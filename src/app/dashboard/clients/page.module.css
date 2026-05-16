@@ -1,0 +1,228 @@
+.page { max-width: 1200px; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+.newBtn {
+  background: var(--primary);
+  color: white;
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.newBtn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus { border-color: var(--primary); }
+
+.statusFilters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterBtn:hover { background: var(--surface-hover); color: var(--text-main); }
+
+.filterActive {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #a5b4fc;
+}
+
+/* Table */
+.tableWrap {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+}
+
+.table th {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.1);
+}
+
+.table td {
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-main);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+  vertical-align: middle;
+}
+
+.table tr:last-child td { border-bottom: none; }
+
+.table tbody tr { transition: background 0.15s ease; }
+
+.table tbody tr:hover { background: var(--surface-hover); }
+
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #a5b4fc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.clientName { font-weight: 600; }
+
+.contact { display: flex; flex-direction: column; gap: 0.1rem; }
+
+.email { font-size: 0.775rem; color: var(--text-muted); }
+
+.na { color: var(--text-muted); opacity: 0.5; }
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Phase progress */
+.phaseProgress { display: flex; align-items: center; gap: 0.5rem; }
+
+.progressBar {
+  width: 60px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #a5b4fc);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.phaseCount { font-size: 0.75rem; color: var(--text-muted); }
+
+/* Actions */
+.actions { display: flex; gap: 0.5rem; flex-wrap: nowrap; }
+
+.viewBtn, .editBtn, .deleteBtn {
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.viewBtn {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.viewBtn:hover { background: rgba(99, 102, 241, 0.25); }
+
+.editBtn {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.editBtn:hover { background: rgba(59, 130, 246, 0.22); }
+
+.deleteBtn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.deleteBtn:hover { background: rgba(239, 68, 68, 0.2); }
+
+/* Empty */
+.empty {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty a { color: var(--primary); font-weight: 500; }

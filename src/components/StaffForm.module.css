@@ -1,0 +1,63 @@
+.form { display: flex; flex-direction: column; gap: 2rem; }
+
+.error {
+  background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+  color: #fca5a5; padding: 0.75rem 1rem; border-radius: 10px; font-size: 0.875rem;
+}
+
+.section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.75rem;
+}
+
+.sectionTitle {
+  font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-muted); margin-bottom: 1.25rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 0;
+}
+
+.fieldGroup { display: flex; flex-direction: column; gap: 0.45rem; }
+
+.label {
+  font-size: 0.78rem; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.input, .textarea {
+  background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+  padding: 0.75rem 1rem; border-radius: 10px;
+  color: var(--text-main); font-size: 0.9rem; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%; font-family: var(--font-sans);
+}
+.input:focus, .textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+}
+.input::placeholder, .textarea::placeholder { color: rgba(156,163,175,0.5); }
+.input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
+.textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+.actions { display: flex; justify-content: flex-end; gap: 1rem; flex-wrap: wrap; }
+
+.cancelBtn {
+  padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+  transition: all 0.2s; cursor: pointer;
+}
+.cancelBtn:hover { color: var(--text-main); background: var(--surface-hover); }
+
+.submitBtn {
+  padding: 0.75rem 1.75rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
+  background: var(--primary); color: white; border: none; cursor: pointer; transition: all 0.2s;
+}
+.submitBtn:hover {
+  background: var(--primary-hover); transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}

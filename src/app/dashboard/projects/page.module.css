@@ -1,0 +1,212 @@
+.page { max-width: 1200px; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem; }
+
+.newBtn {
+  background: var(--primary);
+  color: white;
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.newBtn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.empty {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty a { color: var(--primary); font-weight: 500; }
+
+.projectGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.projectCard {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border-radius: 16px;
+  transition: transform 0.2s ease, border-color 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.projectCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.cardAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #a5b4fc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.cardInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardProjectName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.15rem;
+}
+
+.cardClientName {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.progressWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #a5b4fc);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progressPct {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+  width: 32px;
+  text-align: right;
+}
+
+.phasesRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.phaseChip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.phaseChipDone {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+}
+
+.phaseChipDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.phaseChipDone .phaseChipDot {
+  background: var(--success);
+}
+
+.noPhases {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}
+
+.cardFooter {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.docCount {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.viewLink {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+}

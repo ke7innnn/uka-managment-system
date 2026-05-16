@@ -1,0 +1,111 @@
+.page { max-width: 900px; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem; }
+
+.searchInput {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 1.5rem;
+}
+.searchInput:focus { border-color: var(--primary); }
+
+.empty {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+.empty a { color: var(--primary); font-weight: 500; }
+
+.docList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.docRow {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 14px;
+  transition: transform 0.2s ease;
+}
+
+.docRow:hover { transform: translateX(3px); }
+
+.docIcon {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+  width: 44px;
+  text-align: center;
+}
+
+.docMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.docName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.3rem;
+}
+
+.docMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.docClient {
+  color: #a5b4fc;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.docClient:hover { color: var(--primary); }
+
+.downloadBtn {
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.downloadBtn:hover { background: rgba(99, 102, 241, 0.22); }

@@ -1,0 +1,187 @@
+/* ─── Sidebar Shell ─── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--bg-raised);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0.75rem;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  overflow: hidden;
+}
+
+/* Sidebar glow accent at bottom */
+.sidebar::after {
+  content: '';
+  position: absolute;
+  bottom: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ─── Brand ─── */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.brandLogo {
+  width: 34px;
+  height: 34px;
+  background: var(--grad-accent);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.brandSub {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+/* ─── Nav ─── */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+/* Section divider */
+.navSection {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 1rem 0.75rem 0.4rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.navItem::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--grad-accent);
+  border-radius: 0 3px 3px 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.navItem:hover {
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+.navItem.active {
+  background: var(--accent-bg);
+  color: var(--accent-light);
+  font-weight: 600;
+}
+
+.navItem.active::before {
+  opacity: 1;
+}
+
+.navIcon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.navItem:hover .navIcon,
+.navItem.active .navIcon {
+  opacity: 1;
+}
+
+/* Badge on nav item */
+.navBadge {
+  margin-left: auto;
+  background: var(--red);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: var(--radius-full);
+  min-width: 17px;
+  text-align: center;
+  animation: pulse-glow 2s infinite;
+}
+
+.navLabel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─── Footer ─── */
+.footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  width: 100%;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.logoutBtn:hover {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+/* ─── Staff Portal logo aliases ─── */
+.logo       { display: flex; align-items: center; gap: 0.65rem; padding: 0 0.5rem; margin-bottom: 2rem; }
+.logoBox    { width: 34px; height: 34px; background: var(--grad-accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; color: #fff; flex-shrink: 0; box-shadow: 0 4px 12px var(--accent-glow); }
+.logoText   { font-size: 0.85rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }

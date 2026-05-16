@@ -1,0 +1,393 @@
+.page {
+  padding-bottom: 4rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.newBtn {
+  background: var(--text);
+  color: var(--bg);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.newBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255,255,255,0.15);
+}
+
+/* ── Summary Stats ── */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.statCard {
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.statCard:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+}
+
+.statIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.statVal {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.statOf {
+  font-size: 0.9rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ── Filters ── */
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 250px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.searchInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.colorFilters {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--bg-hover);
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.filterChip {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.filterChip:hover {
+  background: var(--bg-active);
+  color: var(--text);
+}
+
+.chipActive {
+  background: var(--bg-elevated);
+  color: var(--text) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* ── Quick Assign Row ── */
+.quickAssignRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ── Grid & Cards ── */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.staffCard {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: var(--bg-elevated);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle glow behind card content */
+.staffCard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 100px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cardAvatarWrap {
+  position: relative;
+}
+
+.cardAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.statusDot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid var(--bg-elevated);
+}
+
+.cardInfo {
+  flex: 1;
+}
+
+.cardName {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+  letter-spacing: -0.01em;
+}
+
+.cardRole {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.colorBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Progress Section ── */
+.progressSection {
+  background: var(--bg-hover);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.progressFraction {
+  font-weight: 800;
+}
+
+.progressBar {
+  height: 6px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.progressPct {
+  display: block;
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+/* ── Meta Row ── */
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-start;
+}
+
+.metaIcon {
+  color: var(--text-tertiary);
+  margin-bottom: 0.2rem;
+}
+
+.metaVal {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+  display: block;
+}
+
+.metaLabel {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* ── Last Attendance ── */
+.lastAtt {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  border: 1px dashed var(--border-hover);
+}
+
+.lastAttIcon {
+  color: var(--accent-light);
+}
+
+/* ── Card Actions ── */
+.cardActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.actionBtn {
+  padding: 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.actionBtn:hover {
+  background: var(--bg-active);
+  color: var(--text);
+  border-color: var(--border-hover);
+}
+
+.deleteBtn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.deleteBtn:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+.empty a {
+  color: var(--accent-light);
+  font-weight: 600;
+}

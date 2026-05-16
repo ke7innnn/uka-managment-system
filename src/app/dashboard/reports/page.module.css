@@ -1,0 +1,215 @@
+.page {
+  padding-bottom: 4rem;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Global Cards ── */
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.cardTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.metricValue {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+  background: var(--grad-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.metricLabel {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* ── Main Analytics Grid ── */
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.chartCard {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.chartContainer {
+  flex: 1;
+  min-height: 350px;
+  width: 100%;
+}
+
+.customTooltip {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.tooltipLabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.tooltipValue {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Lists ── */
+.listCard {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: background 0.2s;
+}
+
+.listItem:hover {
+  background: var(--bg-active);
+}
+
+.itemLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.itemName {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.itemSub {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.itemRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.itemStat {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.bgGreen { background: rgba(16,185,129,0.1); color: #10b981; }
+.bgYellow { background: rgba(245,158,11,0.1); color: #f59e0b; }
+.bgRed { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+/* ── Split Lists Layout ── */
+.splitLists {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}

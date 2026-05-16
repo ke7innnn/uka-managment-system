@@ -1,0 +1,135 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.loginBox {
+  width: 100%;
+  max-width: 420px;
+  padding: 3rem 2rem;
+  border-radius: 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.logoContainer {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.logo {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--primary) 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputGroup label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.inputGroup input {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  color: var(--text-main);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.inputGroup input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.submitBtn {
+  background: var(--primary);
+  color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.submitBtn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.submitBtn:active {
+  transform: translateY(0);
+}
+
+.bgDecoration1 {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.bgDecoration2 {
+  position: absolute;
+  bottom: -20%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(165, 180, 252, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+}
