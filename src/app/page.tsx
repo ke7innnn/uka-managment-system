@@ -44,8 +44,7 @@ export default function Login() {
     <div className={styles.container}>
       <div className={`glass-panel animate-fade-in ${styles.loginBox}`}>
         <div className={styles.logoContainer}>
-          <div className={styles.logo}>UKA</div>
-          <h1 className={styles.title}>Management System</h1>
+          <h1 className={styles.logo}>UKA</h1>
           <p className={styles.subtitle}>Sign in to your account</p>
         </div>
 
@@ -53,18 +52,18 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className={styles.form}>
           <div className={styles.inputGroup}>
-            <label htmlFor="id">Login ID (Admin Email or Staff Name)</label>
+            <label htmlFor="id">Login ID</label>
             <input
               type="text"
               id="id"
               value={id}
               onChange={(e) => setId(e.target.value)}
-              placeholder="boss@uka or Vrushali Thakur"
+              placeholder="Enter your login ID"
               required
             />
           </div>
           <div className={styles.inputGroup}>
-            <label htmlFor="password">Password (Admin Pass or Phone No)</label>
+            <label htmlFor="password">Password</label>
             <input
               type="password"
               id="password"

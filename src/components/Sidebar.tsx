@@ -27,7 +27,7 @@ export default function Sidebar() {
       {/* Brand */}
       <div className={styles.brand}>
         <div className={styles.brandLogo}>U</div>
-        <span className={styles.brandSub}>UKA Management</span>
+        <span className={styles.brandSub}>UKA</span>
       </div>
 
       {/* Nav */}

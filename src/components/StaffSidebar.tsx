@@ -63,7 +63,7 @@ export default function StaffSidebar() {
         ) : (
           <div className={styles.logoBox}>{member?.name?.charAt(0).toUpperCase() || 'U'}</div>
         )}
-        <span className={styles.logoText}>Staff Portal</span>
+        <span className={styles.logoText}>UKA</span>
       </div>
 
       {/* Nav */}
