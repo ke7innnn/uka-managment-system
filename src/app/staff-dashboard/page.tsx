@@ -11,6 +11,7 @@ import styles from '@/app/dashboard/staff/[id]/page.module.css';
 export default function StaffDashboardHome() {
   const [member, setMember] = useState<StaffMember | null>(null);
   const [locLoading, setLocLoading] = useState(false);
+  const [notifPerm, setNotifPerm] = useState<string>('granted');
 
   const reload = () => {
     const id = isStaffAuthenticated();
@@ -20,9 +21,26 @@ export default function StaffDashboardHome() {
     }
   };
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => { 
+    reload(); 
+    if (typeof Notification !== 'undefined') {
+      setNotifPerm(Notification.permission);
+    }
+  }, []);
 
   if (!member) return null;
+
+  const requestNotificationPermission = async () => {
+    if (typeof Notification !== 'undefined') {
+      const perm = await Notification.requestPermission();
+      setNotifPerm(perm);
+      if (perm === 'granted') {
+        alert("Notifications enabled! You will now see badges on your app icon.");
+      } else {
+        alert("Notification permissions were denied. You won't see badges on your app icon unless you change this in settings.");
+      }
+    }
+  };
 
   // ── Task Actions ──
   const toggleTask = (taskId: string) => {
@@ -140,6 +158,15 @@ export default function StaffDashboardHome() {
             <p className={styles.heroRole}>{member.role}</p>
           </div>
         </div>
+        
+        {notifPerm === 'default' && (
+          <button 
+            onClick={requestNotificationPermission}
+            style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid var(--primary)', color: '#a5b4fc', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+          >
+            🔔 Enable Notifications
+          </button>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
