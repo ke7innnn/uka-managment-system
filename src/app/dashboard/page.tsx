@@ -10,17 +10,20 @@ import {
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
-import { getClients, Client } from '@/lib/store';
+import { getClients, Client, getStaff, StaffMember } from '@/lib/store';
+import { AlertTriangle, XCircle } from 'lucide-react';
 import styles from './page.module.css';
 
 
 export default function DashboardHome() {
   const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { 
     setClients(getClients()); 
+    setStaff(getStaff());
     setMounted(true);
   }, []);
 
@@ -32,6 +35,26 @@ export default function DashboardHome() {
   const recentClients = [...clients]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 4);
+
+  // Performance calculations
+  const performanceAlerts = staff.map(member => {
+    const total = member.tasks.length;
+    if (total === 0) return null;
+    const completed = member.tasks.filter(t => t.completed).length;
+    const pct = Math.round((completed / total) * 100);
+    
+    let status = 'on-track';
+    if (pct < 30) status = 'behind';
+    else if (pct < 70) status = 'attention';
+    
+    if (status === 'on-track') return null; // only show alerts
+    
+    return { member, pct, status };
+  }).filter(Boolean) as { member: StaffMember, pct: number, status: string }[];
+
+  const topAlerts = performanceAlerts
+    .sort((a, b) => a.pct - b.pct)
+    .slice(0, 3);
 
   // Dynamic data for the chart to simulate activity over last 7 days based on clients
   const generateChartData = () => {
@@ -171,6 +194,38 @@ export default function DashboardHome() {
                     </div>
                     <div className={styles.clientRight}>
                       <StatusBadge status={client.projectStatus} />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          <div className={styles.recentClients} style={{ marginTop: '1.5rem' }}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Performance Alerts</h2>
+              <Link href="/dashboard/staff" className={styles.viewAll}>
+                Staff
+              </Link>
+            </div>
+            
+            {topAlerts.length === 0 ? (
+              <div className={styles.empty}>
+                <p>All staff are on track!</p>
+              </div>
+            ) : (
+              <div className={styles.clientList}>
+                {topAlerts.map(({ member, pct, status }) => (
+                  <Link key={member.id} href={`/dashboard/staff/${member.id}`} className={styles.clientRow}>
+                    <div className={styles.clientAvatar} style={{ background: status === 'behind' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)', color: status === 'behind' ? '#ef4444' : '#f59e0b', border: 'none' }}>
+                      {status === 'behind' ? <XCircle size={16} /> : <AlertTriangle size={16} />}
+                    </div>
+                    <div className={styles.clientInfo}>
+                      <span className={styles.clientName}>{member.name}</span>
+                      <span className={styles.clientMeta}>Task Completion: {pct}%</span>
+                    </div>
+                    <div className={styles.clientRight}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 600, color: status === 'behind' ? '#ef4444' : '#f59e0b' }}>
+                        {status === 'behind' ? 'BEHIND' : 'ATTENTION'}
+                      </span>
                     </div>
                   </Link>
                 ))}
