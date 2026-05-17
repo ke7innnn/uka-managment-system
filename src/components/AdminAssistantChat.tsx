@@ -125,14 +125,15 @@ export default function AdminAssistantChat() {
     <div style={{
       position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999,
       width: '100%', maxWidth: '380px', height: '600px', maxHeight: '80vh',
-      background: 'var(--surface)', border: '1px solid var(--border)',
+      background: 'rgba(10, 12, 16, 0.95)', backdropFilter: 'blur(30px)',
+      border: '1px solid var(--border)',
       borderRadius: '20px', display: 'flex', flexDirection: 'column',
-      boxShadow: '0 12px 48px rgba(0,0,0,0.5)', overflow: 'hidden',
-      animation: 'fadeIn 0.2s ease-out'
+      boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05) inset', 
+      overflow: 'hidden', animation: 'fadeIn 0.2s ease-out'
     }}>
       {/* Header */}
       <div style={{
-        padding: '1rem', background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)',
+        padding: '1.25rem', background: 'rgba(15, 18, 25, 0.98)', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -167,16 +168,17 @@ export default function AdminAssistantChat() {
             <div key={idx} style={{
               alignSelf: isModel ? 'flex-start' : 'flex-end',
               maxWidth: '85%',
-              background: isModel ? 'rgba(255,255,255,0.05)' : 'var(--primary)',
+              background: isModel ? 'rgba(255,255,255,0.08)' : 'var(--primary)',
               color: isModel ? 'var(--text-main)' : 'white',
               padding: '0.85rem 1rem',
               borderRadius: '16px',
               borderBottomLeftRadius: isModel ? '4px' : '16px',
               borderBottomRightRadius: isModel ? '16px' : '4px',
-              border: isModel ? '1px solid var(--border)' : 'none',
+              border: isModel ? '1px solid rgba(255,255,255,0.1)' : 'none',
               fontSize: '0.9rem',
               lineHeight: 1.5,
-              whiteSpace: 'pre-wrap'
+              whiteSpace: 'pre-wrap',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
             }}>
               {msg.content}
             </div>
@@ -195,7 +197,7 @@ export default function AdminAssistantChat() {
       </div>
 
       {/* Input Area */}
-      <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', background: 'var(--bg-elevated)' }}>
+      <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', background: 'rgba(15, 18, 25, 0.98)' }}>
         <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.5rem' }}>
           <input 
             type="text" 
@@ -204,9 +206,9 @@ export default function AdminAssistantChat() {
             placeholder="Ask UKA a question..."
             disabled={isLoading}
             style={{
-              flex: 1, background: 'var(--surface)', border: '1px solid var(--border)',
-              padding: '0.75rem 1rem', borderRadius: '20px', color: 'var(--text-main)',
-              fontSize: '0.9rem', outline: 'none'
+              flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+              padding: '0.85rem 1.1rem', borderRadius: '24px', color: 'var(--text-main)',
+              fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s'
             }}
           />
           <button 
