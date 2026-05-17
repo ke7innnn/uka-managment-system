@@ -144,98 +144,108 @@ export default function StaffDashboardHome() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
         
-        {/* Left Column: Tasks */}
-        <div>
-          <div className={`glass-panel ${styles.progressBar}`} style={{ marginBottom: '1.5rem' }}>
-            <div className={styles.pbHeader}>
-              <span className={styles.pbLabel}>My Task Progress</span>
-              <span className={styles.pbPct}>{pct}%</span>
+        {/* Left Column: Tasks Hub */}
+        <div className={`glass-panel`} style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          
+          <div>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Task Progress</h3>
+            <div className={styles.pbHeader} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 600 }}>{doneTasks.length} / {member.tasks.length} Completed</span>
+              <span style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 800 }}>{pct}%</span>
             </div>
-            <div className={styles.pbTrack}>
-              <div className={styles.pbFill} style={{ width: `${pct}%`, background: 'var(--primary)' }} />
+            <div className={styles.pbTrack} style={{ height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div className={styles.pbFill} style={{ width: `${pct}%`, background: 'linear-gradient(90deg, var(--primary), #a5b4fc)', height: '100%', borderRadius: '4px', transition: 'width 0.4s ease' }} />
             </div>
-            <p className={styles.pbSub}>{doneTasks.length} completed · {pendingTasks.length} pending</p>
           </div>
 
-          <h3 className={styles.taskGroupTitle} style={{ marginBottom: '1rem', marginTop: '1rem' }}>My Tasks</h3>
-          {member.tasks.length === 0 ? (
-            <div className={styles.empty}>You have no tasks assigned.</div>
-          ) : (
-            <div className={styles.taskSections}>
-              {pendingTasks.map(task => (
-                <div key={task.id} className={styles.taskItem}>
-                  <button className={`${styles.taskCheck}`} onClick={() => toggleTask(task.id)}></button>
-                  <div className={styles.taskBody}>
-                    <span className={styles.taskTitle}>{task.title}</span>
-                    <span className={styles.taskDeadline}>Due: {new Date(task.deadline).toLocaleDateString()}</span>
+          <div>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>My Tasks</h3>
+            {member.tasks.length === 0 ? (
+              <div className={styles.empty} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                You have no tasks assigned.
+              </div>
+            ) : (
+              <div className={styles.taskSections} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {pendingTasks.map(task => (
+                  <div key={task.id} className={styles.taskItem} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--border)', transition: 'all 0.2s ease' }}>
+                    <button className={styles.taskCheck} onClick={() => toggleTask(task.id)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--border)', background: 'transparent', cursor: 'pointer', flexShrink: 0 }}></button>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>{task.title}</p>
+                      <p style={{ fontSize: '0.75rem', color: '#f59e0b', margin: 0, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <Clock size={12} /> Due: {new Date(task.deadline).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
-              {doneTasks.map(task => (
-                <div key={task.id} className={`${styles.taskItem} ${styles.taskDimmed}`}>
-                  <button className={`${styles.taskCheck} ${styles.taskChecked}`} onClick={() => toggleTask(task.id)}><Check size={14} strokeWidth={2.5} /></button>
-                  <div className={styles.taskBody}>
-                    <span className={styles.taskTitle}>{task.title}</span>
+                ))}
+                {doneTasks.map(task => (
+                  <div key={task.id} className={styles.taskItem} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'transparent', borderRadius: '12px', opacity: 0.5 }}>
+                    <button className={styles.taskCheck} onClick={() => toggleTask(task.id)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: 'none', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                      <Check size={14} strokeWidth={3} />
+                    </button>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-main)', margin: 0, textDecoration: 'line-through' }}>{task.title}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Right Column: Attendance */}
-        <div>
-          <div className={`glass-panel ${styles.attForm}`} style={{ marginBottom: '1.5rem' }}>
-            <h3 className={styles.attFormTitle}>Today's Attendance</h3>
-            
+        {/* Right Column: Attendance Hub */}
+        <div className={`glass-panel`} style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          
+          <div>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Today's Attendance</h3>
             {todaysLog ? (
-              <div style={{ textAlign: 'center', padding: '1rem' }}>
-                <p style={{ color: '#10b981', fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                  <CheckCircle2 size={18} strokeWidth={2} /> Checked in at {todaysLog.checkIn}
+              <div style={{ textAlign: 'center', padding: '1.5rem', background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '12px' }}>
+                <p style={{ color: '#10b981', fontWeight: 700, fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                  <CheckCircle2 size={20} strokeWidth={2.5} /> Checked in at {todaysLog.checkIn}
                 </p>
                 <button 
-                  className={styles.logBtn} 
-                  style={{ background: '#ef4444', width: '100%', marginTop: '1rem' }}
+                  style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '0.85rem', width: '100%', borderRadius: '10px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(239,68,68,0.3)', transition: 'transform 0.2s' }}
                   onClick={() => handleClockOut(todaysLog.id)}
                 >
                   Clock Out
                 </button>
               </div>
             ) : (
-              <div>
+              <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border)', borderRadius: '12px', textAlign: 'center' }}>
                 <button 
-                  className={styles.logBtn} 
-                  style={{ width: '100%', opacity: locLoading ? 0.7 : 1 }} 
+                  style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '0.85rem', width: '100%', borderRadius: '10px', fontWeight: 700, fontSize: '1rem', cursor: locLoading ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(99,102,241,0.3)', transition: 'all 0.2s', opacity: locLoading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} 
                   onClick={handleClockIn}
                   disabled={locLoading}
                 >
-                  {locLoading ? 'Capturing GPS & Clocking In...' : <><MapPin size={16} strokeWidth={1.5} style={{ marginRight: 6, verticalAlign: 'middle' }} /> Clock In Now</>}
+                  <MapPin size={18} strokeWidth={2} /> {locLoading ? 'Capturing GPS...' : 'Clock In Now'}
                 </button>
-                <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-                  Location access is strictly required to clock in.
+                <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Location access is strictly required.
                 </p>
               </div>
             )}
           </div>
 
-          <h3 className={styles.taskGroupTitle} style={{ marginBottom: '1rem' }}>Recent Attendance</h3>
-          <div className={styles.attList}>
-            {[...member.attendance].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map((log) => (
-              <div key={log.id} className={`glass-panel ${styles.attCard}`}>
-                <div className={styles.attCardLeft}>
-                  <div className={styles.attDetails}>
-                    <span className={styles.attDate}>{new Date(log.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-                    <div className={styles.attTimes}>
-                      <span className={styles.attTime} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}><ArrowRightCircle size={14} strokeWidth={1.75} color="#4ade80" /> {log.checkIn}</span>
-                      {log.checkOut && <span className={styles.attTime} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}><ArrowLeftCircle size={14} strokeWidth={1.75} color="#f87171" /> {log.checkOut}</span>}
-                      {log.hoursWorked !== undefined && (
-                        <span className={styles.attHours} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={14} strokeWidth={1.75} /> {log.hoursWorked.toFixed(1)}h</span>
-                      )}
-                    </div>
+          <div>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Recent Logs</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {[...member.attendance].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map((log) => (
+                <div key={log.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                  <div>
+                    <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', margin: 0, marginBottom: '0.25rem' }}>{new Date(log.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><ArrowRightCircle size={12} color="#4ade80" /> {log.checkIn}</span>
+                      {log.checkOut && <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><ArrowLeftCircle size={12} color="#f87171" /> {log.checkOut}</span>}
+                    </p>
                   </div>
+                  {log.hoursWorked !== undefined && (
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--primary)', margin: 0 }}>{log.hoursWorked.toFixed(1)}h</p>
+                      <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Logged</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
         </div>
