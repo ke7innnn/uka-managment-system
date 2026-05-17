@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   title: "UKA",
   description: "Internal portal for UKA",
   manifest: "/manifest.json",
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
