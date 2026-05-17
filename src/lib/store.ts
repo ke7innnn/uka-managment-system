@@ -151,14 +151,21 @@ export function getStaff(): StaffMember[] {
     const raw = localStorage.getItem(STAFF_KEY);
     let staff = raw ? JSON.parse(raw) : [];
     
-    // ── Migrate any old non-UUID IDs to proper UUIDs ──
+    // ── Migrate any old non-UUID IDs and reset hardcoded task targets to 0 ──
     let migrated = false;
     staff = staff.map((s: StaffMember) => {
+      let needsSave = false;
       // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(s.id)) {
-        migrated = true;
-        return { ...s, id: crypto.randomUUID() };
+        needsSave = true;
+        s.id = crypto.randomUUID();
       }
+      // Reset dummy targets (50 or 10) back to 0
+      if (s.totalTasksTarget === 50 || s.totalTasksTarget === 10) {
+        needsSave = true;
+        s.totalTasksTarget = 0;
+      }
+      if (needsSave) migrated = true;
       return s;
     });
     if (migrated) {
@@ -188,7 +195,7 @@ export function getStaff(): StaffMember[] {
         password: s.phone,
         phone: s.phone,
         joinedAt: new Date().toISOString(),
-        totalTasksTarget: 50,
+        totalTasksTarget: 0,
         tasks: [],
         attendance: []
       }));
