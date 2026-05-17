@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getStaffById, isStaffAuthenticated, updateStaffMember, StaffMember } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
+import { User, Briefcase, Building2, Phone, CalendarDays, Upload, Shield } from 'lucide-react';
 import styles from '@/app/dashboard/staff/[id]/page.module.css';
 
 export default function StaffProfilePage() {
@@ -66,52 +67,66 @@ export default function StaffProfilePage() {
         <h1 className={styles.title}>My Profile</h1>
       </div>
 
-      <div className={`glass-panel ${styles.hero}`} style={{ marginBottom: '2rem' }}>
-        <div className={styles.heroLeft}>
-          <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => document.getElementById('pfp-upload')?.click()}>
+      <div className={`glass-panel`} style={{ position: 'relative', overflow: 'hidden', padding: 0, marginBottom: '2rem' }}>
+        {/* Banner */}
+        <div style={{ height: '140px', background: 'linear-gradient(135deg, rgba(124,58,237,0.3) 0%, rgba(6,182,212,0.1) 100%)', position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: 0, backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }} />
+        </div>
+        
+        {/* Profile Content */}
+        <div style={{ padding: '0 2rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '-50px', position: 'relative', zIndex: 10 }}>
+          <div style={{ position: 'relative', cursor: 'pointer', marginBottom: '1.25rem', borderRadius: '50%', padding: '4px', background: 'var(--bg-elevated)', border: '1px solid var(--border)' }} onClick={() => document.getElementById('pfp-upload')?.click()}>
             {member.profilePicture ? (
-              <img src={member.profilePicture} alt={member.name} className={styles.heroAvatar} style={{ objectFit: 'cover', transition: 'opacity 0.2s' }} />
+              <img src={member.profilePicture} alt={member.name} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', transition: 'opacity 0.2s', display: 'block' }} />
             ) : (
-              <div className={styles.heroAvatar} style={{ background: 'linear-gradient(135deg, #4f46e5, #818cf8)' }}>
+              <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 800, color: 'white' }}>
                 {member.name.charAt(0).toUpperCase()}
               </div>
             )}
-            <div style={{ position: 'absolute', bottom: -5, right: -5, background: 'var(--accent)', borderRadius: '50%', padding: '4px', border: '2px solid var(--bg-elevated)' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div style={{ position: 'absolute', bottom: 0, right: 0, background: 'var(--accent)', borderRadius: '50%', padding: '6px', border: '2px solid var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 4px 12px rgba(124,58,237,0.4)' }}>
+              <Upload size={14} strokeWidth={2.5} />
             </div>
             <input type="file" id="pfp-upload" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
           </div>
-          <div className={styles.heroInfo}>
-            <h2 className={styles.heroName}>{member.name}</h2>
-            <p className={styles.heroRole}>{member.role} {member.department ? `· ${member.department}` : ''}</p>
-          </div>
+          
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.25rem', textAlign: 'center' }}>{member.name}</h2>
+          <p style={{ fontSize: '1rem', color: 'var(--accent-light)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', textAlign: 'center' }}>
+            <Shield size={16} /> Staff Member
+          </p>
         </div>
       </div>
 
-      <h3 style={{ marginBottom: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px' }}>
-        Personal Details
-      </h3>
-
-      <div className={styles.infoGrid}>
-        <InfoBox label="Full Name" value={member.name} />
-        <InfoBox label="Role" value={member.role} />
-        <InfoBox label="Department" value={member.department} />
-        <InfoBox label="Phone Number (Password)" value={member.password || member.phone} />
-        <InfoBox label="Joined Date" value={new Date(member.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} />
+      <div className={`glass-panel`} style={{ padding: '2rem' }}>
+        <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.5rem' }}>Personal Details</h3>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <InfoRow icon={User} label="Full Name" value={member.name} />
+          <InfoRow icon={Briefcase} label="Role" value={member.role} />
+          <InfoRow icon={Building2} label="Department" value={member.department} />
+          <InfoRow icon={Phone} label="Phone Number (Password)" value={member.password || member.phone} isMasked={true} />
+          <InfoRow icon={CalendarDays} label="Joined Date" value={new Date(member.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} />
+        </div>
       </div>
       
-      <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-        Need to update your details? Please contact the Admin.
+      <p style={{ marginTop: '2.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+        <Shield size={14} /> Need to update your details? Please contact the Admin.
       </p>
     </div>
   );
 }
 
-function InfoBox({ label, value }: { label: string; value?: string }) {
+function InfoRow({ icon: Icon, label, value, isMasked }: { icon: any; label: string; value?: string; isMasked?: boolean }) {
   return (
-    <div className={styles.infoBox}>
-      <span className={styles.infoLabel}>{label}</span>
-      <span className={styles.infoVal}>{value || <span style={{ opacity: 0.4 }}>—</span>}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+      <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--accent-bg)', color: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Icon size={18} strokeWidth={2} />
+      </div>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0, marginBottom: '0.2rem', fontWeight: 600 }}>{label}</p>
+        <p style={{ fontSize: '1rem', color: 'var(--text-main)', margin: 0, fontWeight: 500, fontFamily: isMasked ? 'monospace' : 'inherit', letterSpacing: isMasked ? '1px' : 'normal' }}>
+          {value || <span style={{ opacity: 0.4 }}>—</span>}
+        </p>
+      </div>
     </div>
   );
 }
