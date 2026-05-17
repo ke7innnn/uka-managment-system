@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+// Force rebuild to load updated Vercel environment variables
 export async function POST(req: Request) {
   try {
     const { messages, context } = await req.json();
