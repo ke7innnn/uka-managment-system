@@ -64,24 +64,31 @@ export async function pullFromSupabase() {
       }))
     }));
 
-    // ── MERGE STRATEGY: Supabase wins, but preserve local-only pending records ──
+    // ── MERGE STRATEGY: Supabase wins, deduplicate by name to prevent ghost clones ──
     const localClientsRaw = localStorage.getItem('uka_clients');
     const localStaffRaw = localStorage.getItem('uka_staff');
     const localClients: Client[] = localClientsRaw ? JSON.parse(localClientsRaw) : [];
     const localStaff: StaffMember[] = localStaffRaw ? JSON.parse(localStaffRaw) : [];
 
     const supabaseClientIds = new Set(supabaseClients.map(c => c.id));
+    // For staff, deduplicate by BOTH id AND name to prevent clones
     const supabaseStaffIds = new Set(supabaseStaff.map(s => s.id));
+    const supabaseStaffNames = new Set(supabaseStaff.map(s => s.name.toLowerCase()));
 
-    // Records that exist locally but haven't reached Supabase yet
+    // Clients pending push: not in Supabase by ID
     const pendingLocalClients = localClients.filter(c => !supabaseClientIds.has(c.id));
-    const pendingLocalStaff = localStaff.filter(s => !supabaseStaffIds.has(s.id));
+    // Staff pending push: not in Supabase by ID AND not already there by name (prevents clones)
+    const pendingLocalStaff = localStaff.filter(s =>
+      !supabaseStaffIds.has(s.id) && !supabaseStaffNames.has(s.name.toLowerCase())
+    );
 
     const mergedClients = [...supabaseClients, ...pendingLocalClients];
     const mergedStaff = [...supabaseStaff, ...pendingLocalStaff];
 
     localStorage.setItem('uka_clients', JSON.stringify(mergedClients));
     localStorage.setItem('uka_staff', JSON.stringify(mergedStaff));
+    // Mark that we have synced at least once — getStaff() uses this to skip re-seeding
+    localStorage.setItem('uka_supabase_synced', 'true');
 
     // Retry push for any records that hadn't synced yet
     if (pendingLocalClients.length > 0) {

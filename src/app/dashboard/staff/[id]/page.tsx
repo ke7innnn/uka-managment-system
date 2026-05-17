@@ -60,7 +60,7 @@ export default function StaffDetailPage() {
     const title = taskTitle.trim();
     if (!title || !taskDeadline) return;
     const task: StaffTask = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       title,
       completed: false,
       deadline: taskDeadline,
@@ -114,7 +114,7 @@ export default function StaffDetailPage() {
     // Parse lat,lng if location looks like coords
     const isCoords = /^-?\d+\.\d+,-?\d+\.\d+$/.test(attLocation);
     const log: AttendanceLog = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       date: attDate,
       checkIn: attIn,
       checkOut: attOut || undefined,

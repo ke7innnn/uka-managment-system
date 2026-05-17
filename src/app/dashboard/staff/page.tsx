@@ -43,7 +43,7 @@ export default function StaffPage() {
     if (!member) return;
 
     const task: StaffTask = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       title: assignTitle.trim(),
       completed: false,
       deadline: assignDeadline,

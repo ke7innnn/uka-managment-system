@@ -79,7 +79,7 @@ export default function StaffDashboardHome() {
         }
 
         const log: AttendanceLog = {
-          id: Math.random().toString(36).substring(2, 9),
+          id: crypto.randomUUID(),
           date: dateStr,
           checkIn: timeStr,
           location: coordsStr,

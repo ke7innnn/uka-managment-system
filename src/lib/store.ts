@@ -167,8 +167,9 @@ export function getStaff(): StaffMember[] {
       import('./supabaseSync').then(({ pushStaffToSupabase }) => pushStaffToSupabase(staff));
     }
 
-    // Auto-initialize if empty — first time on a new device
-    if (staff.length === 0) {
+    // Auto-initialize if empty — ONLY if Supabase hasn't synced yet on this device.
+    // If Supabase has synced, staff come from there. Seeding here would create clones.
+    if (staff.length === 0 && !localStorage.getItem('uka_supabase_synced')) {
       const initial = [
         { name: "Vrushali Thakur", phone: "9518508458" },
         { name: "Uzaid Khan", phone: "7775815503" },
