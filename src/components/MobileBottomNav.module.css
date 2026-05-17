@@ -1,9 +1,14 @@
-/* ── Bottom Tab Bar ── */
-.nav {
+/* ── Hide everything on desktop ── */
+.mobileNavWrapper {
   display: none;
 }
 
 @media (max-width: 768px) {
+  .mobileNavWrapper {
+    display: block;
+  }
+
+  /* ── Bottom Tab Bar ── */
   .nav {
     display: flex;
     position: fixed;

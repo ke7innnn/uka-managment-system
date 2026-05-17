@@ -26,7 +26,7 @@ export default function MobileBottomNav() {
   const isMoreActive = MORE_TABS.some(t => pathname.startsWith(t.href));
 
   return (
-    <>
+    <div className={styles.mobileNavWrapper}>
       {/* More Sheet Overlay */}
       {moreOpen && (
         <div className={styles.overlay} onClick={() => setMoreOpen(false)} />
@@ -68,6 +68,6 @@ export default function MobileBottomNav() {
           <span className={styles.tabLabel}>More</span>
         </button>
       </nav>
-    </>
+    </div>
   );
 }

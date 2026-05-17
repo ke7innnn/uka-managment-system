@@ -29,7 +29,8 @@ export default function StaffMobileBottomNav() {
   }, [pathname]);
 
   return (
-    <nav className={styles.nav}>
+    <div className={styles.mobileNavWrapper}>
+      <nav className={styles.nav}>
       {TABS.map(({ href, label, Icon }) => {
         const isRoot = href === '/staff-dashboard';
         const active = isRoot ? pathname === href : pathname.startsWith(href);
@@ -52,6 +53,7 @@ export default function StaffMobileBottomNav() {
           </Link>
         );
       })}
-    </nav>
+      </nav>
+    </div>
   );
 }
