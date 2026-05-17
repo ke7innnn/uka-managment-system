@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './login.module.css';
 import { getStaff } from '@/lib/store';
@@ -12,6 +12,15 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    // Auto-login for PWA / home screen shortcuts
+    if (localStorage.getItem('uka_admin_auth') === 'true') {
+      router.push('/dashboard');
+    } else if (localStorage.getItem('uka_staff_auth')) {
+      router.push('/staff-dashboard');
+    }
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

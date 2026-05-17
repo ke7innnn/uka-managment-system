@@ -28,6 +28,51 @@ export default function SupabaseSyncProvider({ children }: { children: React.Rea
         window.dispatchEvent(new Event('storage'));
       }
     });
+
+    // PWA App Badge Notification Sync
+    const updateAppBadge = () => {
+      if (typeof navigator !== 'undefined' && 'setAppBadge' in navigator) {
+        try {
+          const staffId = localStorage.getItem('uka_staff_auth');
+          if (!staffId) {
+            // @ts-ignore
+            if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {});
+            return;
+          }
+          
+          const rawStaff = localStorage.getItem('uka_staff');
+          if (rawStaff) {
+            const staff = JSON.parse(rawStaff);
+            const me = staff.find((s: any) => s.id === staffId);
+            if (me && me.tasks) {
+              const pending = me.tasks.filter((t: any) => !t.completed).length;
+              let badgeCount = 0;
+              if (pending >= 3) badgeCount = 2;
+              else if (pending > 0) badgeCount = 1;
+              
+              if (badgeCount > 0) {
+                // @ts-ignore
+                navigator.setAppBadge(badgeCount).catch(() => {});
+              } else {
+                // @ts-ignore
+                if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {});
+              }
+            }
+          }
+        } catch (err) {
+          console.error("App badge update failed", err);
+        }
+      }
+    };
+
+    updateAppBadge();
+    const interval = setInterval(updateAppBadge, 30000); // Check every 30s
+    window.addEventListener('storage', updateAppBadge);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', updateAppBadge);
+    };
   }, []);
 
   return <>{children}</>;
