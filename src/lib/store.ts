@@ -163,8 +163,6 @@ export function getStaff(): StaffMember[] {
     });
     if (migrated) {
       localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
-      // Push migrated IDs to Supabase
-      import('./supabaseSync').then(({ pushStaffToSupabase }) => pushStaffToSupabase(staff));
     }
 
     // Auto-initialize if empty — ONLY if Supabase hasn't synced yet on this device.
@@ -195,8 +193,6 @@ export function getStaff(): StaffMember[] {
         attendance: []
       }));
       localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
-      // Push the initial seed to Supabase so all devices see these staff
-      import('./supabaseSync').then(({ pushStaffToSupabase }) => pushStaffToSupabase(staff));
     }
     
     return staff;
