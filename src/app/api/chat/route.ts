@@ -60,7 +60,16 @@ export async function POST(req: Request) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error?.message || "Failed to communicate with Gemini AI");
+      let errorMsg = data.error?.message || "Failed to communicate with Gemini AI";
+      
+      // Clean up scary quota error messages for the UI
+      if (errorMsg.includes("Quota exceeded") || response.status === 429) {
+        const match = errorMsg.match(/retry in ([\d\.]+)s/);
+        const seconds = match ? Math.ceil(parseFloat(match[1])) : 60;
+        errorMsg = `You are asking questions a bit too quickly. Please wait ${seconds} seconds before asking another question!`;
+      }
+      
+      throw new Error(errorMsg);
     }
 
     const aiMessage = data.candidates[0]?.content?.parts[0]?.text;
