@@ -13,6 +13,13 @@
   overflow: hidden;
 }
 
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    border-right: none;
+  }
+}
+
 /* Sidebar glow accent at bottom */
 .sidebar::after {
   content: '';
