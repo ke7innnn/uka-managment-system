@@ -199,6 +199,8 @@ export default function DashboardHome() {
                 ))}
               </div>
             )}
+          </div>
+
           <div className={styles.recentClients} style={{ marginTop: '1.5rem' }}>
             <div className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>Performance Alerts</h2>
