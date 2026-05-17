@@ -12,6 +12,7 @@ export default function StaffDashboardHome() {
   const [member, setMember] = useState<StaffMember | null>(null);
   const [locLoading, setLocLoading] = useState(false);
   const [notifPerm, setNotifPerm] = useState<string>('granted');
+  const [showIOSBanner, setShowIOSBanner] = useState(false);
 
   const reload = () => {
     const id = isStaffAuthenticated();
@@ -23,10 +24,18 @@ export default function StaffDashboardHome() {
 
   useEffect(() => { 
     reload(); 
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      setNotifPerm(Notification.permission);
-    } else {
-      setNotifPerm('unsupported');
+    if (typeof window !== 'undefined') {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      if (isIOS && !isStandalone) {
+        setShowIOSBanner(true);
+      }
+      
+      if ('Notification' in window) {
+        setNotifPerm(Notification.permission);
+      } else {
+        setNotifPerm('unsupported');
+      }
     }
   }, []);
 
@@ -150,28 +159,39 @@ export default function StaffDashboardHome() {
 
   return (
     <div className={`animate-fade-in ${styles.page}`} style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      <div className={styles.hero} style={{ marginBottom: '2rem' }}>
-        <div className={styles.heroLeft}>
-          {member.profilePicture ? (
-            <img src={member.profilePicture} alt={member.name} className={styles.heroAvatar} style={{ objectFit: 'cover' }} />
-          ) : (
-            <div className={styles.heroAvatar} style={{ background: 'linear-gradient(135deg, #4f46e5, #818cf8)' }}>
-              {member.name.charAt(0).toUpperCase()}
+      <div className={styles.hero} style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div className={styles.heroLeft}>
+            {member.profilePicture ? (
+              <img src={member.profilePicture} alt={member.name} className={styles.heroAvatar} style={{ objectFit: 'cover' }} />
+            ) : (
+              <div className={styles.heroAvatar} style={{ background: 'linear-gradient(135deg, #4f46e5, #818cf8)' }}>
+                {member.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className={styles.heroInfo}>
+              <h1 className={styles.heroName}>Welcome back, {member.name}</h1>
+              <p className={styles.heroRole}>{member.role}</p>
             </div>
-          )}
-          <div className={styles.heroInfo}>
-            <h1 className={styles.heroName}>Welcome back, {member.name}</h1>
-            <p className={styles.heroRole}>{member.role}</p>
           </div>
+          
+          {(notifPerm === 'default' || notifPerm === 'denied') && (
+            <button 
+              onClick={requestNotificationPermission}
+              style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid var(--primary)', color: '#a5b4fc', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+            >
+              🔔 Enable Notifications
+            </button>
+          )}
         </div>
-        
-        {(notifPerm === 'default' || notifPerm === 'denied') && (
-          <button 
-            onClick={requestNotificationPermission}
-            style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid var(--primary)', color: '#a5b4fc', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
-          >
-            🔔 Enable Notifications
-          </button>
+
+        {showIOSBanner && (
+          <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px dashed rgba(59,130,246,0.4)', borderRadius: '12px', padding: '1rem', marginTop: '1rem', color: '#93c5fd', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1.25rem' }}>💡</span>
+            <p style={{ margin: 0, lineHeight: 1.5 }}>
+              <strong>To enable notification badges on iOS:</strong> Tap the Safari <strong>Share</strong> button, select <strong>"Add to Home Screen"</strong>, then launch UKA from your Home Screen!
+            </p>
+          </div>
         )}
       </div>
 
