@@ -30,7 +30,7 @@ export default function StaffForm({ member, mode }: Props) {
     email:            member?.email || '',
     phone:            member?.phone || '',
     department:       member?.department || '',
-    totalTasksTarget: String(member?.totalTasksTarget ?? 10),
+    totalTasksTarget: String(member?.totalTasksTarget ?? 0),
     workDeadline:     member?.workDeadline ? member.workDeadline.split('T')[0] : '',
     notes:            member?.notes || '',
     profilePicture:   member?.profilePicture || '',
@@ -44,7 +44,8 @@ export default function StaffForm({ member, mode }: Props) {
     if (!form.name.trim()) { setError('Name is required.'); return; }
     if (!form.role.trim()) { setError('Role is required.'); return; }
 
-    const target = parseInt(form.totalTasksTarget) || 1;
+    const parsedTarget = parseInt(form.totalTasksTarget);
+    const target = isNaN(parsedTarget) ? 0 : parsedTarget;
 
     if (mode === 'new') {
       addStaffMember({

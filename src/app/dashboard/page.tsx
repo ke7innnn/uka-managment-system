@@ -79,10 +79,13 @@ export default function DashboardHome() {
       }
     });
     
-    // Accumulate to show an "uptime trend"
-    let accActive = Math.max(5, active - 5);
+    // Accumulate actual baseline from before 7 days
+    const weekAgo = new Date(today);
+    weekAgo.setDate(today.getDate() - 7);
+    let accActive = clients.filter(c => new Date(c.createdAt) < weekAgo && c.projectStatus !== 'completed').length;
+    
     data.forEach(d => {
-      accActive += (d.active || 1); // smooth base growth
+      accActive += d.active; // add today's new active clients
       d.active = accActive; 
     });
 

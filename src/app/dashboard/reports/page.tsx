@@ -39,7 +39,7 @@ export default function ReportsPage() {
   // Calculates total tasks (target) and completed tasks (actual) per staff member.
   const performanceData = staffWithStats.map(s => ({
     name: s.name.split(' ')[0], // First name
-    target: s.totalTasksTarget || Math.max(s.total, 5),
+    target: s.totalTasksTarget !== undefined ? s.totalTasksTarget : s.total,
     actual: s.done
   })).slice(0, 7); // Show max 7 on chart
   
