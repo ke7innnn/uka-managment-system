@@ -4,9 +4,12 @@ export async function POST(req: Request) {
   try {
     const { messages, context } = await req.json();
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const primaryKey = process.env.GEMINI_API_KEY;
+    const secondaryKey = process.env.GEMINI_API_KEY_SECONDARY;
+
+    const apiKeys = [primaryKey, secondaryKey].filter(Boolean) as string[];
     
-    if (!apiKey) {
+    if (apiKeys.length === 0) {
       return NextResponse.json(
         { error: "Gemini API key is not configured. Please add GEMINI_API_KEY to your .env.local file." },
         { status: 500 }
@@ -37,7 +40,6 @@ export async function POST(req: Request) {
     }));
 
     // Inject system instructions as the very first message
-    // Note: Gemini has a specific "system_instruction" field we can use.
     const requestBody = {
       system_instruction: {
         parts: [{ text: systemInstruction }]
@@ -49,30 +51,50 @@ export async function POST(req: Request) {
       }
     };
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
+    let aiMessage = '';
+    let lastErrorMsg = 'Failed to communicate with Gemini AI';
+    let lastStatus = 500;
+    let success = false;
 
-    const data = await response.json();
+    // Loop through all available keys
+    for (let i = 0; i < apiKeys.length; i++) {
+      const apiKey = apiKeys[i];
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
 
-    if (!response.ok) {
-      let errorMsg = data.error?.message || "Failed to communicate with Gemini AI";
-      
-      // Clean up scary quota error messages for the UI
-      if (errorMsg.includes("Quota exceeded") || response.status === 429) {
-        const match = errorMsg.match(/retry in ([\d\.]+)s/);
-        const seconds = match ? Math.ceil(parseFloat(match[1])) : 60;
-        errorMsg = `You are asking questions a bit too quickly. Please wait ${seconds} seconds before asking another question!`;
+        const data = await response.json();
+
+        if (response.ok) {
+          aiMessage = data.candidates[0]?.content?.parts[0]?.text;
+          success = true;
+          break; // Key worked! Break the loop.
+        } else {
+          lastStatus = response.status;
+          lastErrorMsg = data.error?.message || "Failed to communicate with Gemini AI";
+          console.warn(`Gemini API key rotation: Key ${i + 1} failed with status ${response.status}. Error: ${lastErrorMsg}`);
+        }
+      } catch (err: any) {
+        lastErrorMsg = err.message || "Network error occurred";
+        console.warn(`Gemini API key rotation: Fetch with key ${i + 1} threw an error: ${lastErrorMsg}`);
       }
-      
-      throw new Error(errorMsg);
     }
 
-    const aiMessage = data.candidates[0]?.content?.parts[0]?.text;
+    if (!success) {
+      // Clean up scary quota error messages for the UI if all keys failed
+      if (lastErrorMsg.includes("Quota exceeded") || lastStatus === 429) {
+        const match = lastErrorMsg.match(/retry in ([\d\.]+)s/);
+        const seconds = match ? Math.ceil(parseFloat(match[1])) : 60;
+        lastErrorMsg = `You are asking questions a bit too quickly. Please wait ${seconds} seconds before asking another question!`;
+      }
+      
+      throw new Error(lastErrorMsg);
+    }
 
     return NextResponse.json({ message: aiMessage });
   } catch (error: any) {
