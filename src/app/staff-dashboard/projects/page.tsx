@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { getClients, updateClient, Client, Document as Doc, isStaffAuthenticated, viewDocumentSafe } from '@/lib/store';
+import { supabase } from '@/lib/supabase';
 import { ImageIcon, FileText, FileSpreadsheet, Video, Paperclip, Eye, Download, Upload, Pencil, Check, X } from 'lucide-react';
 import styles from '@/app/dashboard/clients/page.module.css';
 import detailStyles from '@/app/dashboard/clients/[id]/page.module.css';
@@ -41,12 +42,12 @@ export default function StaffProjectsPage() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!selectedClient || !currentStaffId) return;
     const files = Array.from(e.target.files || []);
-    files.forEach((file) => {
+    files.forEach(async (file) => {
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
           const img = new globalThis.Image();
-          img.onload = () => {
+          img.onload = async () => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             const maxSize = 800;
@@ -60,18 +61,24 @@ export default function StaffProjectsPage() {
             canvas.width = width;
             canvas.height = height;
             ctx?.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-            saveDocument(file.name, dataUrl, 'image/jpeg', Math.round((dataUrl.length * 3) / 4));
+            canvas.toBlob(async (blob) => {
+              if (!blob) return;
+              const path = `documents/${selectedClient.id}/${crypto.randomUUID()}.jpg`;
+              const { error } = await supabase.storage.from('uka-storage').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+              if (error) { alert('Upload failed: ' + error.message); return; }
+              const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
+              saveDocument(file.name, publicUrl, 'image/jpeg', blob.size);
+            }, 'image/jpeg', 0.75);
           };
           img.src = event.target?.result as string;
         };
         reader.readAsDataURL(file);
       } else {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          saveDocument(file.name, ev.target?.result as string, file.type, file.size);
-        };
-        reader.readAsDataURL(file);
+        const path = `documents/${selectedClient.id}/${crypto.randomUUID()}.${file.name.split('.').pop() || 'bin'}`;
+        const { error } = await supabase.storage.from('uka-storage').upload(path, file, { contentType: file.type, upsert: true });
+        if (error) { alert('Upload failed: ' + error.message); return; }
+        const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
+        saveDocument(file.name, publicUrl, file.type, file.size);
       }
     });
     e.target.value = '';
@@ -80,7 +87,7 @@ export default function StaffProjectsPage() {
   const saveDocument = (name: string, url: string, type: string, size: number) => {
     if (!selectedClient || !currentStaffId) return;
     const doc: Doc = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       name,
       url,
       uploadedAt: new Date().toISOString(),
@@ -91,13 +98,9 @@ export default function StaffProjectsPage() {
     const c = getClients().find(cl => cl.id === selectedClient.id);
     if (!c) return;
     const updatedDocs = [...c.documents, doc];
-    try {
-      updateClient(c.id, { documents: updatedDocs });
-      reload();
-      setSelectedClient({ ...c, documents: updatedDocs });
-    } catch (err) {
-      alert(`Error saving document "${name}". It is likely too large for local storage.`);
-    }
+    updateClient(c.id, { documents: updatedDocs });
+    reload();
+    setSelectedClient({ ...c, documents: updatedDocs });
   };
 
   const startRename = (doc: Doc) => {

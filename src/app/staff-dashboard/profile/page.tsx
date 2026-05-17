@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getStaffById, isStaffAuthenticated, updateStaffMember, StaffMember } from '@/lib/store';
+import { supabase } from '@/lib/supabase';
 import styles from '@/app/dashboard/staff/[id]/page.module.css';
 
 export default function StaffProfilePage() {
@@ -37,19 +38,23 @@ export default function StaffProfilePage() {
           canvas.width = width;
           canvas.height = height;
           ctx?.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-          try {
-            updateStaffMember(member.id, { profilePicture: dataUrl });
-            reload(); // refresh to show updated image
-          } catch (err) {
-            alert('Error saving image. It may be too large.');
-          }
+          // Upload compressed blob to Supabase Storage
+          canvas.toBlob(async (blob) => {
+            if (!blob) return;
+            const path = `profiles/${member.id}/avatar.jpg`;
+            const { error } = await supabase.storage.from('uka-storage').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+            if (error) { alert('Upload failed: ' + error.message); return; }
+            // Add cache-buster so img tag actually re-fetches
+            const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
+            const urlWithBust = `${publicUrl}?t=${Date.now()}`;
+            updateStaffMember(member.id, { profilePicture: urlWithBust });
+            reload();
+          }, 'image/jpeg', 0.85);
         };
         img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     }
-    // reset input so same file can be selected again
     e.target.value = '';
   };
 

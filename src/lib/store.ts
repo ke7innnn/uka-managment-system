@@ -1,4 +1,5 @@
 // ─── Types ────────────────────────────────────────────────────────────────────
+import { pushClientsToSupabase, pushStaffToSupabase } from './supabaseSync';
 
 export interface Phase {
   id: string;
@@ -51,6 +52,8 @@ export function getClients(): Client[] {
 export function saveClients(clients: Client[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+  // Background sync to Supabase (non-blocking)
+  pushClientsToSupabase(clients).catch(console.error);
 }
 
 export function getClientById(id: string): Client | undefined {
@@ -80,7 +83,14 @@ export function updateClient(id: string, data: Partial<Client>): Client | undefi
 
 export function deleteClient(id: string): void {
   const clients = getClients().filter((c) => c.id !== id);
-  saveClients(clients);
+  // Save locally first
+  if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+  // Delete from Supabase in background
+  import('./supabase').then(({ supabase }) => {
+    supabase.from('phases').delete().eq('client_id', id).then(() => {});
+    supabase.from('documents').delete().eq('client_id', id).then(() => {});
+    supabase.from('clients').delete().eq('id', id).then(() => {});
+  }).catch(console.error);
 }
 
 export function isAuthenticated(): boolean {
@@ -187,6 +197,8 @@ export function logoutStaff(): void {
 export function saveStaff(staff: StaffMember[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+  // Background sync to Supabase (non-blocking)
+  pushStaffToSupabase(staff).catch(console.error);
 }
 
 export function getStaffById(id: string): StaffMember | undefined {
@@ -215,7 +227,14 @@ export function updateStaffMember(id: string, data: Partial<StaffMember>): Staff
 }
 
 export function deleteStaffMember(id: string): void {
-  saveStaff(getStaff().filter((s) => s.id !== id));
+  const staff = getStaff().filter((s) => s.id !== id);
+  if (typeof window !== 'undefined') localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+  // Delete from Supabase in background
+  import('./supabase').then(({ supabase }) => {
+    supabase.from('staff_tasks').delete().eq('staff_id', id).then(() => {});
+    supabase.from('attendance_logs').delete().eq('staff_id', id).then(() => {});
+    supabase.from('staff').delete().eq('id', id).then(() => {});
+  }).catch(console.error);
 }
 
 // ─── Staff performance helpers ─────────────────────────────────────────────────

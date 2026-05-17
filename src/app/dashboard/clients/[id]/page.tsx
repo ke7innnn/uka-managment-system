@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe } from '@/lib/store';
+import { supabase } from '@/lib/supabase';
 import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -79,12 +80,13 @@ export default function ClientDetailPage() {
   // ── Document actions ───────────────────────────────────────────────────────
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    files.forEach((file) => {
+    files.forEach(async (file) => {
       if (file.type.startsWith('image/')) {
+        // Compress image first, then upload
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
           const img = new globalThis.Image();
-          img.onload = () => {
+          img.onload = async () => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             const maxSize = 800;
@@ -98,18 +100,27 @@ export default function ClientDetailPage() {
             canvas.width = width;
             canvas.height = height;
             ctx?.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-            saveDocument(file.name, dataUrl, 'image/jpeg', Math.round((dataUrl.length * 3) / 4));
+            canvas.toBlob(async (blob) => {
+              if (!blob) return;
+              const ext = 'jpg';
+              const path = `documents/${params.id}/${crypto.randomUUID()}.${ext}`;
+              const { error } = await supabase.storage.from('uka-storage').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+              if (error) { alert('Upload failed: ' + error.message); return; }
+              const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
+              saveDocument(file.name, publicUrl, 'image/jpeg', blob.size);
+            }, 'image/jpeg', 0.75);
           };
           img.src = event.target?.result as string;
         };
         reader.readAsDataURL(file);
       } else {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          saveDocument(file.name, ev.target?.result as string, file.type, file.size);
-        };
-        reader.readAsDataURL(file);
+        // Upload raw file directly to Supabase Storage
+        const ext = file.name.split('.').pop() || 'bin';
+        const path = `documents/${params.id}/${crypto.randomUUID()}.${ext}`;
+        const { error } = await supabase.storage.from('uka-storage').upload(path, file, { contentType: file.type, upsert: true });
+        if (error) { alert('Upload failed: ' + error.message); return; }
+        const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
+        saveDocument(file.name, publicUrl, file.type, file.size);
       }
     });
     e.target.value = '';
@@ -126,12 +137,8 @@ export default function ClientDetailPage() {
     };
     const c = getClientById(params.id);
     if (!c) return;
-    try {
-      updateClient(c.id, { documents: [...c.documents, doc] });
-      reload();
-    } catch (err) {
-      alert(`Error saving document "${name}". It is likely too large for local storage.`);
-    }
+    updateClient(c.id, { documents: [...c.documents, doc] });
+    reload();
   };
 
   const deleteDocument = (docId: string) => {
