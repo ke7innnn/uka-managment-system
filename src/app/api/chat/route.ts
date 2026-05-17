@@ -13,29 +13,40 @@ export async function POST(req: Request) {
       );
     }
 
-    // Prepare system instructions with realtime database context
+    // Analyze the latest user message for business keywords
+    const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop()?.content || "";
+    const textStr = lastUserMessage.toLowerCase();
+    
+    const needsStaff = /staff|employee|attendance|task|performance|late|completed|who/i.test(textStr);
+    const needsClients = /client|project|invoice|priority|status|work/i.test(textStr);
+    const isBusinessRelated = needsStaff || needsClients || /business|uka|data|report/i.test(textStr);
+
+    let injectedData = "";
+    if (isBusinessRelated) {
+      if (needsStaff) {
+        injectedData += `\n--- STAFF DIRECTORY & PERFORMANCE ---\n${JSON.stringify(context.staff || [])}\n`;
+      }
+      if (needsClients) {
+        injectedData += `\n--- CLIENTS & ACTIVE PROJECTS ---\n${JSON.stringify(context.clients || [])}\n`;
+      }
+      // If it's vaguely business related but didn't match specific staff/client terms, inject everything to be safe
+      if (!needsStaff && !needsClients) {
+         injectedData += `\n--- STAFF DATA ---\n${JSON.stringify(context.staff || [])}\n--- CLIENT DATA ---\n${JSON.stringify(context.clients || [])}\n`;
+      }
+    }
+
     const systemInstruction = `
-      You are "UKA", the highly intelligent architectural and management AI assistant for the Admin of the UKA Management System.
+      You are UKA, a smart AI assistant for an architecture firm. 
+      If business data is provided to you, analyze it and answer professionally. 
+      If no data is provided, respond like a helpful friendly assistant. 
+      Always be concise. Never make up data that was not given to you.
       
-      You must guide the Admin in their work, answer questions about their firm, suggest which projects to prioritize, and evaluate staff performance. Be professional, insightful, and act like a high-level manager.
-      
-      Here is the complete, real-time data of the UKA Management System right now:
-      
-      --- STAFF DIRECTORY & PERFORMANCE ---
-      ${JSON.stringify(context.staff || [])}
-      
-      --- CLIENTS & ACTIVE PROJECTS ---
-      ${JSON.stringify(context.clients || [])}
-      
-      Use this exact data to answer the Admin's questions. 
-      - If asked about staff, calculate their completion rates based on their "tasks" array. 
-      - If asked about projects, check the "phases" and "projectStatus".
-      - Keep your answers concise, well-formatted, and highly analytical.
-      - Never break character. You are UKA.
+      ${isBusinessRelated ? `Here is the requested real-time business data to answer the user's query:\n${injectedData}` : "No business data is required for this specific interaction."}
     `;
 
-    // Format messages for Gemini API
-    const formattedMessages = messages.map((msg: any) => ({
+    // Format messages for Gemini API - strictly limit to the last 6 messages for context memory
+    const recentMessages = messages.slice(-6);
+    const formattedMessages = recentMessages.map((msg: any) => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }]
     }));
