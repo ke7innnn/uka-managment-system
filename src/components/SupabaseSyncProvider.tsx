@@ -19,12 +19,12 @@ export default function SupabaseSyncProvider({ children }: { children: React.Rea
 
   useEffect(() => {
     if (didSync.current) return;
+    if (typeof window === 'undefined') return;
     didSync.current = true;
 
     // Pull latest data from Supabase on first page load
     pullFromSupabase().then((success) => {
       if (success) {
-        // Force a re-render so any open page picks up fresh data
         window.dispatchEvent(new Event('storage'));
       }
     });
