@@ -64,7 +64,7 @@ export function addClient(data: Omit<Client, 'id' | 'createdAt'>): Client {
   const clients = getClients();
   const client: Client = {
     ...data,
-    id: Math.random().toString(36).substring(2, 9),
+    id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
   };
   clients.push(client);
@@ -209,7 +209,7 @@ export function addStaffMember(data: Omit<StaffMember, 'id' | 'joinedAt'>): Staf
   const staff = getStaff();
   const member: StaffMember = {
     ...data,
-    id: Math.random().toString(36).substring(2, 9),
+    id: crypto.randomUUID(),
     joinedAt: new Date().toISOString(),
   };
   staff.push(member);
