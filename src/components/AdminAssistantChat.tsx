@@ -108,11 +108,11 @@ export default function AdminAssistantChat() {
     } catch (error) {
       setMessages(prev => [...prev, { role: 'model', content: "⚠️ Network Error: Could not reach the UKA AI server." }]);
     } finally {
+      setIsLoading(false);
       // 3. Keep the input locked for an artificial "Cooldown" period to mathematically prevent hitting the 20/min API limit.
       setCooldown(true);
       setTimeout(() => {
         setCooldown(false);
-        setIsLoading(false);
       }, 3500); // 3.5 seconds forced wait between questions
     }
   };
