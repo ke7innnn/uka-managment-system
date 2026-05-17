@@ -135,8 +135,27 @@ export async function pushClientsToSupabase(clients: Client[]) {
 
   const { error } = await supabase.from('clients').upsert(clientRows);
   if (error) { console.error('pushClientsToSupabase error:', error.message); return; }
+  
   if (phaseRows.length > 0) await supabase.from('phases').upsert(phaseRows);
   if (docRows.length > 0) await supabase.from('documents').upsert(docRows);
+
+  // Clean up orphans
+  const clientIds = clients.map(c => c.id);
+  if (clientIds.length > 0) {
+    const currentPhaseIds = phaseRows.map(p => p.id);
+    if (currentPhaseIds.length > 0) {
+      await supabase.from('phases').delete().in('client_id', clientIds).not('id', 'in', `(${currentPhaseIds.join(',')})`);
+    } else {
+      await supabase.from('phases').delete().in('client_id', clientIds);
+    }
+
+    const currentDocIds = docRows.map(d => d.id);
+    if (currentDocIds.length > 0) {
+      await supabase.from('documents').delete().in('client_id', clientIds).not('id', 'in', `(${currentDocIds.join(',')})`);
+    } else {
+      await supabase.from('documents').delete().in('client_id', clientIds);
+    }
+  }
 }
 
 export async function pushStaffToSupabase(staff: StaffMember[]) {
@@ -178,6 +197,25 @@ export async function pushStaffToSupabase(staff: StaffMember[]) {
 
   const { error } = await supabase.from('staff').upsert(staffRows);
   if (error) { console.error('pushStaffToSupabase error:', error.message); return; }
+  
   if (taskRows.length > 0) await supabase.from('staff_tasks').upsert(taskRows);
   if (attendanceRows.length > 0) await supabase.from('attendance_logs').upsert(attendanceRows);
+
+  // Clean up orphans
+  const staffIds = staff.map(s => s.id);
+  if (staffIds.length > 0) {
+    const currentTaskIds = taskRows.map(t => t.id);
+    if (currentTaskIds.length > 0) {
+      await supabase.from('staff_tasks').delete().in('staff_id', staffIds).not('id', 'in', `(${currentTaskIds.join(',')})`);
+    } else {
+      await supabase.from('staff_tasks').delete().in('staff_id', staffIds);
+    }
+
+    const currentAttendanceIds = attendanceRows.map(a => a.id);
+    if (currentAttendanceIds.length > 0) {
+      await supabase.from('attendance_logs').delete().in('staff_id', staffIds).not('id', 'in', `(${currentAttendanceIds.join(',')})`);
+    } else {
+      await supabase.from('attendance_logs').delete().in('staff_id', staffIds);
+    }
+  }
 }

@@ -24,6 +24,10 @@
   --accent-glow:    rgba(124,58,237,0.25);
   --accent-bg:      rgba(124,58,237,0.1);
 
+  /* ── Legacy Mappings (Fixes broken progress bars & buttons) ── */
+  --primary:        var(--accent);
+  --primary-hover:  #6d28d9;
+
   /* ── Secondary Accents ── */
   --cyan:           #06b6d4;
   --cyan-bg:        rgba(6,182,212,0.1);
