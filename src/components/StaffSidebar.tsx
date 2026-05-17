@@ -15,7 +15,7 @@ const NAV = [
   { href: '/staff-dashboard/profile',        label: 'My Profile',            Icon: User          },
 ];
 
-export default function StaffSidebar() {
+export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [inboxCount, setInboxCount] = useState(0);
@@ -72,6 +72,7 @@ export default function StaffSidebar() {
           <Link
             key={href}
             href={href}
+            onClick={onClose}
             className={`${styles.navItem} ${pathname === href ? styles.active : ''}`}
           >
             <span className={styles.navIcon}><Icon size={18} strokeWidth={1.75} /></span>

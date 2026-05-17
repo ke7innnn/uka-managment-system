@@ -213,3 +213,14 @@
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
+
+
+/* ── Global Mobile Sweep ── */
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .controls { flex-wrap: wrap; }
+  .controls select, .controls button { flex: 1 1 100%; }
+  .statsGrid { grid-template-columns: 1fr; }
+  .tableWrap { overflow-x: auto; width: 100%; display: block; -webkit-overflow-scrolling: touch; }
+  .table th, .table td { white-space: nowrap; }
+}

@@ -109,3 +109,11 @@
   flex-shrink: 0;
 }
 .downloadBtn:hover { background: rgba(99, 102, 241, 0.22); }
+
+
+/* ── Global Mobile Sweep ── */
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .grid { grid-template-columns: 1fr; }
+}

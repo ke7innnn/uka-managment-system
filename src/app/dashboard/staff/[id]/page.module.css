@@ -269,3 +269,13 @@
   background: var(--surface); border: 1px dashed var(--border); border-radius: 12px;
   padding: 2.5rem 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;
 }
+
+
+/* ── Global Mobile Sweep ── */
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .grid { grid-template-columns: 1fr; }
+  .taskForm { flex-direction: column; align-items: stretch; }
+  .attendanceForm { grid-template-columns: 1fr; }
+  .tableWrap { overflow-x: auto; }
+}

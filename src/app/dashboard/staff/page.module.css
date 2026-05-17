@@ -391,3 +391,14 @@
   color: var(--accent-light);
   font-weight: 600;
 }
+
+
+/* ── Global Mobile Sweep ── */
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .headerActions { width: 100%; }
+  .addBtn { width: 100%; justify-content: center; }
+  .statsGrid { grid-template-columns: 1fr; }
+  .assignForm { grid-template-columns: 1fr; }
+  .staffGrid { grid-template-columns: 1fr; }
+}

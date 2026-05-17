@@ -165,3 +165,13 @@
   color: var(--text-tertiary);
   font-size: 0.9rem;
 }
+
+
+/* ── Global Mobile Sweep ── */
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .controls { flex-direction: column; width: 100%; }
+  .controls input, .controls button { width: 100%; }
+  .tableWrap { overflow-x: auto; width: 100%; display: block; -webkit-overflow-scrolling: touch; }
+  .table th, .table td { white-space: nowrap; }
+}

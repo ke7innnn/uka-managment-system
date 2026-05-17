@@ -163,3 +163,10 @@
   color: var(--text-muted);
   font-style: italic;
 }
+
+
+/* ── Global Mobile Sweep ── */
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .grid { grid-template-columns: 1fr; }
+}

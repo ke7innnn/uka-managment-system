@@ -336,3 +336,12 @@
   font-weight: 800;
   color: var(--text);
 }
+
+
+/* ── Global Mobile Sweep ── */
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .grid { grid-template-columns: 1fr; gap: 1rem; }
+  .mainContent { grid-template-columns: 1fr; }
+  .actionGrid { grid-template-columns: 1fr; }
+}
