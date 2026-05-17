@@ -5,6 +5,67 @@
   position: relative;
 }
 
+/* ── Mobile Header ── */
+.mobileHeader {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 90;
+}
+
+.menuBtn {
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  margin-left: -0.5rem;
+}
+
+.mobileBrand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mobileLogoBox {
+  width: 28px;
+  height: 28px;
+  background: var(--grad-accent);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.75rem;
+  color: #fff;
+}
+
+/* ── Sidebar Wrapper ── */
+.sidebarWrapper {
+  display: block;
+}
+
+/* ── Overlay ── */
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 95;
+}
+
 .main {
   flex: 1;
   margin-left: var(--sidebar-w);
@@ -14,4 +75,34 @@
   background: var(--bg);
   position: relative;
   z-index: 1;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .mobileHeader {
+    display: flex;
+  }
+  
+  .overlay {
+    display: block;
+  }
+
+  .sidebarWrapper {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  .main {
+    margin-left: 0;
+    max-width: 100vw;
+    padding: 1.5rem;
+    padding-top: 5rem; /* Space for the fixed mobile header */
+  }
 }

@@ -16,7 +16,7 @@ const NAV = [
   { href: '/dashboard/reports',   label: 'Reports',   Icon: BarChart3        },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -38,6 +38,7 @@ export default function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={onClose}
               className={`${styles.navItem} ${active ? styles.active : ''}`}
             >
               <span className={styles.navIcon}><Icon size={18} strokeWidth={1.75} /></span>
