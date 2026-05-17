@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { getClients, updateClient, Client, Document as Doc, isStaffAuthenticated, viewDocumentSafe } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
 import { ImageIcon, FileText, FileSpreadsheet, Video, Paperclip, Eye, Download, Upload, Pencil, Check, X } from 'lucide-react';
-import styles from '@/app/dashboard/clients/page.module.css';
+import styles from '@/app/dashboard/projects/page.module.css';
 import detailStyles from '@/app/dashboard/clients/[id]/page.module.css';
 
 export default function StaffProjectsPage() {
@@ -216,24 +216,23 @@ export default function StaffProjectsPage() {
         <p className={styles.subtitle}>Select a project to view or upload documents.</p>
       </div>
 
-      <div className={styles.grid}>
+      <div className={styles.projectGrid}>
         {clients.map((client) => (
-          <div key={client.id} className={`glass-panel ${styles.clientCard}`}>
-            <div className={styles.cardHeader}>
-              <div className={styles.avatar}>{client.name.charAt(0).toUpperCase()}</div>
-              <div className={styles.info}>
-                <h2 className={styles.name}>{client.projectName || 'General Project'}</h2>
-                <p className={styles.company}>{client.name}</p>
+          <div key={client.id} className={`glass-panel ${styles.projectCard}`}>
+            <div className={styles.cardTop}>
+              <div className={styles.cardAvatar}>{client.name.charAt(0).toUpperCase()}</div>
+              <div className={styles.cardInfo}>
+                <h2 className={styles.cardProjectName}>{client.projectName || 'General Project'}</h2>
+                <p className={styles.cardClientName}>{client.name}</p>
               </div>
             </div>
-            <div className={styles.cardFooter}>
-              <button 
-                onClick={() => handleSelect(client.id)}
-                style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.3)', padding: '0.5rem 1rem', borderRadius: '8px', width: '100%', cursor: 'pointer', fontWeight: 600 }}
-              >
-                View Documents
-              </button>
-            </div>
+            
+            <button 
+              onClick={() => handleSelect(client.id)}
+              style={{ background: 'var(--accent-bg)', color: 'var(--accent-light)', border: '1px solid var(--border-active)', padding: '0.75rem 1rem', borderRadius: '10px', width: '100%', cursor: 'pointer', fontWeight: 600, marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.2s ease' }}
+            >
+              <FileText size={16} /> View Documents
+            </button>
           </div>
         ))}
         {clients.length === 0 && (
