@@ -25,6 +25,7 @@ export default function AdminAssistantChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load chat history from localStorage
@@ -107,7 +108,12 @@ export default function AdminAssistantChat() {
     } catch (error) {
       setMessages(prev => [...prev, { role: 'model', content: "⚠️ Network Error: Could not reach the UKA AI server." }]);
     } finally {
-      setIsLoading(false);
+      // 3. Keep the input locked for an artificial "Cooldown" period to mathematically prevent hitting the 20/min API limit.
+      setCooldown(true);
+      setTimeout(() => {
+        setCooldown(false);
+        setIsLoading(false);
+      }, 3500); // 3.5 seconds forced wait between questions
     }
   };
 
@@ -214,19 +220,20 @@ export default function AdminAssistantChat() {
             type="text" 
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask UKA a question..."
-            disabled={isLoading}
+            placeholder={cooldown ? "Cooling down for 3 seconds..." : "Ask UKA a question..."}
+            disabled={isLoading || cooldown}
             style={{
               flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
               padding: '0.85rem 1.1rem', borderRadius: '24px', color: 'var(--text-main)',
-              fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s'
+              fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s',
+              opacity: cooldown ? 0.5 : 1
             }}
           />
           <button 
             type="submit" 
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || cooldown || !input.trim()}
             style={{
-              background: isLoading || !input.trim() ? 'var(--border)' : 'var(--primary)',
+              background: isLoading || cooldown || !input.trim() ? 'var(--border)' : 'var(--primary)',
               color: 'white', border: 'none', width: '42px', height: '42px',
               borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
