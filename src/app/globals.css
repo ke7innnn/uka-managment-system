@@ -190,3 +190,44 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); }
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+
+/* ─── Global Mobile Responsive Improvements ─── */
+@media (max-width: 768px) {
+  /* Typography scale-down on mobile */
+  h1 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.2rem !important; }
+
+  /* Prevent horizontal overflow */
+  body { overflow-x: hidden; }
+
+  /* Page-level header: stack vertically on mobile */
+  .page-header,
+  [class*="header"] {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* Full-width buttons and actions on mobile */
+  [class*="addBtn"],
+  [class*="exportBtn"],
+  [class*="submitBtn"],
+  [class*="uploadBtn"] {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* All grids collapse to 1 column */
+  [class*="statsGrid"],
+  [class*="assignForm"],
+  [class*="staffGrid"],
+  [class*="cardGrid"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Scrollable tables */
+  [class*="tableWrap"] {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius);
+  }
+}
