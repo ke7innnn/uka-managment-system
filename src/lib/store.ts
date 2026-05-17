@@ -151,7 +151,23 @@ export function getStaff(): StaffMember[] {
     const raw = localStorage.getItem(STAFF_KEY);
     let staff = raw ? JSON.parse(raw) : [];
     
-    // Auto-initialize if empty
+    // ── Migrate any old non-UUID IDs to proper UUIDs ──
+    let migrated = false;
+    staff = staff.map((s: StaffMember) => {
+      // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(s.id)) {
+        migrated = true;
+        return { ...s, id: crypto.randomUUID() };
+      }
+      return s;
+    });
+    if (migrated) {
+      localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+      // Push migrated IDs to Supabase
+      import('./supabaseSync').then(({ pushStaffToSupabase }) => pushStaffToSupabase(staff));
+    }
+
+    // Auto-initialize if empty — first time on a new device
     if (staff.length === 0) {
       const initial = [
         { name: "Vrushali Thakur", phone: "9518508458" },
@@ -167,7 +183,7 @@ export function getStaff(): StaffMember[] {
       ];
       
       staff = initial.map(s => ({
-        id: Math.random().toString(36).substring(2, 9),
+        id: crypto.randomUUID(),
         name: s.name,
         role: "Staff",
         password: s.phone,
@@ -178,11 +194,14 @@ export function getStaff(): StaffMember[] {
         attendance: []
       }));
       localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+      // Push the initial seed to Supabase so all devices see these staff
+      import('./supabaseSync').then(({ pushStaffToSupabase }) => pushStaffToSupabase(staff));
     }
     
     return staff;
   } catch { return []; }
 }
+
 
 export function isStaffAuthenticated(): string | null {
   if (typeof window === 'undefined') return null;
