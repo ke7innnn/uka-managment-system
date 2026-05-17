@@ -52,9 +52,8 @@ export async function POST(req: Request) {
     };
 
     let aiMessage = '';
-    let lastErrorMsg = 'Failed to communicate with Gemini AI';
-    let lastStatus = 500;
     let success = false;
+    const errors: { keyIndex: number; status: number; message: string; isRateLimit: boolean }[] = [];
 
     // Loop through all available keys
     for (let i = 0; i < apiKeys.length; i++) {
@@ -75,25 +74,45 @@ export async function POST(req: Request) {
           success = true;
           break; // Key worked! Break the loop.
         } else {
-          lastStatus = response.status;
-          lastErrorMsg = data.error?.message || "Failed to communicate with Gemini AI";
-          console.warn(`Gemini API key rotation: Key ${i + 1} failed with status ${response.status}. Error: ${lastErrorMsg}`);
+          const errMsg = data.error?.message || "Failed to communicate with Gemini AI";
+          const isRateLimit = response.status === 429 || errMsg.includes("Quota exceeded");
+          errors.push({
+            keyIndex: i + 1,
+            status: response.status,
+            message: errMsg,
+            isRateLimit
+          });
+          console.warn(`Gemini API key rotation: Key ${i + 1} failed (status ${response.status}): ${errMsg}`);
         }
       } catch (err: any) {
-        lastErrorMsg = err.message || "Network error occurred";
-        console.warn(`Gemini API key rotation: Fetch with key ${i + 1} threw an error: ${lastErrorMsg}`);
+        const errMsg = err.message || "Network error occurred";
+        errors.push({
+          keyIndex: i + 1,
+          status: 500,
+          message: errMsg,
+          isRateLimit: false
+        });
+        console.warn(`Gemini API key rotation: Fetch with key ${i + 1} threw an error: ${errMsg}`);
       }
     }
 
     if (!success) {
-      // Clean up scary quota error messages for the UI if all keys failed
-      if (lastErrorMsg.includes("Quota exceeded") || lastStatus === 429) {
-        const match = lastErrorMsg.match(/retry in ([\d\.]+)s/);
+      // Find the most "helpful" error to show to the user.
+      // If any key was just rate-limited, show a rate limit message rather than a scary fatal 403 suspension error.
+      const rateLimitError = errors.find(e => e.isRateLimit);
+      
+      let finalErrorMsg = "Failed to communicate with Gemini AI";
+      if (rateLimitError) {
+        const match = rateLimitError.message.match(/retry in ([\d\.]+)s/);
         const seconds = match ? Math.ceil(parseFloat(match[1])) : 60;
-        lastErrorMsg = `You are asking questions a bit too quickly. Please wait ${seconds} seconds before asking another question!`;
+        finalErrorMsg = `You are asking questions a bit too quickly. Please wait ${seconds} seconds before asking another question!`;
+      } else {
+        // If all keys had fatal errors, show the error of the primary key first, otherwise the last error.
+        const primaryError = errors.find(e => e.keyIndex === 1);
+        finalErrorMsg = primaryError ? primaryError.message : errors[errors.length - 1].message;
       }
       
-      throw new Error(lastErrorMsg);
+      throw new Error(finalErrorMsg);
     }
 
     return NextResponse.json({ message: aiMessage });
