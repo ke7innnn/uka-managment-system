@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getStaffById, isStaffAuthenticated, updateStaffMember, StaffMember } from '@/lib/store';
+import { getStaffById, isStaffAuthenticated, updateStaffMember, StaffMember, logoutStaff } from '@/lib/store';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { User, Briefcase, Building2, Phone, CalendarDays, Upload, Shield } from 'lucide-react';
 import styles from '@/app/dashboard/staff/[id]/page.module.css';
 
 export default function StaffProfilePage() {
   const [member, setMember] = useState<StaffMember | null>(null);
+  const router = useRouter();
 
   const reload = () => {
     const id = isStaffAuthenticated();
@@ -108,9 +110,19 @@ export default function StaffProfilePage() {
         </div>
       </div>
       
-      <p style={{ marginTop: '2.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-        <Shield size={14} /> Need to update your details? Please contact the Admin.
-      </p>
+      <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+        <button 
+          onClick={() => { logoutStaff(); router.push('/'); }}
+          style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', padding: '0.85rem 2rem', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s' }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Log Out
+        </button>
+
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+          <Shield size={14} /> Need to update your details? Please contact the Admin.
+        </p>
+      </div>
     </div>
   );
 }

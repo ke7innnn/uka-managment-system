@@ -23,15 +23,21 @@ export default function StaffDashboardHome() {
 
   useEffect(() => { 
     reload(); 
-    if (typeof Notification !== 'undefined') {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
       setNotifPerm(Notification.permission);
+    } else {
+      setNotifPerm('unsupported');
     }
   }, []);
 
   if (!member) return null;
 
   const requestNotificationPermission = async () => {
-    if (typeof Notification !== 'undefined') {
+    if (notifPerm === 'denied') {
+      alert("You have previously denied notifications. Please enable them manually in your device or browser Settings for this app.");
+      return;
+    }
+    if (typeof window !== 'undefined' && 'Notification' in window) {
       const perm = await Notification.requestPermission();
       setNotifPerm(perm);
       if (perm === 'granted') {
@@ -159,7 +165,7 @@ export default function StaffDashboardHome() {
           </div>
         </div>
         
-        {notifPerm === 'default' && (
+        {(notifPerm === 'default' || notifPerm === 'denied') && (
           <button 
             onClick={requestNotificationPermission}
             style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid var(--primary)', color: '#a5b4fc', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
