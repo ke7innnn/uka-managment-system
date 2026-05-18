@@ -26,7 +26,12 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     <aside className={styles.sidebar}>
       {/* Brand */}
       <div className={styles.brand}>
-        <div className={styles.brandLogo}>U</div>
+        <img
+          src="/icon.png"
+          alt="UKA Logo"
+          className={styles.brandLogo}
+          style={{ width: 34, height: 34, borderRadius: 6, objectFit: 'cover', background: 'transparent', boxShadow: 'none' }}
+        />
         <span className={styles.brandSub}>UKA</span>
       </div>
 

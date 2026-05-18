@@ -58,11 +58,12 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
     <div className={styles.sidebar}>
       {/* Brand */}
       <div className={styles.logo}>
-        {member?.profilePicture ? (
-          <img src={member.profilePicture} alt="Profile" className={styles.logoBox} style={{ objectFit: 'cover' }} />
-        ) : (
-          <div className={styles.logoBox}>{member?.name?.charAt(0).toUpperCase() || 'U'}</div>
-        )}
+        <img
+          src="/icon.png"
+          alt="UKA Logo"
+          className={styles.logoBox}
+          style={{ objectFit: 'cover', background: 'transparent', boxShadow: 'none' }}
+        />
         <span className={styles.logoText}>UKA</span>
       </div>
 
