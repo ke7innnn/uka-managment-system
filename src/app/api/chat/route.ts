@@ -56,8 +56,13 @@ export async function POST(req: Request) {
     let success = false;
     const errors: { keyIndex: number; status: number; message: string; isRateLimit: boolean }[] = [];
 
-    // Loop through all available keys
-    for (let i = 0; i < apiKeys.length; i++) {
+    // Stateless round-robin load distribution based on total user messages sent in the conversation history
+    const userTurnCount = messages.filter((msg: any) => msg.role === 'user').length;
+    const startIndex = userTurnCount % apiKeys.length;
+
+    // Loop through all available keys starting from the calculated index
+    for (let offset = 0; offset < apiKeys.length; offset++) {
+      const i = (startIndex + offset) % apiKeys.length;
       const apiKey = apiKeys[i];
       try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
