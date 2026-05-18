@@ -402,3 +402,137 @@
   .assignForm { grid-template-columns: 1fr; }
   .staffGrid { grid-template-columns: 1fr; }
 }
+
+/* ── Premium Quick Assign Card ── */
+.quickAssignCard {
+  background: linear-gradient(180deg, var(--bg-raised) 0%, rgba(200, 169, 110, 0.02) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.quickAssignCard::after {
+  content: '';
+  position: absolute;
+  top: -150px;
+  right: -150px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(200,169,110,0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.quickAssignTitle {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.quickAssignTitleIcon {
+  color: var(--accent);
+}
+
+.quickAssignGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  align-items: flex-end;
+}
+
+@media (min-width: 1024px) {
+  .quickAssignGrid {
+    grid-template-columns: 1fr 1.5fr 1fr auto;
+  }
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.inputLabel {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  transition: color 0.2s;
+  z-index: 10;
+}
+
+.inputField {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  padding: 0.75rem 1rem 0.75rem 2.5rem !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 0.85rem !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.inputField:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.inputField:focus + .inputIcon {
+  color: var(--accent) !important;
+}
+
+.submitBtn {
+  background: var(--text);
+  color: var(--bg);
+  padding: 0.8rem 1.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.submitBtn:hover {
+  background: var(--accent);
+  color: var(--bg);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(200, 169, 110, 0.25);
+}
+
+.submitBtn:active {
+  transform: translateY(0);
+}
+

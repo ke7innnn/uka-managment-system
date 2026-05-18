@@ -6,7 +6,7 @@ import {
   getStaff, deleteStaffMember, StaffMember, updateStaffMember, StaffTask,
   staffCompletionPct, staffStatusColor, totalHoursWorked,
 } from '@/lib/store';
-import { BarChart2, CheckCircle2, AlertTriangle, XCircle, Clock, Calendar, Hourglass, MapPin } from 'lucide-react';
+import { BarChart2, CheckCircle2, AlertTriangle, XCircle, Clock, Calendar, Hourglass, MapPin, User, PlusCircle, Briefcase } from 'lucide-react';
 import styles from './page.module.css';
 
 const COLOR_MAP = {
@@ -123,48 +123,65 @@ export default function StaffPage() {
       </div>
 
       {/* Quick Assign Task */}
-      <div className={`glass-panel`} style={{ padding: '1.5rem', marginBottom: '1.75rem', borderRadius: '16px' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Quick Assign Task</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
-          <div style={{ flex: 1, minWidth: '200px' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Select Staff</label>
-            <select
-              value={assignStaffId}
-              onChange={e => setAssignStaffId(e.target.value)}
-              className={styles.searchInput}
-              style={{ width: '100%', cursor: 'pointer' }}
-            >
-              <option value="">-- Choose Staff Member --</option>
-              {staff.map(s => (
-                <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
-              ))}
-            </select>
+      <div className={styles.quickAssignCard}>
+        <h3 className={styles.quickAssignTitle}>
+          <PlusCircle className={styles.quickAssignTitleIcon} size={18} strokeWidth={1.5} />
+          Quick Assign Task
+        </h3>
+        
+        <div className={styles.quickAssignGrid}>
+          {/* Select Staff */}
+          <div className={styles.inputGroup}>
+            <label className={styles.inputLabel}>Select Staff</label>
+            <div className={styles.inputWrapper}>
+              <User className={styles.inputIcon} size={16} strokeWidth={1.5} />
+              <select
+                value={assignStaffId}
+                onChange={e => setAssignStaffId(e.target.value)}
+                className={styles.inputField}
+                style={{ cursor: 'pointer' }}
+              >
+                <option value="">-- Choose Staff Member --</option>
+                {staff.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div style={{ flex: 2, minWidth: '200px' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Task Title</label>
-            <input
-              type="text"
-              value={assignTitle}
-              onChange={e => setAssignTitle(e.target.value)}
-              placeholder="e.g. Complete 3D Render"
-              className={styles.searchInput}
-              style={{ width: '100%' }}
-            />
+
+          {/* Task Title */}
+          <div className={styles.inputGroup}>
+            <label className={styles.inputLabel}>Task Title</label>
+            <div className={styles.inputWrapper}>
+              <Briefcase className={styles.inputIcon} size={16} strokeWidth={1.5} />
+              <input
+                type="text"
+                value={assignTitle}
+                onChange={e => setAssignTitle(e.target.value)}
+                placeholder="e.g. Complete 3D Render"
+                className={styles.inputField}
+              />
+            </div>
           </div>
-          <div style={{ flex: 1, minWidth: '150px' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Deadline</label>
-            <input
-              type="date"
-              value={assignDeadline}
-              onChange={e => setAssignDeadline(e.target.value)}
-              className={styles.searchInput}
-              style={{ width: '100%' }}
-            />
+
+          {/* Deadline */}
+          <div className={styles.inputGroup}>
+            <label className={styles.inputLabel}>Deadline</label>
+            <div className={styles.inputWrapper}>
+              <Calendar className={styles.inputIcon} size={16} strokeWidth={1.5} />
+              <input
+                type="date"
+                value={assignDeadline}
+                onChange={e => setAssignDeadline(e.target.value)}
+                className={styles.inputField}
+              />
+            </div>
           </div>
+
+          {/* Submit Button */}
           <button 
             onClick={handleQuickAssign}
-            className={styles.newBtn}
-            style={{ height: '42px', padding: '0 1.5rem' }}
+            className={styles.submitBtn}
           >
             Assign Task
           </button>

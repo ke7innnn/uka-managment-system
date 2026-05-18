@@ -204,12 +204,6 @@ export default function ReportsPage() {
           </div>
         </div>
       </div>
-      
-      {/* ── Footer Note for AI ── */}
-      <div style={{ marginTop: '3rem', padding: '1rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <Bot size={16} strokeWidth={1.5} style={{ color: 'var(--accent-light)' }} />
-        <span><strong>AI-Ready Report:</strong> This data structure is optimized for future extraction by your Gemini Flash chatbot agent for rapid query answering.</span>
-      </div>
     </div>
   );
 }
