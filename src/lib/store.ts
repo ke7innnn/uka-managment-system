@@ -312,3 +312,62 @@ export function totalHoursWorked(member: StaffMember): number {
   return member.attendance.reduce((sum, a) => sum + (a.hoursWorked || 0), 0);
 }
 
+// ─── Workspace Chat ────────────────────────────────────────────────────────────
+
+export interface WorkspaceMessage {
+  id: string;
+  senderId: string; // 'admin' or staff.id
+  senderName: string;
+  senderRole: string; // 'Admin', or staff role
+  content: string;
+  createdAt: string; // ISO string
+}
+
+const WORKSPACE_KEY = 'uka_workspace_messages';
+
+export function cleanOldWorkspaceMessages(messages: WorkspaceMessage[]): WorkspaceMessage[] {
+  // Delete messages older than 3 days (72 hours)
+  const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
+  return messages.filter(m => new Date(m.createdAt).getTime() > threeDaysAgo);
+}
+
+export function getWorkspaceMessages(): WorkspaceMessage[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(WORKSPACE_KEY);
+    const messages: WorkspaceMessage[] = raw ? JSON.parse(raw) : [];
+    const cleaned = cleanOldWorkspaceMessages(messages);
+    if (cleaned.length < messages.length) {
+      saveWorkspaceMessages(cleaned);
+    }
+    return cleaned;
+  } catch {
+    return [];
+  }
+}
+
+export function saveWorkspaceMessages(messages: WorkspaceMessage[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(WORKSPACE_KEY, JSON.stringify(messages));
+  // Background sync to Supabase (non-blocking)
+  import('./supabaseSync').then(({ pushWorkspaceToSupabase }) => {
+    if (pushWorkspaceToSupabase) pushWorkspaceToSupabase(messages).catch(console.error);
+  }).catch(() => {});
+}
+
+export function addWorkspaceMessage(senderId: string, senderName: string, senderRole: string, content: string): WorkspaceMessage {
+  const messages = getWorkspaceMessages();
+  const msg: WorkspaceMessage = {
+    id: crypto.randomUUID(),
+    senderId,
+    senderName,
+    senderRole,
+    content,
+    createdAt: new Date().toISOString()
+  };
+  messages.push(msg);
+  saveWorkspaceMessages(messages);
+  return msg;
+}
+
+

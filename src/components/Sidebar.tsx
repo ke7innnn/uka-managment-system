@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { logout } from '@/lib/store';
 import styles from './Sidebar.module.css';
-import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, LogOut, CalendarCheck } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, LogOut, CalendarCheck, MessageSquare } from 'lucide-react';
 
 const NAV = [
   { href: '/dashboard',           label: 'Dashboard', Icon: LayoutDashboard },
@@ -13,6 +13,7 @@ const NAV = [
   { href: '/dashboard/documents', label: 'Documents', Icon: FileText         },
   { href: '/dashboard/staff',     label: 'Staff',     Icon: UserCog          },
   { href: '/dashboard/attendance',label: 'Attendance',Icon: CalendarCheck    },
+  { href: '/dashboard/workspace', label: 'Workspace', Icon: MessageSquare    },
   { href: '/dashboard/reports',   label: 'Reports',   Icon: BarChart3        },
 ];
 

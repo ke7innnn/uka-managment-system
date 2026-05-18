@@ -1,0 +1,237 @@
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 8rem);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.chatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-hover);
+  border-bottom: 1px solid var(--border);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hashIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(200, 169, 110, 0.1);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.chatTitle {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.chatSubtitle {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: 0.2rem;
+}
+
+.messagesArea {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01) 0%, transparent 100%);
+}
+
+.emptyState {
+  margin: auto;
+  text-align: center;
+  color: var(--text-tertiary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  opacity: 0.7;
+}
+
+.emptyIcon {
+  color: var(--accent);
+  opacity: 0.5;
+}
+
+.emptyState h3 {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.emptyState p {
+  font-size: 0.85rem;
+}
+
+.messageWrapper {
+  display: flex;
+  gap: 1rem;
+  max-width: 80%;
+}
+
+.messageWrapper.isMe {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.avatarWrap {
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-active);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+}
+
+.adminAvatar {
+  background: rgba(200, 169, 110, 0.15);
+  color: var(--accent);
+  border-color: rgba(200, 169, 110, 0.4);
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.isMe .messageContent {
+  align-items: flex-end;
+}
+
+.messageMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.senderName {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.senderRole {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--bg-hover);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.adminRole {
+  background: rgba(200, 169, 110, 0.1);
+  color: var(--accent-light);
+}
+
+.time {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.bubble {
+  padding: 0.85rem 1.15rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.theirBubble {
+  background: var(--bg-active);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-top-left-radius: 4px;
+}
+
+.myBubble {
+  background: var(--accent);
+  color: var(--bg);
+  border-top-right-radius: 4px;
+  box-shadow: 0 4px 15px rgba(200, 169, 110, 0.2);
+}
+
+.inputArea {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: var(--bg-hover);
+  border-top: 1px solid var(--border);
+}
+
+.inputField {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.85rem 1.25rem;
+  border-radius: 99px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.inputField:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.sendBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sendBtn:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(200, 169, 110, 0.3);
+}
+
+.sendBtn:disabled {
+  background: var(--bg-active);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}

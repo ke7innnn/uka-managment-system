@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Client, StaffMember } from './store';
+import { Client, StaffMember, WorkspaceMessage } from './store';
 
 // ─── SYNC DOWN (Supabase -> LocalStorage) ──────────────────────────────────
 export async function pullFromSupabase() {
@@ -17,6 +17,14 @@ export async function pullFromSupabase() {
       .select('*, staff_tasks(*), attendance_logs(*)');
 
     if (staffErr) throw staffErr;
+
+    const { data: workspaceData, error: workspaceErr } = await supabase
+      .from('workspace_messages')
+      .select('*')
+      .order('created_at', { ascending: true });
+    
+    // We don't throw on workspaceErr because the table might not exist yet for some users
+    if (workspaceErr) console.warn('Workspace table might not exist yet:', workspaceErr);
 
     const supabaseClients: Client[] = (clientsData || []).map((c: any) => ({
       id: c.id,
@@ -98,7 +106,23 @@ export async function pullFromSupabase() {
       pushStaffToSupabase(pendingLocalStaff).catch(console.error);
     }
 
+    if (!workspaceErr && workspaceData) {
+      const supabaseMessages: WorkspaceMessage[] = workspaceData.map(m => ({
+        id: m.id,
+        senderId: m.sender_id,
+        senderName: m.sender_name,
+        senderRole: m.sender_role,
+        content: m.content,
+        createdAt: m.created_at
+      }));
+      // Only keep last 3 days
+      const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
+      const recentMessages = supabaseMessages.filter(m => new Date(m.createdAt).getTime() > threeDaysAgo);
+      localStorage.setItem('uka_workspace_messages', JSON.stringify(recentMessages));
+    }
+
     window.dispatchEvent(new Event('uka-sync-complete'));
+    window.dispatchEvent(new Event('uka-workspace-sync-complete'));
     return true;
   } catch (err) {
     console.error('Failed to pull from Supabase:', err);
@@ -225,4 +249,23 @@ export async function pushStaffToSupabase(staff: StaffMember[]) {
       await supabase.from('attendance_logs').delete().in('staff_id', staffIds);
     }
   }
+}
+
+export async function pushWorkspaceToSupabase(messages: any[]) {
+  if (!messages || messages.length === 0) return;
+  const rows = messages.map(m => ({
+    id: m.id,
+    sender_id: m.senderId,
+    sender_name: m.senderName,
+    sender_role: m.senderRole,
+    content: m.content,
+    created_at: m.createdAt
+  }));
+  
+  // Also clean old messages from supabase
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+  await supabase.from('workspace_messages').delete().lt('created_at', threeDaysAgo);
+
+  const { error } = await supabase.from('workspace_messages').upsert(rows);
+  if (error) { console.error('pushWorkspaceToSupabase error:', error.message); }
 }

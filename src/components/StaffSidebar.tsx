@@ -5,12 +5,13 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { logoutStaff, getStaff, isStaffAuthenticated, getStaffById, StaffMember } from '@/lib/store';
 import styles from '@/components/Sidebar.module.css';
-import { CheckCircle2, FolderKanban, Bell, AlertTriangle, User, LogOut } from 'lucide-react';
+import { CheckCircle2, FolderKanban, Bell, AlertTriangle, User, LogOut, MessageSquare } from 'lucide-react';
 
 const NAV = [
   { href: '/staff-dashboard',                label: 'My Tasks & Attendance', Icon: CheckCircle2  },
   { href: '/staff-dashboard/projects',       label: 'Client Projects',       Icon: FolderKanban  },
   { href: '/staff-dashboard/inbox',          label: 'My Inbox',              Icon: Bell          },
+  { href: '/staff-dashboard/workspace',      label: 'Workspace',             Icon: MessageSquare },
   { href: '/staff-dashboard/wall-of-shame',  label: 'Performance Alerts',    Icon: AlertTriangle },
   { href: '/staff-dashboard/profile',        label: 'My Profile',            Icon: User          },
 ];
