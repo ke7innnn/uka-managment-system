@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { logoutStaff, getStaff, isStaffAuthenticated, getStaffById, StaffMember } from '@/lib/store';
+import { logoutStaff, getStaff, isStaffAuthenticated, getStaffById, StaffMember, getUnreadWorkspaceCount } from '@/lib/store';
 import styles from '@/components/Sidebar.module.css';
 import { CheckCircle2, FolderKanban, Bell, AlertTriangle, User, LogOut, MessageSquare } from 'lucide-react';
 
@@ -20,6 +20,7 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [inboxCount, setInboxCount] = useState(0);
+  const [workspaceCount, setWorkspaceCount] = useState(0);
   const [member, setMember] = useState<StaffMember | null>(null);
 
   useEffect(() => {
@@ -53,6 +54,26 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
     }
   }, [pathname]);
 
+  useEffect(() => {
+    const staffId = isStaffAuthenticated();
+    if (!staffId) return;
+
+    const updateCount = () => {
+      setWorkspaceCount(getUnreadWorkspaceCount(staffId));
+    };
+
+    updateCount();
+    window.addEventListener('uka-workspace-sync-complete', updateCount);
+    window.addEventListener('uka-workspace-read-complete', updateCount);
+
+    const interval = setInterval(updateCount, 5000);
+    return () => {
+      window.removeEventListener('uka-workspace-sync-complete', updateCount);
+      window.removeEventListener('uka-workspace-read-complete', updateCount);
+      clearInterval(interval);
+    };
+  }, [pathname]);
+
   const handleLogout = () => { logoutStaff(); router.push('/'); };
 
   return (
@@ -78,10 +99,13 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
             className={`${styles.navItem} ${pathname === href ? styles.active : ''}`}
           >
             <span className={styles.navIcon}><Icon size={18} strokeWidth={1.75} /></span>
-            <span className={styles.navLabel}>
-              {label}
+            <span className={styles.navLabel} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+              <span>{label}</span>
               {href === '/staff-dashboard/inbox' && inboxCount > 0 && (
-                <span className={styles.navBadge}>{inboxCount}</span>
+                <span className={styles.navBadge} style={{ marginLeft: 'auto' }}>{inboxCount}</span>
+              )}
+              {label === 'Workspace' && workspaceCount > 0 && (
+                <span className={styles.navBadge} style={{ marginLeft: 'auto' }}>{workspaceCount}</span>
               )}
             </span>
           </Link>

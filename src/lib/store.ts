@@ -370,4 +370,27 @@ export function addWorkspaceMessage(senderId: string, senderName: string, sender
   return msg;
 }
 
+export function getWorkspaceLastRead(): string {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem('uka_workspace_last_read') || '';
+}
+
+export function setWorkspaceLastRead(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('uka_workspace_last_read', new Date().toISOString());
+  // Dispatch event so sidebars immediately clear their badges
+  window.dispatchEvent(new Event('uka-workspace-read-complete'));
+}
+
+export function getUnreadWorkspaceCount(currentUserId: string): number {
+  const lastRead = getWorkspaceLastRead();
+  if (!lastRead) {
+    return getWorkspaceMessages().filter(m => m.senderId !== currentUserId).length;
+  }
+  const lastReadTime = new Date(lastRead).getTime();
+  return getWorkspaceMessages().filter(m => 
+    m.senderId !== currentUserId && new Date(m.createdAt).getTime() > lastReadTime
+  ).length;
+}
+
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { WorkspaceMessage, getWorkspaceMessages, addWorkspaceMessage } from '@/lib/store';
+import { WorkspaceMessage, getWorkspaceMessages, addWorkspaceMessage, getStaff, setWorkspaceLastRead } from '@/lib/store';
 import { Send, Hash, Info, User } from 'lucide-react';
 import styles from './WorkspaceChat.module.css';
 
@@ -12,10 +12,20 @@ interface WorkspaceChatProps {
 export default function WorkspaceChat({ currentUserId, currentUserName, currentUserRole }: WorkspaceChatProps) {
   const [messages, setMessages] = useState<WorkspaceMessage[]>([]);
   const [input, setInput] = useState('');
+  const [mentionSuggestions, setMentionSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestQuery, setSuggestQuery] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastNotifiedId = useRef<string>('');
+
+  const getPingTargets = () => {
+    const staffList = getStaff().map(s => s.name);
+    return ['Umesh Kekre', 'Admin', ...staffList];
+  };
 
   const loadMessages = () => {
     setMessages(getWorkspaceMessages());
+    setWorkspaceLastRead(); // Automatically mark messages as read
   };
 
   useEffect(() => {
@@ -25,6 +35,12 @@ export default function WorkspaceChat({ currentUserId, currentUserName, currentU
     
     // Polling as a fallback to keep chats in sync if multiple tabs are open
     const interval = setInterval(loadMessages, 5000);
+
+    // Request notification permissions
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
     return () => {
       window.removeEventListener('uka-workspace-sync-complete', handleSync);
       clearInterval(interval);
@@ -37,13 +53,101 @@ export default function WorkspaceChat({ currentUserId, currentUserName, currentU
     }
   }, [messages]);
 
+  // Handle Mentions and Ping Audio synthesized Alerts
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const latest = messages[messages.length - 1];
+    const isFromMe = latest.senderId === currentUserId;
+    
+    if (isFromMe || latest.id === lastNotifiedId.current) return;
+    
+    const mentionText1 = `@${currentUserName}`;
+    const mentionText2 = `@${currentUserRole}`;
+    const hasMention = latest.content.toLowerCase().includes(mentionText1.toLowerCase()) || 
+                      latest.content.toLowerCase().includes(mentionText2.toLowerCase()) ||
+                      (currentUserRole === 'Admin' && latest.content.toLowerCase().includes('@admin'));
+                      
+    if (hasMention) {
+      lastNotifiedId.current = latest.id;
+      
+      // Beautiful audio cue (synthesized oscillator)
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5 elegant tone
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.35);
+        setTimeout(() => osc.stop(), 400);
+      } catch (e) {}
+
+      // Browser Popups
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(`Workspace Ping from ${latest.senderName}`, {
+          body: latest.content,
+          icon: '/icon.png'
+        });
+      }
+    }
+  }, [messages, currentUserName, currentUserRole, currentUserId]);
+
+  const handleInputChange = (val: string) => {
+    setInput(val);
+    
+    // Mention Suggestion triggers
+    const lastWord = val.split(/\s+/).pop() || '';
+    if (lastWord.startsWith('@')) {
+      const query = lastWord.slice(1).toLowerCase();
+      setSuggestQuery(query);
+      const targets = getPingTargets();
+      const filtered = targets.filter(t => t.toLowerCase().includes(query));
+      setMentionSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectSuggestion = (name: string) => {
+    const words = input.split(/\s+/);
+    words.pop(); // Remove `@typed`
+    words.push(`@${name}`);
+    setInput(words.join(' ') + ' ');
+    setShowSuggestions(false);
+  };
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
     
     addWorkspaceMessage(currentUserId, currentUserName, currentUserRole, input.trim());
     setInput('');
+    setShowSuggestions(false);
     loadMessages();
+  };
+
+  const renderMessageContent = (content: string) => {
+    const parts = content.split(/(@[a-zA-Z0-9\s\-\.\'\_\u00c0-\u017f]+)/g);
+    const targets = getPingTargets().map(t => `@${t}`.toLowerCase());
+
+    return parts.map((part, index) => {
+      if (part.startsWith('@')) {
+        const potentialName = part.slice(1).trim().toLowerCase();
+        const isTarget = targets.some(t => t.includes(potentialName) || potentialName.includes(t.slice(1)));
+        
+        if (isTarget) {
+          return (
+            <span key={index} className={styles.mentionHighlight}>
+              {part}
+            </span>
+          );
+        }
+      }
+      return part;
+    });
   };
 
   return (
@@ -94,7 +198,7 @@ export default function WorkspaceChat({ currentUserId, currentUserName, currentU
                     </div>
                   )}
                   <div className={`${styles.bubble} ${isMe ? styles.myBubble : styles.theirBubble}`}>
-                    {msg.content}
+                    {renderMessageContent(msg.content)}
                   </div>
                 </div>
               </div>
@@ -103,18 +207,36 @@ export default function WorkspaceChat({ currentUserId, currentUserName, currentU
         )}
       </div>
 
-      <form onSubmit={handleSend} className={styles.inputArea}>
-        <input
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="Message #workspace..."
-          className={styles.inputField}
-        />
-        <button type="submit" className={styles.sendBtn} disabled={!input.trim()}>
-          <Send size={18} strokeWidth={2} />
-        </button>
-      </form>
+      <div className={styles.inputWrapperContainer}>
+        {showSuggestions && (
+          <div className={styles.suggestionsBox}>
+            {mentionSuggestions.map((name, i) => (
+              <button 
+                key={name}
+                type="button"
+                className={styles.suggestionItem}
+                onClick={() => selectSuggestion(name)}
+              >
+                <User size={14} className={styles.suggestIcon} />
+                <span>{name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <form onSubmit={handleSend} className={styles.inputArea}>
+          <input
+            type="text"
+            value={input}
+            onChange={e => handleInputChange(e.target.value)}
+            placeholder="Message #workspace (type @ to ping)..."
+            className={styles.inputField}
+          />
+          <button type="submit" className={styles.sendBtn} disabled={!input.trim()}>
+            <Send size={18} strokeWidth={2} />
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

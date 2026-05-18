@@ -1,8 +1,7 @@
-'use client';
-
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { logout } from '@/lib/store';
+import { logout, getUnreadWorkspaceCount } from '@/lib/store';
 import styles from './Sidebar.module.css';
 import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, LogOut, CalendarCheck, MessageSquare } from 'lucide-react';
 
@@ -20,6 +19,26 @@ const NAV = [
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const updateUnread = () => {
+    setUnreadCount(getUnreadWorkspaceCount('admin'));
+  };
+
+  useEffect(() => {
+    updateUnread();
+    
+    // Recalculate on sync and read completion events
+    window.addEventListener('uka-workspace-sync-complete', updateUnread);
+    window.addEventListener('uka-workspace-read-complete', updateUnread);
+    
+    const interval = setInterval(updateUnread, 5000);
+    return () => {
+      window.removeEventListener('uka-workspace-sync-complete', updateUnread);
+      window.removeEventListener('uka-workspace-read-complete', updateUnread);
+      clearInterval(interval);
+    };
+  }, []);
 
   const handleLogout = () => { logout(); router.replace('/'); };
 
@@ -48,7 +67,12 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
               className={`${styles.navItem} ${active ? styles.active : ''}`}
             >
               <span className={styles.navIcon}><Icon size={18} strokeWidth={1.75} /></span>
-              <span>{label}</span>
+              <span style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                <span>{label}</span>
+                {label === 'Workspace' && unreadCount > 0 && (
+                  <span className={styles.navBadge} style={{ marginLeft: 'auto' }}>{unreadCount}</span>
+                )}
+              </span>
             </Link>
           );
         })}
