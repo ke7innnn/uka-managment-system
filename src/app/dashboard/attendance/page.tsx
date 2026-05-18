@@ -149,25 +149,51 @@ export default function DailyAttendancePage() {
                   </td>
                   <td>
                     {row.log ? (
-                      <span style={{ color: '#10b981', fontWeight: 600, fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <CheckCircle2 size={14} /> Present
+                      <span style={{ 
+                        background: 'rgba(16, 185, 129, 0.08)', 
+                        border: '1px solid rgba(16, 185, 129, 0.25)', 
+                        color: '#34d399', 
+                        padding: '0.25rem 0.55rem', 
+                        borderRadius: '4px', 
+                        fontSize: '0.72rem', 
+                        fontWeight: 700, 
+                        textTransform: 'uppercase', 
+                        letterSpacing: '0.5px', 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '0.3rem' 
+                      }}>
+                        <CheckCircle2 size={12} /> Present
                       </span>
                     ) : (
-                      <span style={{ color: 'var(--text-tertiary)', fontWeight: 600, fontSize: '0.8rem' }}>Absent</span>
+                      <span style={{ 
+                        background: 'rgba(239, 68, 68, 0.08)', 
+                        border: '1px solid rgba(239, 68, 68, 0.25)', 
+                        color: '#f87171', 
+                        padding: '0.25rem 0.55rem', 
+                        borderRadius: '4px', 
+                        fontSize: '0.72rem', 
+                        fontWeight: 700, 
+                        textTransform: 'uppercase', 
+                        letterSpacing: '0.5px',
+                        display: 'inline-flex'
+                      }}>
+                        Absent
+                      </span>
                     )}
                   </td>
                   <td>
                     {row.log ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                        <span className={styles.timeTag} style={{ color: '#4ade80' }}>
+                        <span className={styles.timeTag} style={{ color: '#4ade80', fontSize: '0.8rem', fontWeight: 500 }}>
                           <ArrowRightCircle size={14} /> In: {row.log.checkIn}
                         </span>
                         {row.log.checkOut ? (
-                          <span className={styles.timeTag} style={{ color: '#f87171' }}>
+                          <span className={styles.timeTag} style={{ color: '#f87171', fontSize: '0.8rem', fontWeight: 500 }}>
                             <ArrowLeftCircle size={14} /> Out: {row.log.checkOut}
                           </span>
                         ) : (
-                          <span className={styles.timeTag} style={{ color: 'var(--text-tertiary)' }}>
+                          <span className={styles.timeTag} style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>
                             <Clock size={14} /> Ongoing...
                           </span>
                         )}
@@ -178,7 +204,7 @@ export default function DailyAttendancePage() {
                         )}
                       </div>
                     ) : (
-                      <span style={{ color: 'var(--text-tertiary)' }}>—</span>
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>—</span>
                     )}
                   </td>
                   <td>
@@ -187,7 +213,7 @@ export default function DailyAttendancePage() {
                         <MapPin size={14} style={{ flexShrink: 0, marginTop: 2 }} /> {row.log.locationLabel}
                       </span>
                     ) : (
-                      <span style={{ color: 'var(--text-tertiary)' }}>—</span>
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>—</span>
                     )}
                   </td>
                   <td>
@@ -201,7 +227,7 @@ export default function DailyAttendancePage() {
                         ))}
                       </ul>
                     ) : (
-                      <span style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>No tasks completed.</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>No tasks completed.</span>
                     )}
                   </td>
                 </tr>
