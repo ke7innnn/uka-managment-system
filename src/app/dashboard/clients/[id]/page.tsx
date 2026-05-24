@@ -131,6 +131,48 @@ export default function ClientDetailPage() {
     }
   }, [renamingId]);
 
+  // Safety navigation block when uploading files
+  useEffect(() => {
+    const isUploading = isUploadingGeneral || 
+                        Object.values(uploadingFolders).some(v => v) || 
+                        Object.values(uploadingSubfolders).some(v => v);
+
+    if (!isUploading) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'A file is currently uploading. If you leave now, the upload will be cancelled.';
+      return e.returnValue;
+    };
+
+    const handleAnchorClick = (e: MouseEvent) => {
+      let target = e.target as HTMLElement | null;
+      while (target && target.tagName !== 'A') {
+        target = target.parentElement;
+      }
+      if (target && target.tagName === 'A') {
+        const href = target.getAttribute('href');
+        if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+          const confirmLeave = window.confirm(
+            "A file is currently uploading. If you leave now, the upload will be cancelled.\n\nDo you still want to leave?"
+          );
+          if (!confirmLeave) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('click', handleAnchorClick, true);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('click', handleAnchorClick, true);
+    };
+  }, [isUploadingGeneral, uploadingFolders, uploadingSubfolders]);
+
   if (!client) return null;
 
   const allTasks = client.phases.flatMap(p => p.tasks || []);
