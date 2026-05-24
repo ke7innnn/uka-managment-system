@@ -6,6 +6,7 @@ import {
   StaffMember, AttendanceLog, staffCompletionPct, getClients, Client
 } from '@/lib/store';
 import { processReminders, clearStageReminders } from '@/lib/reminders';
+import Link from 'next/link';
 import { MapPin, CheckCircle2, Clock, Check, ArrowRightCircle, ArrowLeftCircle } from 'lucide-react';
 import styles from '@/app/dashboard/staff/[id]/page.module.css';
 
@@ -231,7 +232,9 @@ export default function StaffDashboardHome() {
                   {t.completed && <Check size={12} strokeWidth={3} color="white" />}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.88rem', color: 'var(--text)', fontWeight: 500, textDecoration: t.completed ? 'line-through' : 'none', lineHeight: 1.4 }}>{t.taskTitle}</div>
+                  <Link href={`/staff-dashboard/projects/${t.clientId}?tab=phases`} style={{ textDecoration: 'none' }}>
+                    <div style={{ fontSize: '0.88rem', color: 'var(--text)', fontWeight: 500, textDecoration: t.completed ? 'line-through' : 'none', lineHeight: 1.4 }}>{t.taskTitle}</div>
+                  </Link>
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: 4 }}>
                     <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{t.clientName}</span> · {t.stageName}
                   </div>
