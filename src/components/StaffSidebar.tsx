@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { logoutStaff, getStaff, isStaffAuthenticated, getStaffById, StaffMember, getUnreadWorkspaceCount, getUnreadAlertsCount } from '@/lib/store';
 import styles from '@/components/Sidebar.module.css';
-import { CheckCircle2, FolderKanban, Bell, AlertTriangle, User, LogOut, MessageSquare } from 'lucide-react';
+import { CheckCircle2, FolderKanban, Bell, AlertTriangle, User, LogOut, MessageSquare, Sun, Moon } from 'lucide-react';
 
 const NAV = [
   { href: '/staff-dashboard',                        label: 'My Tasks & Attendance', Icon: CheckCircle2  },
@@ -23,6 +23,7 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
   const [workspaceCount, setWorkspaceCount] = useState(0);
   const [alertsCount, setAlertsCount] = useState(0);
   const [member, setMember] = useState<StaffMember | null>(null);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -37,6 +38,11 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
     const currentStaff = allStaff.find(s => s.id === staffId);
     if (!currentStaff) return;
     setMember(currentStaff);
+
+    // Theme sync
+    const saved = localStorage.getItem('uka_theme') || 'dark';
+    setTheme(saved as 'dark' | 'light');
+    document.documentElement.setAttribute('data-theme', saved);
 
     const pendingTasks = currentStaff.tasks.filter(t => !t.completed).length;
     let count = 0;
@@ -57,6 +63,15 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
   }, [pathname]);
 
   useEffect(() => {
+    const handleThemeChange = () => {
+      const current = localStorage.getItem('uka_theme') || 'dark';
+      setTheme(current as 'dark' | 'light');
+    };
+    window.addEventListener('uka-theme-change', handleThemeChange);
+    return () => window.removeEventListener('uka-theme-change', handleThemeChange);
+  }, []);
+
+  useEffect(() => {
     const staffId = isStaffAuthenticated();
     if (!staffId) return;
 
@@ -75,6 +90,14 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
       clearInterval(interval);
     };
   }, [pathname]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('uka_theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    window.dispatchEvent(new Event('uka-theme-change'));
+  };
 
   const handleLogout = () => { logoutStaff(); router.push('/'); };
 
@@ -117,8 +140,42 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
         ))}
       </nav>
 
-      {/* Logout */}
-      <div className={styles.footer}>
+      {/* Footer / Toggle & Logout */}
+      <div className={styles.footer} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <button 
+          onClick={toggleTheme}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.75rem', 
+            width: '100%', 
+            padding: '0.75rem 1rem', 
+            borderRadius: '10px',
+            color: 'var(--text-secondary)',
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            justifyContent: 'flex-start'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--text)';
+            e.currentTarget.style.borderColor = 'var(--border-hover)';
+            e.currentTarget.style.background = 'var(--bg-hover)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--text-secondary)';
+            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.background = 'var(--bg-elevated)';
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            {theme === 'dark' ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
+          </span>
+          <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+        </button>
+
         <button className={styles.logoutBtn} onClick={handleLogout}>
           <span className={styles.navIcon}><LogOut size={18} strokeWidth={1.75} /></span>
           <span>Logout</span>
