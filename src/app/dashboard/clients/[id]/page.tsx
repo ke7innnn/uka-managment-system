@@ -3,7 +3,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember } from '@/lib/store';
+import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients } from '@/lib/store';
+import { initStageReminders, clearStageReminders, processReminders } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
 import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload } from 'lucide-react';
 import styles from './page.module.css';
@@ -112,6 +113,8 @@ export default function ClientDetailPage() {
     if (!c) { router.replace('/dashboard/clients'); return; }
     setClient(c);
     setStaffList(getStaff());
+    // Process any due reminders on each reload
+    processReminders(getClients());
   };
 
   useEffect(() => { reload(); }, [params.id]);
@@ -126,8 +129,11 @@ export default function ClientDetailPage() {
 
   if (!client) return null;
 
-  const donePhases = client.phases.filter((p) => p.completed).length;
-  const progress = client.phases.length > 0 ? Math.round((donePhases / client.phases.length) * 100) : 0;
+  const allTasks = client.phases.flatMap(p => p.tasks || []);
+  const doneTasks = allTasks.filter(t => t.completed).length;
+  const totalTasks = allTasks.length;
+  const donePhases = client.phases.filter(p => p.status === 'completed').length;
+  const progress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
   // ── Phase actions ──────────────────────────────────────────────────────────
   const addStage = () => {
@@ -152,10 +158,16 @@ export default function ClientDetailPage() {
   };
 
   const startStage = (phaseId: string) => {
+    const phase = client.phases.find(p => p.id === phaseId);
     const updated = client.phases.map((p) =>
       p.id === phaseId ? { ...p, status: 'in-progress' as const, startedAt: new Date().toISOString() } : p
     );
     updateClient(client.id, { phases: updated });
+    // Fire reminders & workspace message
+    if (phase) {
+      const updatedPhase = { ...phase, status: 'in-progress' as const, startedAt: new Date().toISOString() };
+      initStageReminders(client, updatedPhase);
+    }
     reload();
   };
 
@@ -164,6 +176,7 @@ export default function ClientDetailPage() {
       p.id === phaseId ? { ...p, status: 'completed' as const } : p
     );
     updateClient(client.id, { phases: updated });
+    clearStageReminders(phaseId, client.id);
     reload();
   };
 
@@ -174,6 +187,14 @@ export default function ClientDetailPage() {
     updateClient(client.id, { phases: updated });
     setEditingTimeBound(null);
     reload();
+  };
+
+  const formatDeadline = (dateStr?: string) => {
+    if (!dateStr) return 'No deadline set';
+    // Handle ISO date strings from date input (YYYY-MM-DD)
+    const d = new Date(dateStr + 'T00:00:00');
+    if (isNaN(d.getTime())) return dateStr;
+    return `Before ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`;
   };
 
   const addTask = (phaseId: string) => {
@@ -423,7 +444,7 @@ export default function ClientDetailPage() {
           <div className={styles.progressBarOuter}>
             <div className={styles.progressBarInner} style={{ width: `${progress}%` }} />
           </div>
-          <p className={styles.progressSub}>{donePhases} of {client.phases.length} phases completed</p>
+          <p className={styles.progressSub}>{doneTasks} of {totalTasks} tasks completed across {client.phases.length} stages ({donePhases} stage{donePhases !== 1 ? 's' : ''} fully done)</p>
         </div>
       )}
 
@@ -519,9 +540,9 @@ export default function ClientDetailPage() {
                               <div className={styles.timeBoundEdit}>
                                 <input 
                                   autoFocus
+                                  type="date"
                                   value={timeBoundDraft} 
                                   onChange={e => setTimeBoundDraft(e.target.value)}
-                                  placeholder="e.g. 5 working days"
                                   className={styles.timeBoundInput}
                                   onKeyDown={e => { if (e.key === 'Enter') saveTimeBound(phase.id); if (e.key === 'Escape') setEditingTimeBound(null); }}
                                 />
@@ -531,7 +552,7 @@ export default function ClientDetailPage() {
                             ) : (
                               <div className={styles.timeBoundDisplay}>
                                 <Clock size={12} /> 
-                                <span>{phase.timeBound || 'No deadline set'}</span>
+                                <span>{formatDeadline(phase.timeBound)}</span>
                                 <button onClick={() => { setEditingTimeBound(phase.id); setTimeBoundDraft(phase.timeBound || ''); }} className={styles.tbEditBtn}>
                                   <Pencil size={10} />
                                 </button>

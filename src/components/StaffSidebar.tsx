@@ -3,17 +3,17 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { logoutStaff, getStaff, isStaffAuthenticated, getStaffById, StaffMember, getUnreadWorkspaceCount } from '@/lib/store';
+import { logoutStaff, getStaff, isStaffAuthenticated, getStaffById, StaffMember, getUnreadWorkspaceCount, getUnreadAlertsCount } from '@/lib/store';
 import styles from '@/components/Sidebar.module.css';
 import { CheckCircle2, FolderKanban, Bell, AlertTriangle, User, LogOut, MessageSquare } from 'lucide-react';
 
 const NAV = [
-  { href: '/staff-dashboard',                label: 'My Tasks & Attendance', Icon: CheckCircle2  },
-  { href: '/staff-dashboard/projects',       label: 'Client Projects',       Icon: FolderKanban  },
-  { href: '/staff-dashboard/inbox',          label: 'My Inbox',              Icon: Bell          },
-  { href: '/staff-dashboard/workspace',      label: 'Workspace',             Icon: MessageSquare },
-  { href: '/staff-dashboard/wall-of-shame',  label: 'Performance Alerts',    Icon: AlertTriangle },
-  { href: '/staff-dashboard/profile',        label: 'My Profile',            Icon: User          },
+  { href: '/staff-dashboard',                        label: 'My Tasks & Attendance', Icon: CheckCircle2  },
+  { href: '/staff-dashboard/projects',               label: 'Client Projects',       Icon: FolderKanban  },
+  { href: '/staff-dashboard/inbox',                  label: 'My Inbox',              Icon: Bell          },
+  { href: '/staff-dashboard/workspace',              label: 'Workspace',             Icon: MessageSquare },
+  { href: '/staff-dashboard/performance-alerts',     label: 'Performance Alerts',    Icon: AlertTriangle },
+  { href: '/staff-dashboard/profile',                label: 'My Profile',            Icon: User          },
 ];
 
 export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
@@ -21,6 +21,7 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
   const router = useRouter();
   const [inboxCount, setInboxCount] = useState(0);
   const [workspaceCount, setWorkspaceCount] = useState(0);
+  const [alertsCount, setAlertsCount] = useState(0);
   const [member, setMember] = useState<StaffMember | null>(null);
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
     if (pendingTasks > 0) count += 1;
     if (pendingTasks >= 3) count += 1;
     setInboxCount(count);
+    setAlertsCount(getUnreadAlertsCount(currentStaff.name));
 
     if (typeof navigator !== 'undefined' && 'setAppBadge' in navigator) {
       if (count > 0) {
@@ -101,11 +103,14 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
             <span className={styles.navIcon}><Icon size={18} strokeWidth={1.75} /></span>
             <span className={styles.navLabel} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
               <span>{label}</span>
-              {href === '/staff-dashboard/inbox' && inboxCount > 0 && (
+              {label === 'My Inbox' && inboxCount > 0 && (
                 <span className={styles.navBadge} style={{ marginLeft: 'auto' }}>{inboxCount}</span>
               )}
               {label === 'Workspace' && workspaceCount > 0 && (
                 <span className={styles.navBadge} style={{ marginLeft: 'auto' }}>{workspaceCount}</span>
+              )}
+              {label === 'Performance Alerts' && alertsCount > 0 && (
+                <span className={styles.navBadge} style={{ marginLeft: 'auto', background: 'var(--red)' }}>{alertsCount}</span>
               )}
             </span>
           </Link>

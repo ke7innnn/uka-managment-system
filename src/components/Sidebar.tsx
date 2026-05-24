@@ -1,28 +1,34 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { logout, getUnreadWorkspaceCount } from '@/lib/store';
+import { logout, getUnreadWorkspaceCount, getUnreadAlertsCount } from '@/lib/store';
 import styles from './Sidebar.module.css';
-import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, LogOut, CalendarCheck, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, LogOut, CalendarCheck, MessageSquare, Inbox, Bell } from 'lucide-react';
 
 const NAV = [
-  { href: '/dashboard',           label: 'Dashboard', Icon: LayoutDashboard },
-  { href: '/dashboard/clients',   label: 'Clients',   Icon: Users            },
-  { href: '/dashboard/projects',  label: 'Projects',  Icon: FolderKanban     },
-  { href: '/dashboard/documents', label: 'Documents', Icon: FileText         },
-  { href: '/dashboard/staff',     label: 'Staff',     Icon: UserCog          },
-  { href: '/dashboard/attendance',label: 'Attendance',Icon: CalendarCheck    },
-  { href: '/dashboard/workspace', label: 'Workspace', Icon: MessageSquare    },
-  { href: '/dashboard/reports',   label: 'Reports',   Icon: BarChart3        },
+  { href: '/dashboard',                        label: 'Dashboard',          Icon: LayoutDashboard },
+  { href: '/dashboard/clients',               label: 'Clients',            Icon: Users            },
+  { href: '/dashboard/projects',              label: 'Projects',           Icon: FolderKanban     },
+  { href: '/dashboard/documents',             label: 'Documents',          Icon: FileText         },
+  { href: '/dashboard/staff',                 label: 'Staff',              Icon: UserCog          },
+  { href: '/dashboard/attendance',            label: 'Attendance',         Icon: CalendarCheck    },
+  { href: '/dashboard/workspace',             label: 'Workspace',          Icon: MessageSquare    },
+  { href: '/dashboard/inbox',                 label: 'Inbox',              Icon: Inbox            },
+  { href: '/dashboard/performance-alerts',    label: 'Performance Alerts', Icon: Bell             },
+  { href: '/dashboard/reports',               label: 'Reports',            Icon: BarChart3        },
 ];
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [alertsCount, setAlertsCount] = useState(0);
+  const [inboxCount, setInboxCount] = useState(0);
 
   const updateUnread = () => {
     setUnreadCount(getUnreadWorkspaceCount('admin'));
+    setAlertsCount(getUnreadAlertsCount('admin'));
+    setInboxCount(getUnreadAlertsCount('admin'));
   };
 
   useEffect(() => {
@@ -71,6 +77,12 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                 <span>{label}</span>
                 {label === 'Workspace' && unreadCount > 0 && (
                   <span className={styles.navBadge} style={{ marginLeft: 'auto' }}>{unreadCount}</span>
+                )}
+                {label === 'Inbox' && inboxCount > 0 && (
+                  <span className={styles.navBadge} style={{ marginLeft: 'auto' }}>{inboxCount}</span>
+                )}
+                {label === 'Performance Alerts' && alertsCount > 0 && (
+                  <span className={styles.navBadge} style={{ marginLeft: 'auto', background: 'var(--red)' }}>{alertsCount}</span>
                 )}
               </span>
             </Link>

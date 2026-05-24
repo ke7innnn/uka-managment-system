@@ -512,4 +512,69 @@ export function getUnreadWorkspaceCount(currentUserId: string): number {
   ).length;
 }
 
+// ─── Performance Alerts ────────────────────────────────────────────────────────
 
+export type AlertSeverity = 'info' | 'warning' | 'urgent' | 'critical';
+
+export interface PerformanceAlert {
+  id: string;
+  clientId: string;
+  clientName: string;
+  stageName: string;
+  assignedTo: string;        // staff name(s), e.g. "Sadhana Kanojiya & Uzaid Khan"
+  pendingTasks: string[];    // list of task titles still pending
+  timeBound?: string;        // YYYY-MM-DD deadline
+  severity: AlertSeverity;
+  templateKey: string;       // 'stage-start' | 'day-1-light' | 'day-2-moderate' | 'day-3-warning' | 'deadline-breach' | 'repeat-harsh'
+  message: string;
+  createdAt: string;         // ISO string
+  readBy: string[];          // list of userIds who have read it
+}
+
+const ALERTS_KEY = 'uka_performance_alerts';
+
+export function getAlerts(): PerformanceAlert[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(ALERTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+export function saveAlerts(alerts: PerformanceAlert[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(ALERTS_KEY, JSON.stringify(alerts));
+}
+
+export function addAlert(alert: Omit<PerformanceAlert, 'id' | 'createdAt' | 'readBy'>): PerformanceAlert {
+  const alerts = getAlerts();
+  const newAlert: PerformanceAlert = {
+    ...alert,
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+    readBy: []
+  };
+  alerts.push(newAlert);
+  saveAlerts(alerts);
+  return newAlert;
+}
+
+export function markAlertRead(alertId: string, userId: string): void {
+  const alerts = getAlerts().map(a =>
+    a.id === alertId && !a.readBy.includes(userId)
+      ? { ...a, readBy: [...a.readBy, userId] }
+      : a
+  );
+  saveAlerts(alerts);
+}
+
+export function getAlertsForUser(staffName: string): PerformanceAlert[] {
+  return getAlerts().filter(a =>
+    a.assignedTo.toLowerCase().includes(staffName.toLowerCase()) || staffName === 'admin'
+  );
+}
+
+export function getUnreadAlertsCount(staffNameOrAdmin: string): number {
+  const userId = staffNameOrAdmin;
+  return getAlertsForUser(staffNameOrAdmin).filter(a => !a.readBy.includes(userId)).length;
+}

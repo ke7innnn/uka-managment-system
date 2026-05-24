@@ -1,0 +1,2 @@
+.alertCard { transition: all 0.2s; }
+.alertCard:hover { transform: translateY(-1px); }
