@@ -8,19 +8,17 @@ import {
 } from '@/lib/store';
 import { processReminders, clearStageReminders } from '@/lib/reminders';
 import Link from 'next/link';
-import { MapPin, CheckCircle2, Clock, Check, ArrowRightCircle, ArrowLeftCircle } from 'lucide-react';
+import { MapPin, CheckCircle2, Clock, Check, ArrowRightCircle, ArrowLeftCircle, FolderOpen } from 'lucide-react';
 import styles from '@/app/dashboard/staff/[id]/page.module.css';
 
-interface UnifiedTask {
-  id: string;
-  type: 'standalone' | 'project';
-  title: string;
-  completed: boolean;
-  deadline?: string;
-  clientName?: string;
-  clientId?: string;
-  stageName?: string;
-  phaseId?: string;
+interface AssignedStage {
+  clientId: string;
+  clientName: string;
+  projectName?: string;
+  phaseId: string;
+  phaseName: string;
+  status: 'not-started' | 'in-progress';
+  assignedTasks: { id: string; title: string; completed: boolean }[];
 }
 
 export default function StaffDashboardHome() {
@@ -28,7 +26,7 @@ export default function StaffDashboardHome() {
   const [locLoading, setLocLoading] = useState(false);
   const [notifPerm, setNotifPerm] = useState<string>('granted');
   const [showIOSBanner, setShowIOSBanner] = useState(false);
-  const [unifiedTasks, setUnifiedTasks] = useState<UnifiedTask[]>([]);
+  const [assignedStages, setAssignedStages] = useState<AssignedStage[]>([]);
 
   const reload = () => {
     const id = isStaffAuthenticated();
@@ -40,37 +38,34 @@ export default function StaffDashboardHome() {
         const allClients = getClients();
         processReminders(allClients);
         
-        // 1. Get standalone tasks
-        const standalone: UnifiedTask[] = (m.tasks || []).map(t => ({
-          id: t.id,
-          type: 'standalone',
-          title: t.title,
-          completed: t.completed,
-          deadline: t.deadline
-        }));
-
-        // 2. Get project tasks assigned to this staff member
-        const projects: UnifiedTask[] = [];
+        const stagesList: AssignedStage[] = [];
         allClients.forEach(client => {
           client.phases.forEach(phase => {
-            (phase.tasks || []).forEach(task => {
-              if (task.assignedTo && task.assignedTo.toLowerCase().includes(m.name.toLowerCase())) {
-                projects.push({
+            if (phase.status !== 'completed') {
+              const assigned = (phase.tasks || [])
+                .filter(task => task.assignedTo && task.assignedTo.toLowerCase().includes(m.name.toLowerCase()))
+                .map(task => ({
                   id: task.id,
-                  type: 'project',
                   title: task.title,
-                  completed: task.completed,
-                  clientName: client.name,
+                  completed: task.completed
+                }));
+
+              if (assigned.length > 0) {
+                stagesList.push({
                   clientId: client.id,
-                  stageName: phase.name,
-                  phaseId: phase.id
+                  clientName: client.name,
+                  projectName: client.projectName,
+                  phaseId: phase.id,
+                  phaseName: phase.name,
+                  status: phase.status,
+                  assignedTasks: assigned
                 });
               }
-            });
+            }
           });
         });
 
-        setUnifiedTasks([...standalone, ...projects]);
+        setAssignedStages(stagesList);
       }
     }
   };
@@ -111,32 +106,7 @@ export default function StaffDashboardHome() {
   };
 
   // ── Task Actions ──
-  const handleToggleTask = (task: UnifiedTask) => {
-    if (task.type === 'standalone') {
-      const updated = member.tasks.map(t => {
-        if (t.id === task.id) {
-          return { ...t, completed: !t.completed, completedAt: !t.completed ? new Date().toISOString() : undefined };
-        }
-        return t;
-      });
-      updateStaffMember(member.id, { tasks: updated });
-    } else {
-      const client = getClientById(task.clientId!);
-      if (client) {
-        const updatedPhases = client.phases.map(p => {
-          if (p.id === task.phaseId) {
-            return {
-              ...p,
-              tasks: p.tasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t)
-            };
-          }
-          return p;
-        });
-        updateClient(client.id, { phases: updatedPhases });
-      }
-    }
-    reload();
-  };
+
 
   // ── Attendance Actions ──
   const handleClockIn = () => {
@@ -218,12 +188,17 @@ export default function StaffDashboardHome() {
     reload();
   };
 
-  const total = unifiedTasks.length;
-  const done = unifiedTasks.filter(t => t.completed).length;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  let totalAssignedTasksCount = 0;
+  let completedAssignedTasksCount = 0;
   
-  const pendingTasks = unifiedTasks.filter(t => !t.completed);
-  const doneTasks = unifiedTasks.filter(t => t.completed);
+  assignedStages.forEach(stage => {
+    totalAssignedTasksCount += stage.assignedTasks.length;
+    completedAssignedTasksCount += stage.assignedTasks.filter(t => t.completed).length;
+  });
+  
+  const overallPct = totalAssignedTasksCount > 0 
+    ? Math.round((completedAssignedTasksCount / totalAssignedTasksCount) * 100) 
+    : 0;
   
   // Today's log
   const todayDateStr = new Date().toISOString().split('T')[0];
@@ -273,76 +248,127 @@ export default function StaffDashboardHome() {
         <div className={`glass-panel`} style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           <div>
-            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Task Progress</h3>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Work Progress</h3>
             <div className={styles.pbHeader} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 600 }}>{done} / {total} Completed</span>
-              <span style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 800 }}>{pct}%</span>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 600 }}>{completedAssignedTasksCount} / {totalAssignedTasksCount} Tasks Completed</span>
+              <span style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 800 }}>{overallPct}%</span>
             </div>
             <div className={styles.pbTrack} style={{ height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
-              <div className={styles.pbFill} style={{ width: `${pct}%`, background: 'linear-gradient(90deg, var(--primary), #a5b4fc)', height: '100%', borderRadius: '4px', transition: 'width 0.4s ease' }} />
+              <div className={styles.pbFill} style={{ width: `${overallPct}%`, background: 'linear-gradient(90deg, var(--primary), #a5b4fc)', height: '100%', borderRadius: '4px', transition: 'width 0.4s ease' }} />
             </div>
           </div>
 
           <div>
-            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>My Tasks</h3>
-            {total === 0 ? (
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>My Active Stages</h3>
+            {assignedStages.length === 0 ? (
               <div className={styles.empty} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                You have no tasks assigned.
+                You have no active project stages assigned.
               </div>
             ) : (
-              <div className={styles.taskSections} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {pendingTasks.map(task => (
-                  <div key={task.id} className={styles.taskItem} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--border)', transition: 'all 0.2s ease' }}>
-                    <button className={styles.taskCheck} onClick={() => handleToggleTask(task)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--border)', background: 'transparent', cursor: 'pointer', flexShrink: 0 }}></button>
-                    <div style={{ flex: 1 }}>
-                      {task.type === 'project' ? (
-                        <Link href={`/staff-dashboard/projects/${task.clientId}?tab=phases`} style={{ textDecoration: 'none' }}>
-                          <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>{task.title}</p>
-                        </Link>
-                      ) : (
-                        <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>{task.title}</p>
-                      )}
-                      {task.type === 'project' ? (
-                        <p style={{ fontSize: '0.75rem', color: 'var(--accent)', margin: 0, marginTop: '0.25rem', fontWeight: 600 }}>
-                          💼 {task.clientName} · <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>{task.stageName}</span>
-                        </p>
-                      ) : (
-                        task.deadline && (
-                          <p style={{ fontSize: '0.75rem', color: '#f59e0b', margin: 0, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <Clock size={12} /> Due: {new Date(task.deadline).toLocaleDateString()}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {assignedStages.map(stage => {
+                  const stageTotal = stage.assignedTasks.length;
+                  const stageDone = stage.assignedTasks.filter(t => t.completed).length;
+                  const stagePct = Math.round((stageDone / stageTotal) * 100);
+
+                  return (
+                    <div 
+                      key={stage.phaseId} 
+                      className="glass-panel" 
+                      style={{ 
+                        padding: '1.25rem', 
+                        background: 'rgba(255, 255, 255, 0.02)', 
+                        border: '1px solid var(--border)', 
+                        borderRadius: '14px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '1rem',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                        <div>
+                          <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                            {stage.clientName}
+                          </h4>
+                          {stage.projectName && (
+                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, marginTop: '2px' }}>
+                              📁 {stage.projectName}
+                            </p>
+                          )}
+                          <p style={{ fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600, margin: 0, marginTop: '8px' }}>
+                            {stage.phaseName}
                           </p>
-                        )
-                      )}
+                        </div>
+                        <span 
+                          style={{ 
+                            fontSize: '0.65rem', 
+                            fontWeight: 700, 
+                            padding: '3px 8px', 
+                            borderRadius: '12px',
+                            background: stage.status === 'in-progress' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                            color: stage.status === 'in-progress' ? '#10b981' : '#f59e0b',
+                            border: stage.status === 'in-progress' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(245, 158, 11, 0.2)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                          }}
+                        >
+                          {stage.status === 'in-progress' ? 'In Progress' : 'Not Started'}
+                        </span>
+                      </div>
+
+                      {/* Stage internal progress */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                          <span>Your Tasks: {stageDone} / {stageTotal} completed</span>
+                          <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{stagePct}%</span>
+                        </div>
+                        <div style={{ height: '5px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{ width: `${stagePct}%`, background: 'var(--accent)', height: '100%', borderRadius: '3px', transition: 'width 0.3s ease' }} />
+                        </div>
+                      </div>
+
+                      {/* Redirect Button */}
+                      <Link 
+                        href={`/staff-dashboard/projects/${stage.clientId}?tab=phases`}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <button 
+                          style={{ 
+                            width: '100%',
+                            background: 'var(--border)',
+                            color: 'var(--text-main)',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            padding: '0.65rem',
+                            borderRadius: '10px',
+                            fontWeight: 600,
+                            fontSize: '0.85rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(200, 169, 110, 0.1)';
+                            e.currentTarget.style.borderColor = 'rgba(200, 169, 110, 0.3)';
+                            e.currentTarget.style.color = 'var(--accent)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'var(--border)';
+                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+                            e.currentTarget.style.color = 'var(--text-main)';
+                          }}
+                        >
+                          <FolderOpen size={15} />
+                          Open Stage & Upload Documents
+                        </button>
+                      </Link>
+
                     </div>
-                  </div>
-                ))}
-                {doneTasks.map(task => (
-                  <div key={task.id} className={styles.taskItem} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'transparent', borderRadius: '12px', opacity: 0.5 }}>
-                    <button className={styles.taskCheck} onClick={() => handleToggleTask(task)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: 'none', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                      <Check size={14} strokeWidth={3} />
-                    </button>
-                    <div style={{ flex: 1 }}>
-                      {task.type === 'project' ? (
-                        <Link href={`/staff-dashboard/projects/${task.clientId}?tab=phases`} style={{ textDecoration: 'none' }}>
-                          <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-main)', margin: 0, textDecoration: 'line-through' }}>{task.title}</p>
-                        </Link>
-                      ) : (
-                        <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-main)', margin: 0, textDecoration: 'line-through' }}>{task.title}</p>
-                      )}
-                      {task.type === 'project' ? (
-                        <p style={{ fontSize: '0.75rem', color: 'var(--accent)', margin: 0, marginTop: '0.25rem', fontWeight: 600 }}>
-                          💼 {task.clientName} · <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>{task.stageName}</span>
-                        </p>
-                      ) : (
-                        task.deadline && (
-                          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem', textDecoration: 'line-through' }}>
-                            <Clock size={12} /> Due: {new Date(task.deadline).toLocaleDateString()}
-                          </p>
-                        )
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
