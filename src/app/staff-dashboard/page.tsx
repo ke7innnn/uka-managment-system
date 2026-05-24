@@ -3,19 +3,32 @@
 import { useEffect, useState } from 'react';
 import { 
   getStaffById, isStaffAuthenticated, updateStaffMember, 
-  StaffMember, AttendanceLog, staffCompletionPct, getClients, Client
+  StaffMember, AttendanceLog, staffCompletionPct, getClients, Client,
+  getClientById, updateClient
 } from '@/lib/store';
 import { processReminders, clearStageReminders } from '@/lib/reminders';
 import Link from 'next/link';
 import { MapPin, CheckCircle2, Clock, Check, ArrowRightCircle, ArrowLeftCircle } from 'lucide-react';
 import styles from '@/app/dashboard/staff/[id]/page.module.css';
 
+interface UnifiedTask {
+  id: string;
+  type: 'standalone' | 'project';
+  title: string;
+  completed: boolean;
+  deadline?: string;
+  clientName?: string;
+  clientId?: string;
+  stageName?: string;
+  phaseId?: string;
+}
+
 export default function StaffDashboardHome() {
   const [member, setMember] = useState<StaffMember | null>(null);
   const [locLoading, setLocLoading] = useState(false);
   const [notifPerm, setNotifPerm] = useState<string>('granted');
   const [showIOSBanner, setShowIOSBanner] = useState(false);
-  const [activeStageTasks, setActiveStageTasks] = useState<{ clientName: string; stageName: string; clientId: string; phaseId: string; taskId: string; taskTitle: string; completed: boolean }[]>([]);
+  const [unifiedTasks, setUnifiedTasks] = useState<UnifiedTask[]>([]);
 
   const reload = () => {
     const id = isStaffAuthenticated();
@@ -26,19 +39,38 @@ export default function StaffDashboardHome() {
         // Load active stage tasks assigned to this staff member
         const allClients = getClients();
         processReminders(allClients);
-        const tasks: typeof activeStageTasks = [];
+        
+        // 1. Get standalone tasks
+        const standalone: UnifiedTask[] = (m.tasks || []).map(t => ({
+          id: t.id,
+          type: 'standalone',
+          title: t.title,
+          completed: t.completed,
+          deadline: t.deadline
+        }));
+
+        // 2. Get project tasks assigned to this staff member
+        const projects: UnifiedTask[] = [];
         allClients.forEach(client => {
           client.phases.forEach(phase => {
-            if (phase.status === 'in-progress') {
-              (phase.tasks || []).forEach(task => {
-                if (task.assignedTo && task.assignedTo.toLowerCase().includes(m.name.toLowerCase())) {
-                  tasks.push({ clientName: client.name, stageName: phase.name, clientId: client.id, phaseId: phase.id, taskId: task.id, taskTitle: task.title, completed: task.completed });
-                }
-              });
-            }
+            (phase.tasks || []).forEach(task => {
+              if (task.assignedTo && task.assignedTo.toLowerCase().includes(m.name.toLowerCase())) {
+                projects.push({
+                  id: task.id,
+                  type: 'project',
+                  title: task.title,
+                  completed: task.completed,
+                  clientName: client.name,
+                  clientId: client.id,
+                  stageName: phase.name,
+                  phaseId: phase.id
+                });
+              }
+            });
           });
         });
-        setActiveStageTasks(tasks);
+
+        setUnifiedTasks([...standalone, ...projects]);
       }
     }
   };
@@ -79,14 +111,30 @@ export default function StaffDashboardHome() {
   };
 
   // ── Task Actions ──
-  const toggleTask = (taskId: string) => {
-    const updated = member.tasks.map(t => {
-      if (t.id === taskId) {
-        return { ...t, completed: !t.completed, completedAt: !t.completed ? new Date().toISOString() : undefined };
+  const handleToggleTask = (task: UnifiedTask) => {
+    if (task.type === 'standalone') {
+      const updated = member.tasks.map(t => {
+        if (t.id === task.id) {
+          return { ...t, completed: !t.completed, completedAt: !t.completed ? new Date().toISOString() : undefined };
+        }
+        return t;
+      });
+      updateStaffMember(member.id, { tasks: updated });
+    } else {
+      const client = getClientById(task.clientId!);
+      if (client) {
+        const updatedPhases = client.phases.map(p => {
+          if (p.id === task.phaseId) {
+            return {
+              ...p,
+              tasks: p.tasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t)
+            };
+          }
+          return p;
+        });
+        updateClient(client.id, { phases: updatedPhases });
       }
-      return t;
-    });
-    updateStaffMember(member.id, { tasks: updated });
+    }
     reload();
   };
 
@@ -170,9 +218,12 @@ export default function StaffDashboardHome() {
     reload();
   };
 
-  const pct = staffCompletionPct(member);
-  const pendingTasks = member.tasks.filter(t => !t.completed);
-  const doneTasks = member.tasks.filter(t => t.completed);
+  const total = unifiedTasks.length;
+  const done = unifiedTasks.filter(t => t.completed).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  
+  const pendingTasks = unifiedTasks.filter(t => !t.completed);
+  const doneTasks = unifiedTasks.filter(t => t.completed);
   
   // Today's log
   const todayDateStr = new Date().toISOString().split('T')[0];
@@ -216,35 +267,6 @@ export default function StaffDashboardHome() {
         )}
       </div>
 
-      {/* Active Stage Tasks */}
-      {activeStageTasks.length > 0 && (
-        <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem', borderLeft: '3px solid var(--accent)' }}>
-          <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-            🔥 My Active Stage Tasks
-            <span style={{ background: 'var(--accent-bg)', border: '1px solid var(--border-active)', color: 'var(--accent)', padding: '2px 8px', borderRadius: 12, fontSize: '0.65rem', fontWeight: 700 }}>
-              {activeStageTasks.filter(t => !t.completed).length} pending
-            </span>
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-            {activeStageTasks.map(t => (
-              <div key={`${t.phaseId}-${t.taskId}`} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem', padding: '0.85rem 1rem', background: t.completed ? 'transparent' : 'rgba(200,169,110,0.04)', borderRadius: 10, border: `1px solid ${t.completed ? 'var(--border)' : 'rgba(200,169,110,0.2)'}`, opacity: t.completed ? 0.55 : 1, transition: 'all 0.2s' }}>
-                <div style={{ width: 18, height: 18, borderRadius: 4, border: t.completed ? 'none' : '1.5px solid rgba(200,169,110,0.5)', background: t.completed ? 'var(--green)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                  {t.completed && <Check size={12} strokeWidth={3} color="white" />}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <Link href={`/staff-dashboard/projects/${t.clientId}?tab=phases`} style={{ textDecoration: 'none' }}>
-                    <div style={{ fontSize: '0.88rem', color: 'var(--text)', fontWeight: 500, textDecoration: t.completed ? 'line-through' : 'none', lineHeight: 1.4 }}>{t.taskTitle}</div>
-                  </Link>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: 4 }}>
-                    <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{t.clientName}</span> · {t.stageName}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
         
         {/* Left Column: Tasks Hub */}
@@ -253,7 +275,7 @@ export default function StaffDashboardHome() {
           <div>
             <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Task Progress</h3>
             <div className={styles.pbHeader} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 600 }}>{doneTasks.length} / {member.tasks.length} Completed</span>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 600 }}>{done} / {total} Completed</span>
               <span style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 800 }}>{pct}%</span>
             </div>
             <div className={styles.pbTrack} style={{ height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
@@ -263,7 +285,7 @@ export default function StaffDashboardHome() {
 
           <div>
             <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>My Tasks</h3>
-            {member.tasks.length === 0 ? (
+            {total === 0 ? (
               <div className={styles.empty} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
                 You have no tasks assigned.
               </div>
@@ -271,22 +293,53 @@ export default function StaffDashboardHome() {
               <div className={styles.taskSections} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {pendingTasks.map(task => (
                   <div key={task.id} className={styles.taskItem} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--border)', transition: 'all 0.2s ease' }}>
-                    <button className={styles.taskCheck} onClick={() => toggleTask(task.id)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--border)', background: 'transparent', cursor: 'pointer', flexShrink: 0 }}></button>
+                    <button className={styles.taskCheck} onClick={() => handleToggleTask(task)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--border)', background: 'transparent', cursor: 'pointer', flexShrink: 0 }}></button>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>{task.title}</p>
-                      <p style={{ fontSize: '0.75rem', color: '#f59e0b', margin: 0, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <Clock size={12} /> Due: {new Date(task.deadline).toLocaleDateString()}
-                      </p>
+                      {task.type === 'project' ? (
+                        <Link href={`/staff-dashboard/projects/${task.clientId}?tab=phases`} style={{ textDecoration: 'none' }}>
+                          <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>{task.title}</p>
+                        </Link>
+                      ) : (
+                        <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>{task.title}</p>
+                      )}
+                      {task.type === 'project' ? (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--accent)', margin: 0, marginTop: '0.25rem', fontWeight: 600 }}>
+                          💼 {task.clientName} · <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>{task.stageName}</span>
+                        </p>
+                      ) : (
+                        task.deadline && (
+                          <p style={{ fontSize: '0.75rem', color: '#f59e0b', margin: 0, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <Clock size={12} /> Due: {new Date(task.deadline).toLocaleDateString()}
+                          </p>
+                        )
+                      )}
                     </div>
                   </div>
                 ))}
                 {doneTasks.map(task => (
                   <div key={task.id} className={styles.taskItem} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'transparent', borderRadius: '12px', opacity: 0.5 }}>
-                    <button className={styles.taskCheck} onClick={() => toggleTask(task.id)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: 'none', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                    <button className={styles.taskCheck} onClick={() => handleToggleTask(task)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: 'none', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                       <Check size={14} strokeWidth={3} />
                     </button>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-main)', margin: 0, textDecoration: 'line-through' }}>{task.title}</p>
+                      {task.type === 'project' ? (
+                        <Link href={`/staff-dashboard/projects/${task.clientId}?tab=phases`} style={{ textDecoration: 'none' }}>
+                          <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-main)', margin: 0, textDecoration: 'line-through' }}>{task.title}</p>
+                        </Link>
+                      ) : (
+                        <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-main)', margin: 0, textDecoration: 'line-through' }}>{task.title}</p>
+                      )}
+                      {task.type === 'project' ? (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--accent)', margin: 0, marginTop: '0.25rem', fontWeight: 600 }}>
+                          💼 {task.clientName} · <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>{task.stageName}</span>
+                        </p>
+                      ) : (
+                        task.deadline && (
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem', textDecoration: 'line-through' }}>
+                            <Clock size={12} /> Due: {new Date(task.deadline).toLocaleDateString()}
+                          </p>
+                        )
+                      )}
                     </div>
                   </div>
                 ))}
