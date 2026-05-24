@@ -568,16 +568,18 @@ export default function ClientDetailPage() {
                               </button>
                               <span className={styles.taskTitle}>{task.title}</span>
                               <div className={styles.taskActions}>
-                                <select 
+                                <input 
+                                  list="staff-list"
                                   className={styles.assigneeSelect} 
                                   value={task.assignedTo || ''} 
                                   onChange={(e) => assignTask(phase.id, task.id, e.target.value)}
-                                >
-                                  <option value="">Unassigned</option>
+                                  placeholder="Assignee (e.g. Sadhana)"
+                                />
+                                <datalist id="staff-list">
                                   {staffList.map(s => (
-                                    <option key={s.id} value={s.name}>{s.name}</option>
+                                    <option key={s.id} value={s.name} />
                                   ))}
-                                </select>
+                                </datalist>
                                 <button className={styles.taskDeleteBtn} onClick={() => deleteTask(phase.id, task.id)}><X size={14} /></button>
                               </div>
                             </div>
