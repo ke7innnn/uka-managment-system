@@ -113,49 +113,37 @@ export function processReminders(clients: Client[]): void {
     const uniqueAssignees = [...new Set((phase.tasks || []).map(t => t.assignedTo).filter(Boolean))];
     const assignedTo = uniqueAssignees.join(', ') || 'Team';
 
-    // Determine template
-    const hoursElapsed = (now.getTime() - new Date(schedule.startedAt).getTime()) / (1000 * 60 * 60);
     const deadlinePassed = phase.timeBound ? now > new Date(phase.timeBound + 'T23:59:59') : false;
 
-    let templateKey: string;
+    // If not overdue yet, we do not send any alerts! (Silences warnings before deadline is reached)
+    if (!deadlinePassed) return;
+
+    // Calculate stage duration in days to space reminders proportionally
+    const startDate = phase.startedAt ? new Date(phase.startedAt) : new Date(schedule.startedAt);
+    const deadlineDate = new Date(phase.timeBound + 'T23:59:59');
+    const durationInMs = deadlineDate.getTime() - startDate.getTime();
+    const durationInDays = Math.max(1, Math.round(durationInMs / (1000 * 60 * 60 * 24)));
+    
+    // Proportional interval: divide stage duration by 6 templates (minimum 1 day)
+    const interval = Math.max(1, Math.floor(durationInDays / 6));
+    
+    // Calculate days overdue
+    const msOverdue = now.getTime() - deadlineDate.getTime();
+    const daysOverdue = Math.floor(msOverdue / (1000 * 60 * 60 * 24)) + 1;
+
+    // Escalate milestone index every proportional 'interval' days overdue (cap at 6)
+    // Between milestones, the same warning level will simply repeat daily.
+    const reminderIndex = Math.min(6, Math.floor((daysOverdue - 1) / interval) + 1);
+
+    const templateKey = `reminder-${reminderIndex}`;
     let severity: 'info' | 'warning' | 'urgent' | 'critical';
-
-    if (deadlinePassed) {
-      const deadlineDate = new Date(phase.timeBound + 'T23:59:59');
-      const msOverdue = now.getTime() - deadlineDate.getTime();
-      const daysOverdue = Math.floor(msOverdue / (1000 * 60 * 60 * 24)) + 1;
-
-      if (daysOverdue === 1) {
-        templateKey = 'reminder-1';
-        severity = 'warning';
-      } else if (daysOverdue === 2) {
-        templateKey = 'reminder-2';
-        severity = 'warning';
-      } else if (daysOverdue === 3) {
-        templateKey = 'reminder-3';
-        severity = 'urgent';
-      } else if (daysOverdue === 4) {
-        templateKey = 'reminder-4';
-        severity = 'urgent';
-      } else if (daysOverdue === 5) {
-        templateKey = 'reminder-5';
-        severity = 'critical';
-      } else {
-        templateKey = 'reminder-6';
-        severity = 'critical';
-      }
-    } else if (hoursElapsed >= 72) {
-      templateKey = 'day-3-warning';
-      severity = 'urgent';
-    } else if (hoursElapsed >= 48) {
-      templateKey = 'day-2-moderate';
+    
+    if (reminderIndex === 1 || reminderIndex === 2) {
       severity = 'warning';
-    } else if (hoursElapsed >= 24) {
-      templateKey = 'day-1-light';
-      severity = 'info';
+    } else if (reminderIndex === 3 || reminderIndex === 4) {
+      severity = 'urgent';
     } else {
-      templateKey = 'stage-start';
-      severity = 'info';
+      severity = 'critical';
     }
 
     const msg = buildMessage(templateKey, client.name, phase.name, pendingTasks.length, pendingTasks.slice(0, 5), assignedTo, phase.timeBound);
@@ -173,15 +161,16 @@ export function processReminders(clients: Client[]): void {
     });
 
     // Post workspace message for warnings and above
-    if (severity !== 'info') {
-      const emoji = severity === 'critical' ? '🚨' : severity === 'urgent' ? '🔴' : '⚠️';
-      addWorkspaceMessage(
-        'system',
-        '🤖 System',
-        'Automated',
-        `${emoji} Reminder: ${pendingTasks.length} task(s) still pending in "${phase.name}" for ${client.name}.\nAssigned to: ${assignedTo}.`
-      );
-    }
+    const emoji = severity === 'critical' ? '🚨' : severity === 'urgent' ? '🔴' : '⚠️';
+    
+    // Extract the specific core reminder warning to post in the shared chat channel
+    const alertBody = msg.split('\n\n')[1] || msg;
+    addWorkspaceMessage(
+      'system',
+      '🤖 System',
+      'Automated',
+      `${emoji} REMINDER ${reminderIndex} OVERDUE:\n${alertBody}`
+    );
 
     // Schedule next check in 24h
     schedule.lastFiredAt = now.toISOString();
