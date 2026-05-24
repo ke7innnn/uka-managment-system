@@ -145,34 +145,34 @@ export default function AdminAssistantChat() {
     <div style={{
       position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999,
       width: '100%', maxWidth: '380px', height: '600px', maxHeight: '80vh',
-      background: 'rgba(10, 12, 16, 0.95)', backdropFilter: 'blur(30px)',
+      background: 'var(--bg-raised)', backdropFilter: 'blur(30px)',
       border: '1px solid var(--border)',
       borderRadius: '20px', display: 'flex', flexDirection: 'column',
-      boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05) inset', 
+      boxShadow: '0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px var(--border) inset', 
       overflow: 'hidden', animation: 'fadeIn 0.2s ease-out'
     }}>
       {/* Header */}
       <div style={{
-        padding: '1.25rem', background: 'rgba(15, 18, 25, 0.98)', borderBottom: '1px solid var(--border)',
+        padding: '1.25rem', background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ 
-            width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), #818cf8)',
+            width: '36px', height: '36px', borderRadius: '50%', background: 'var(--grad-accent)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
           }}>
-            <Bot size={20} strokeWidth={2.5} />
+            <Bot size={20} strokeWidth={2.5} style={{ color: 'white' }} />
           </div>
           <div>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>UKA Assistant</h3>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>Real-time Admin Advisor</p>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>UKA Assistant</h3>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Real-time Admin Advisor</p>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <button onClick={handleClearChat} title="Clear Chat History" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem' }}>
+          <button onClick={handleClearChat} title="Clear Chat History" style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem' }}>
             <Trash2 size={18} />
           </button>
-          <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem' }}>
+          <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem' }}>
             <X size={20} />
           </button>
         </div>
@@ -188,17 +188,17 @@ export default function AdminAssistantChat() {
             <div key={idx} style={{
               alignSelf: isModel ? 'flex-start' : 'flex-end',
               maxWidth: '85%',
-              background: isModel ? 'rgba(255,255,255,0.08)' : 'var(--primary)',
-              color: isModel ? 'var(--text-main)' : 'white',
+              background: isModel ? 'var(--bg-hover)' : 'var(--primary)',
+              color: isModel ? 'var(--text)' : '#ffffff',
               padding: '0.85rem 1rem',
               borderRadius: '16px',
               borderBottomLeftRadius: isModel ? '4px' : '16px',
               borderBottomRightRadius: isModel ? '16px' : '4px',
-              border: isModel ? '1px solid rgba(255,255,255,0.1)' : 'none',
+              border: isModel ? '1px solid var(--border)' : 'none',
               fontSize: '0.9rem',
               lineHeight: 1.5,
               whiteSpace: 'pre-wrap',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
             }}>
               {renderFormattedText(msg.content)}
             </div>
@@ -206,7 +206,7 @@ export default function AdminAssistantChat() {
         })}
         {isLoading && (
           <div style={{
-            alignSelf: 'flex-start', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)',
+            alignSelf: 'flex-start', background: 'var(--bg-hover)', color: 'var(--text-secondary)',
             padding: '0.85rem 1rem', borderRadius: '16px', borderBottomLeftRadius: '4px', border: '1px solid var(--border)',
             display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem'
           }}>
@@ -217,7 +217,7 @@ export default function AdminAssistantChat() {
       </div>
 
       {/* Input Area */}
-      <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', background: 'rgba(15, 18, 25, 0.98)' }}>
+      <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', background: 'var(--bg-elevated)' }}>
         <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.5rem' }}>
           <input 
             type="text" 
@@ -226,8 +226,8 @@ export default function AdminAssistantChat() {
             placeholder={cooldown ? "Cooling down for 10 seconds..." : "Ask UKA a question..."}
             disabled={isLoading || cooldown}
             style={{
-              flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              padding: '0.85rem 1.1rem', borderRadius: '24px', color: 'var(--text-main)',
+              flex: 1, background: 'var(--bg)', border: '1px solid var(--border)',
+              padding: '0.85rem 1.1rem', borderRadius: '24px', color: 'var(--text)',
               fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s',
               opacity: cooldown ? 0.5 : 1
             }}
@@ -243,7 +243,7 @@ export default function AdminAssistantChat() {
               transition: 'background 0.2s'
             }}
           >
-            <Send size={18} />
+            <Send size={18} style={{ color: 'white' }} />
           </button>
         </form>
       </div>
