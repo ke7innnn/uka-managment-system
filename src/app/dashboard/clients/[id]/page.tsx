@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe } from '@/lib/store';
+import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
 import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload } from 'lucide-react';
 import styles from './page.module.css';
@@ -43,6 +43,11 @@ export default function ClientDetailPage() {
   const [newPhaseName, setNewPhaseName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'documents'>('overview');
+  const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [openStages, setOpenStages] = useState<Record<string, boolean>>({});
+  const [editingTimeBound, setEditingTimeBound] = useState<string | null>(null);
+  const [timeBoundDraft, setTimeBoundDraft] = useState('');
+  const [newTaskDraft, setNewTaskDraft] = useState<Record<string, string>>({});
   // Rename state: docId -> draft name
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
@@ -106,6 +111,7 @@ export default function ClientDetailPage() {
     const c = getClientById(params.id);
     if (!c) { router.replace('/dashboard/clients'); return; }
     setClient(c);
+    setStaffList(getStaff());
   };
 
   useEffect(() => { reload(); }, [params.id]);
@@ -124,32 +130,110 @@ export default function ClientDetailPage() {
   const progress = client.phases.length > 0 ? Math.round((donePhases / client.phases.length) * 100) : 0;
 
   // ── Phase actions ──────────────────────────────────────────────────────────
-  const addPhase = () => {
+  const addStage = () => {
     const name = newPhaseName.trim();
     if (!name) return;
-    const phase: Phase = {
+    const stage: Phase = {
       id: crypto.randomUUID(),
       name,
-      completed: false,
+      status: 'not-started',
       order: client.phases.length,
+      tasks: [],
     };
-    updateClient(client.id, { phases: [...client.phases, phase] });
+    updateClient(client.id, { phases: [...client.phases, stage] });
     setNewPhaseName('');
     reload();
   };
 
-  const togglePhase = (phaseId: string) => {
+  const deleteStage = (phaseId: string) => {
+    const updated = client.phases.filter((p) => p.id !== phaseId);
+    updateClient(client.id, { phases: updated });
+    reload();
+  };
+
+  const startStage = (phaseId: string) => {
     const updated = client.phases.map((p) =>
-      p.id === phaseId ? { ...p, completed: !p.completed } : p
+      p.id === phaseId ? { ...p, status: 'in-progress' as const, startedAt: new Date().toISOString() } : p
     );
     updateClient(client.id, { phases: updated });
     reload();
   };
 
-  const deletePhase = (phaseId: string) => {
-    const updated = client.phases.filter((p) => p.id !== phaseId);
+  const markStageComplete = (phaseId: string) => {
+    const updated = client.phases.map((p) =>
+      p.id === phaseId ? { ...p, status: 'completed' as const } : p
+    );
     updateClient(client.id, { phases: updated });
     reload();
+  };
+
+  const saveTimeBound = (phaseId: string) => {
+    const updated = client.phases.map((p) =>
+      p.id === phaseId ? { ...p, timeBound: timeBoundDraft } : p
+    );
+    updateClient(client.id, { phases: updated });
+    setEditingTimeBound(null);
+    reload();
+  };
+
+  const addTask = (phaseId: string) => {
+    const title = (newTaskDraft[phaseId] || '').trim();
+    if (!title) return;
+    const updated = client.phases.map((p) => {
+      if (p.id === phaseId) {
+        return {
+          ...p,
+          tasks: [...p.tasks, { id: crypto.randomUUID(), title, completed: false, assignedTo: '' }]
+        };
+      }
+      return p;
+    });
+    updateClient(client.id, { phases: updated });
+    setNewTaskDraft(prev => ({ ...prev, [phaseId]: '' }));
+    reload();
+  };
+
+  const toggleTask = (phaseId: string, taskId: string) => {
+    const updated = client.phases.map((p) => {
+      if (p.id === phaseId) {
+        return {
+          ...p,
+          tasks: p.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t)
+        };
+      }
+      return p;
+    });
+    updateClient(client.id, { phases: updated });
+    reload();
+  };
+
+  const assignTask = (phaseId: string, taskId: string, staffName: string) => {
+    const updated = client.phases.map((p) => {
+      if (p.id === phaseId) {
+        return {
+          ...p,
+          tasks: p.tasks.map(t => t.id === taskId ? { ...t, assignedTo: staffName } : t)
+        };
+      }
+      return p;
+    });
+    updateClient(client.id, { phases: updated });
+    reload();
+  };
+  
+  const deleteTask = (phaseId: string, taskId: string) => {
+    const updated = client.phases.map((p) => {
+      if (p.id === phaseId) {
+        return { ...p, tasks: p.tasks.filter(t => t.id !== taskId) };
+      }
+      return p;
+    });
+    updateClient(client.id, { phases: updated });
+    reload();
+  };
+
+  const toggleStageAccordion = (phaseId: string) => {
+    setOpenStages(prev => ({ ...prev, [phaseId]: !prev[phaseId] }));
   };
 
   // ── Document actions ───────────────────────────────────────────────────────
@@ -396,51 +480,126 @@ export default function ClientDetailPage() {
           <div className={styles.addPhaseRow}>
             <input
               type="text"
-              placeholder="Phase name (e.g. 3D Render, Colour Graded…)"
+              placeholder="Stage name (e.g. Stage 5 - Final Review)"
               value={newPhaseName}
               onChange={(e) => setNewPhaseName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addPhase()}
+              onKeyDown={(e) => e.key === 'Enter' && addStage()}
               className={styles.phaseInput}
-              id="new-phase-input"
             />
-            <button className={styles.addPhaseBtn} onClick={addPhase}>+ Add Phase</button>
+            <button className={styles.addPhaseBtn} onClick={addStage}>+ Add Stage</button>
           </div>
 
           {client.phases.length === 0 ? (
-            <div className={styles.emptyState}>No phases added yet. Add one above to track progress.</div>
+            <div className={styles.emptyState}>No stages added yet. Add one above or use a template.</div>
           ) : (
-            <div className={styles.phaseList}>
-              {client.phases.map((phase, idx) => (
-                <div
-                  key={phase.id}
-                  className={`${styles.phaseItem} ${phase.completed ? styles.phaseCompleted : ''}`}
-                >
-                  <div className={styles.phaseLeft}>
-                    <span className={styles.phaseNumber}>{idx + 1}</span>
-                    <button
-                      className={`${styles.phaseCheck} ${phase.completed ? styles.checked : ''}`}
-                      onClick={() => togglePhase(phase.id)}
-                      id={`phase-check-${phase.id}`}
-                      title={phase.completed ? 'Mark as incomplete' : 'Mark as complete'}
-                    >
-                      {phase.completed && <Check size={12} strokeWidth={2.5} />}
-                    </button>
-                    <span className={styles.phaseName}>{phase.name}</span>
+            <div className={styles.stageList}>
+              {client.phases.map((phase) => {
+                const isOpen = openStages[phase.id];
+                const totalTasks = phase.tasks?.length || 0;
+                const doneTasks = phase.tasks?.filter(t => t.completed).length || 0;
+                const isCompleted = phase.status === 'completed';
+
+                return (
+                  <div key={phase.id} className={`${styles.stageSection} ${isOpen ? styles.open : ''} ${isCompleted ? styles.completed : ''}`}>
+                    <div className={styles.stageHeader} onClick={() => toggleStageAccordion(phase.id)}>
+                      <div className={styles.stageHeaderLeft}>
+                        <div className={styles.stageHeaderTitle}>
+                          <span className={styles.stageTitleText}>{phase.name}</span>
+                          {isCompleted ? (
+                            <span className={styles.stageDoneBadge}><Check size={12} style={{ marginRight: 4 }} /> Done</span>
+                          ) : (
+                            <span className={styles.stageProgressBadge}>{doneTasks}/{totalTasks} Tasks</span>
+                          )}
+                        </div>
+                        <div className={styles.stageMeta}>
+                          {phase.status === 'in-progress' && <span className={styles.statusBadgeActive}>In Progress</span>}
+                          {phase.status === 'not-started' && <span className={styles.statusBadgePending}>Not Started</span>}
+                          <span className={styles.timeBoundContainer} onClick={e => e.stopPropagation()}>
+                            {editingTimeBound === phase.id ? (
+                              <div className={styles.timeBoundEdit}>
+                                <input 
+                                  autoFocus
+                                  value={timeBoundDraft} 
+                                  onChange={e => setTimeBoundDraft(e.target.value)}
+                                  placeholder="e.g. 5 working days"
+                                  className={styles.timeBoundInput}
+                                  onKeyDown={e => { if (e.key === 'Enter') saveTimeBound(phase.id); if (e.key === 'Escape') setEditingTimeBound(null); }}
+                                />
+                                <button onClick={() => saveTimeBound(phase.id)} className={styles.tbSave}><Check size={12} /></button>
+                                <button onClick={() => setEditingTimeBound(null)} className={styles.tbCancel}><X size={12} /></button>
+                              </div>
+                            ) : (
+                              <div className={styles.timeBoundDisplay}>
+                                <Clock size={12} /> 
+                                <span>{phase.timeBound || 'No deadline set'}</span>
+                                <button onClick={() => { setEditingTimeBound(phase.id); setTimeBoundDraft(phase.timeBound || ''); }} className={styles.tbEditBtn}>
+                                  <Pencil size={10} />
+                                </button>
+                              </div>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                      <div className={styles.stageHeaderRight}>
+                        <button className={styles.stageDeleteBtn} onClick={(e) => { e.stopPropagation(); deleteStage(phase.id); }} title="Delete Stage"><Trash2 size={14} /></button>
+                        <ChevronDown size={18} className={styles.stageChevron} />
+                      </div>
+                    </div>
+
+                    {isOpen && (
+                      <div className={styles.stageBody}>
+                        <div className={styles.stageControls}>
+                          {phase.status === 'not-started' && (
+                            <button className={styles.startStageBtn} onClick={() => startStage(phase.id)}>Start Stage</button>
+                          )}
+                          {phase.status === 'in-progress' && (
+                            <button className={styles.completeStageBtn} onClick={() => markStageComplete(phase.id)}><CheckCircle2 size={14} /> Mark Stage Complete</button>
+                          )}
+                          {phase.startedAt && (
+                            <span className={styles.startedAtText}>Started: {new Date(phase.startedAt).toLocaleDateString()}</span>
+                          )}
+                        </div>
+
+                        <div className={styles.taskList}>
+                          {phase.tasks?.map(task => (
+                            <div key={task.id} className={`${styles.taskItem} ${task.completed ? styles.taskDone : ''}`}>
+                              <button className={styles.taskCheck} onClick={() => toggleTask(phase.id, task.id)}>
+                                {task.completed && <Check size={12} strokeWidth={3} />}
+                              </button>
+                              <span className={styles.taskTitle}>{task.title}</span>
+                              <div className={styles.taskActions}>
+                                <select 
+                                  className={styles.assigneeSelect} 
+                                  value={task.assignedTo || ''} 
+                                  onChange={(e) => assignTask(phase.id, task.id, e.target.value)}
+                                >
+                                  <option value="">Unassigned</option>
+                                  {staffList.map(s => (
+                                    <option key={s.id} value={s.name}>{s.name}</option>
+                                  ))}
+                                </select>
+                                <button className={styles.taskDeleteBtn} onClick={() => deleteTask(phase.id, task.id)}><X size={14} /></button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className={styles.addTaskRow}>
+                          <input 
+                            type="text" 
+                            placeholder="Add new sub-task..."
+                            value={newTaskDraft[phase.id] || ''}
+                            onChange={e => setNewTaskDraft(prev => ({ ...prev, [phase.id]: e.target.value }))}
+                            onKeyDown={e => e.key === 'Enter' && addTask(phase.id)}
+                            className={styles.addTaskInput}
+                          />
+                          <button className={styles.addTaskBtn} onClick={() => addTask(phase.id)}>Add Task</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className={styles.phaseRight}>
-                    <span className={styles.phaseStatus}>
-                      {phase.completed ? <><CheckCircle2 size={13} strokeWidth={2} style={{ marginRight: 4, verticalAlign: 'middle' }} />Done</> : <><Clock size={13} strokeWidth={2} style={{ marginRight: 4, verticalAlign: 'middle' }} />Pending</>}
-                    </span>
-                    <button
-                      className={styles.phaseDelete}
-                      onClick={() => deletePhase(phase.id)}
-                      title="Remove phase"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

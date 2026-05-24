@@ -1,11 +1,22 @@
 // ─── Types ────────────────────────────────────────────────────────────────────
 import { pushClientsToSupabase, pushStaffToSupabase } from './supabaseSync';
 
+export interface PhaseTask {
+  id: string;
+  title: string;
+  completed: boolean;
+  assignedTo: string; // Staff ID or Name
+}
+
 export interface Phase {
   id: string;
   name: string;
-  completed: boolean;
+  status: 'not-started' | 'in-progress' | 'completed';
+  timeBound?: string;
+  startedAt?: string;
   order: number;
+  tasks: PhaseTask[];
+  completed?: boolean; // legacy support
 }
 
 export interface Document {
@@ -45,7 +56,16 @@ export function getClients(): Client[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const clients: Client[] = raw ? JSON.parse(raw) : [];
+    // Data Migration for old Phase objects
+    return clients.map(client => ({
+      ...client,
+      phases: client.phases.map(p => ({
+        ...p,
+        status: p.status || (p.completed ? 'completed' : 'not-started'),
+        tasks: p.tasks || []
+      }))
+    }));
   } catch {
     return [];
   }
@@ -62,12 +82,89 @@ export function getClientById(id: string): Client | undefined {
   return getClients().find((c) => c.id === id);
 }
 
+export const DEFAULT_PHASES_TEMPLATE = [
+  {
+    name: "Stage 1 — File Preparation",
+    status: "not-started" as const,
+    tasks: [
+      { title: "Filing with sticker and basic papers (7/12, physical survey with surroundings and gutbook superimposed for D.P, gutbook, site photos, KYC questionnaire, Architect Appointment Letter)", assignedTo: "Sadhana" },
+      { title: "Give entire paperwork checklist of approval to client", assignedTo: "Sadhana" },
+      { title: "Upload project on website", assignedTo: "Sadhana" },
+      { title: "Give it Office UIN and form WhatsApp group", assignedTo: "Sadhana" },
+      { title: "Send summarized auto prompt to client and boss on group", assignedTo: "Sadhana" },
+      { title: "Upload basic plot on DP marking, CRZ, Wetland, Eco Sensitive Zone Corridor, Heritage, KMZ images on website and give remark", assignedTo: "Vijay" },
+      { title: "Check whether additional NOCs required (Forest, Railway, Environmental Clearance, Highway Access, etc.) and mention remark accordingly", assignedTo: "Vijay" },
+      { title: "Place order for 2 sets of TILR/NOCs — mention date and responsible person's name", assignedTo: "Vijay" },
+      { title: "Place order for 2 sets of all revenue papers — mention date and responsible person's name", assignedTo: "Vijay" },
+      { title: "Send summarized auto prompt to document provider, client and boss on group", assignedTo: "Vijay" }
+    ]
+  },
+  {
+    name: "Stage 2 — Paper Procurement",
+    status: "not-started" as const,
+    tasks: [
+      { title: "Prepare 1 office file copy and 1 VVCMC file copy", assignedTo: "Sadhana" },
+      { title: "Complete balance typing as per entire checklist", assignedTo: "Sadhana" },
+      { title: "Finalise the file and upload on web", assignedTo: "Sadhana" },
+      { title: "Forward to Vrushali Madam for online inward", assignedTo: "Sadhana" },
+      { title: "Forward to Vijay Sir for Legal and Tree NOC (1 set VVCMC hard copy)", assignedTo: "Sadhana" },
+      { title: "Fast track TILR with client", assignedTo: "Sadhana" },
+      { title: "Produce rough challan estimate", assignedTo: "Sadhana" },
+      { title: "Receive file forwarded for online inward", assignedTo: "Vrushali" },
+      { title: "Process online inward of the file", assignedTo: "Vrushali" }
+    ]
+  },
+  {
+    name: "Stage 3 — Legal / Tree NOC",
+    status: "not-started" as const,
+    tasks: [
+      { title: "Mention compliances of legal department and tree department scrutiny periodically", assignedTo: "Vijay" },
+      { title: "Confirm and upload final TILR document on web", assignedTo: "Vijay" },
+      { title: "Upload final legal and tree NOC signed noting", assignedTo: "Vijay" },
+      { title: "Upload DP marking", assignedTo: "Vijay" },
+      { title: "Prepare and upload offline drawing", assignedTo: "Vrushali" },
+      { title: "Ready online clear report and drawing and upload", assignedTo: "Vrushali" },
+      { title: "Complete final offline docket as per checklist", assignedTo: "Vrushali" },
+      { title: "Mention issues/clarifications to Nihal on live chat window (no verbal communication)", assignedTo: "Vrushali" },
+      { title: "Acknowledge that offline docket has been successfully received", assignedTo: "Nihal" },
+      { title: "Ensure that file is inwarded", assignedTo: "Nihal" },
+      { title: "Upload covering letter with online/offline number identification on the site", assignedTo: "Nihal" },
+      { title: "Attach final signed drawing from client on site for further drafting by Vrushali Madam", assignedTo: "Uday" },
+      { title: "Attach service drawings and EE report", assignedTo: "Crystal" }
+    ]
+  },
+  {
+    name: "Stage 4 — Upon Obtaining Permission",
+    status: "not-started" as const,
+    tasks: [
+      { title: "Update the master file sheet", assignedTo: "Vrushali" },
+      { title: "Upload all scanning of orders and blueprints", assignedTo: "Vrushali" },
+      { title: "Handle Rera letters / on-site handling", assignedTo: "Vrushali" },
+      { title: "Handle Rera letters", assignedTo: "Crystal" },
+      { title: "On-site handling", assignedTo: "Crystal" },
+      { title: "Provide images of notings upon issue of online permission", assignedTo: "Ganesh" }
+    ]
+  }
+];
+
 export function addClient(data: Omit<Client, 'id' | 'createdAt'>): Client {
   const clients = getClients();
   const client: Client = {
     ...data,
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
+    phases: data.phases && data.phases.length > 0 ? data.phases : DEFAULT_PHASES_TEMPLATE.map((stage, idx) => ({
+      id: crypto.randomUUID(),
+      name: stage.name,
+      status: stage.status,
+      order: idx,
+      tasks: stage.tasks.map(t => ({
+        id: crypto.randomUUID(),
+        title: t.title,
+        completed: false,
+        assignedTo: t.assignedTo
+      }))
+    }))
   };
   clients.push(client);
   saveClients(clients);

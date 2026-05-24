@@ -40,7 +40,11 @@ export async function pullFromSupabase() {
       createdAt: c.created_at,
       tags: c.tags || [],
       phases: (c.phases || []).map((p: any) => ({
-        id: p.id, name: p.name, completed: p.completed, order: p.order
+        id: p.id, name: p.name, completed: p.completed, order: p.order,
+        status: p.status || (p.completed ? 'completed' : 'not-started'),
+        timeBound: p.time_bound || undefined,
+        startedAt: p.started_at || undefined,
+        tasks: typeof p.tasks === 'string' ? JSON.parse(p.tasks) : (p.tasks || [])
       })),
       documents: (c.documents || []).map((d: any) => ({
         id: d.id, name: d.name, url: d.url, uploadedAt: d.uploaded_at,
@@ -154,7 +158,17 @@ export async function pushClientsToSupabase(clients: Client[]) {
 
   clients.forEach(c => {
     c.phases.forEach(p => {
-      phaseRows.push({ id: p.id, client_id: c.id, name: p.name, completed: p.completed, order: p.order });
+      phaseRows.push({ 
+        id: p.id, 
+        client_id: c.id, 
+        name: p.name, 
+        completed: p.status === 'completed' || p.completed, 
+        order: p.order,
+        status: p.status,
+        time_bound: p.timeBound || null,
+        started_at: p.startedAt || null,
+        tasks: JSON.stringify(p.tasks || [])
+      });
     });
     c.documents.forEach(d => {
       docRows.push({

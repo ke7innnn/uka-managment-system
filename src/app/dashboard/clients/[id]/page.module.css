@@ -265,92 +265,322 @@
 }
 .addPhaseBtn:hover { background: var(--primary-hover); }
 
-.phaseList {
+/* Stages & Tasks */
+.stageList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stageSection {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.stageSection.open {
+  border-color: rgba(220, 190, 120, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+.stageSection.completed {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.stageHeader {
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: var(--surface-hover);
+  transition: background 0.2s;
+}
+.stageHeader:hover {
+  background: var(--surface-active);
+}
+
+.stageHeaderLeft {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.phaseItem {
+.stageHeaderTitle {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background: var(--surface);
+  gap: 0.75rem;
+}
+
+.stageTitleText {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.stageProgressBadge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  background: rgba(220, 190, 120, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(220, 190, 120, 0.2);
+  font-family: monospace;
+}
+
+.stageDoneBadge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+}
+
+.stageMeta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.statusBadgeActive {
+  color: var(--warning);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.statusBadgePending {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.timeBoundContainer {
+  display: flex;
+  align-items: center;
+}
+.timeBoundDisplay {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tbEditBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+}
+.tbEditBtn:hover {
+  color: var(--text-main);
+  background: var(--surface-active);
+}
+
+.timeBoundEdit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.timeBoundInput {
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  transition: all 0.2s ease;
+  color: var(--text-main);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+.tbSave { background: var(--success); color: white; border: none; border-radius: 4px; cursor: pointer; padding: 2px; }
+.tbCancel { background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer; padding: 2px; }
+
+.stageHeaderRight {
+  display: flex;
+  align-items: center;
   gap: 1rem;
 }
 
-.phaseItem:hover { border-color: rgba(99, 102, 241, 0.3); }
-
-.phaseCompleted {
-  background: rgba(16, 185, 129, 0.05);
-  border-color: rgba(16, 185, 129, 0.2);
-}
-
-.phaseLeft { display: flex; align-items: center; gap: 0.75rem; }
-
-.phaseNumber {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface-hover);
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
+.stageChevron {
   color: var(--text-muted);
-  flex-shrink: 0;
+  transition: transform 0.3s;
+}
+.stageSection.open .stageChevron {
+  transform: rotate(180deg);
 }
 
-.phaseCheck {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  border: 2px solid var(--border);
+.stageDeleteBtn {
   background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+.stageDeleteBtn:hover {
+  color: var(--danger);
+  background: rgba(244, 63, 94, 0.1);
+}
+
+.stageBody {
+  padding: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.stageControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.startStageBtn {
+  background: rgba(220, 190, 120, 0.15);
+  border: 1px solid rgba(220, 190, 120, 0.4);
+  color: var(--primary);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.startStageBtn:hover { background: rgba(220, 190, 120, 0.25); }
+
+.completeStageBtn {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: var(--success);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.completeStageBtn:hover { background: rgba(16, 185, 129, 0.25); }
+
+.startedAtText {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+}
+
+.taskItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+.taskItem:last-child {
+  border-bottom: none;
+}
+.taskItem:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.taskItem.taskDone {
+  opacity: 0.6;
+}
+.taskItem.taskDone .taskTitle {
+  text-decoration: line-through;
+}
+
+.taskCheck {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
-  color: white;
-  flex-shrink: 0;
+  color: var(--bg);
+  margin-top: 2px;
 }
-
-.checked {
+.taskItem.taskDone .taskCheck {
   background: var(--success);
   border-color: var(--success);
 }
 
-.phaseName {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-main);
-}
-
-.phaseCompleted .phaseName {
-  text-decoration: line-through;
-  color: var(--text-muted);
-}
-
-.phaseRight { display: flex; align-items: center; gap: 1rem; }
-
-.phaseStatus { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
-
-.phaseDelete {
-  color: var(--text-muted);
+.taskTitle {
+  flex: 1;
   font-size: 0.9rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  transition: all 0.15s;
+  color: var(--text-main);
+  line-height: 1.4;
 }
-.phaseDelete:hover { color: #fca5a5; background: rgba(239,68,68,0.1); }
+
+.taskActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.assigneeSelect {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+}
+.assigneeSelect:focus {
+  border-color: var(--primary);
+}
+
+.taskDeleteBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.taskDeleteBtn:hover { color: var(--danger); }
+
+.addTaskRow {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border);
+}
+.addTaskInput {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+}
+.addTaskInput:focus { border-color: var(--primary); }
+
+.addTaskBtn {
+  background: var(--surface-active);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 0 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.addTaskBtn:hover { background: var(--border); }
 
 /* Documents */
 .uploadRow {
