@@ -4,6 +4,7 @@ import { useAuthGuard } from '@/hooks/useAuthGuard';
 import Sidebar from '@/components/Sidebar';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import AdminAssistantChat from '@/components/AdminAssistantChat';
+import WorkspaceChatWidget from '@/components/WorkspaceChatWidget';
 import styles from './layout.module.css';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -17,6 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className={styles.main}>{children}</main>
       <MobileBottomNav />
       <AdminAssistantChat />
+      <WorkspaceChatWidget />
     </div>
   );
 }

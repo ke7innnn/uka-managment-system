@@ -3,6 +3,7 @@
 import useStaffGuard from '@/hooks/useStaffGuard';
 import StaffSidebar from '@/components/StaffSidebar';
 import StaffMobileBottomNav from '@/components/StaffMobileBottomNav';
+import WorkspaceChatWidget from '@/components/WorkspaceChatWidget';
 import styles from '@/app/dashboard/layout.module.css';
 
 export default function StaffDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -17,6 +18,7 @@ export default function StaffDashboardLayout({ children }: { children: React.Rea
       </div>
       <main className={styles.main}>{children}</main>
       <StaffMobileBottomNav />
+      <WorkspaceChatWidget />
     </div>
   );
 }

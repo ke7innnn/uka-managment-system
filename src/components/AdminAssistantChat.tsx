@@ -126,7 +126,7 @@ export default function AdminAssistantChat() {
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999,
-          width: '60px', height: '60px', borderRadius: '50%',
+          width: '150px', height: '150px', borderRadius: '50%',
           background: 'linear-gradient(135deg, var(--primary), #818cf8)',
           boxShadow: '0 8px 32px rgba(99,102,241,0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -136,7 +136,7 @@ export default function AdminAssistantChat() {
         onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
         onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
       >
-        <Bot size={28} strokeWidth={2.5} />
+        <Bot size={70} strokeWidth={2.5} />
       </button>
     );
   }
