@@ -52,9 +52,22 @@ export default function ClientDetailPage() {
   const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
   const [draggedDocId, setDraggedDocId] = useState<string | null>(null);
   const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
+  const [uploadTarget, setUploadTarget] = useState<{ folderId?: string; subfolderId?: string } | null>(null);
 
   const toggleFolder = (folderId: string) => {
     setOpenFolders(prev => ({ ...prev, [folderId]: !prev[folderId] }));
+  };
+
+  const triggerFolderUpload = (e: React.MouseEvent, folderId: string) => {
+    e.stopPropagation();
+    setUploadTarget({ folderId });
+    fileInputRef.current?.click();
+  };
+
+  const triggerSubfolderUpload = (e: React.MouseEvent, folderId: string, subfolderId: string) => {
+    e.stopPropagation();
+    setUploadTarget({ folderId, subfolderId });
+    fileInputRef.current?.click();
   };
 
   const onDragStart = (e: React.DragEvent, docId: string) => {
@@ -188,7 +201,10 @@ export default function ClientDetailPage() {
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    processFiles(files);
+    if (files.length > 0) {
+      processFiles(files, uploadTarget?.folderId, uploadTarget?.subfolderId);
+    }
+    setUploadTarget(null);
     e.target.value = '';
   };
 
@@ -438,7 +454,10 @@ export default function ClientDetailPage() {
             onDragOver={(e) => onDragOver(e, 'main')}
             onDragLeave={onDragLeave}
             onDrop={(e) => onDrop(e, undefined, undefined)}
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => {
+              setUploadTarget(null);
+              fileInputRef.current?.click();
+            }}
           >
             <CloudUpload className={styles.dropZoneIcon} size={26} strokeWidth={1.5} style={{ margin: '0 auto' }} />
             Drag &amp; drop files here, or <strong style={{ color: 'var(--primary)' }}>click to select</strong> — then assign to a folder below
@@ -490,7 +509,16 @@ export default function ClientDetailPage() {
                       <div className={styles.folderName}>{folder.name}</div>
                       <div className={styles.folderMeta}>{folder.code} &nbsp;&middot;&nbsp; <span>{totalDocs}</span> files</div>
                     </div>
-                    <ChevronDown className={styles.folderToggle} size={16} strokeWidth={2} />
+                    <div className={styles.folderHeaderActions} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className={styles.folderActionBtn}
+                        onClick={(e) => triggerFolderUpload(e, folder.id)}
+                        title={`Upload file directly to ${folder.name}`}
+                      >
+                        <Upload size={13} />
+                      </button>
+                      <ChevronDown className={styles.folderToggle} size={16} strokeWidth={2} onClick={() => toggleFolder(folder.id)} />
+                    </div>
                   </div>
                   
                   <div className={styles.folderBody}>
@@ -506,24 +534,43 @@ export default function ClientDetailPage() {
                           >
                             <FolderOpen className={styles.subfolderIcon} size={14} strokeWidth={1.5} />
                             <span className={styles.subfolderName}>{sub.name}</span>
-                            <span className={styles.subfolderCode}>{sub.code}</span>
+                            
+                            <div className={styles.subfolderActions} onClick={(e) => e.stopPropagation()}>
+                              <span className={styles.subfolderCode}>{sub.code}</span>
+                              <button
+                                className={styles.subfolderActionBtn}
+                                onClick={(e) => triggerSubfolderUpload(e, folder.id, sub.id)}
+                                title={`Upload file directly to ${sub.name}`}
+                              >
+                                <Upload size={11} />
+                              </button>
+                            </div>
                           </div>
                           {subDocs.length > 0 && (
                             <div className={styles.subfolderFiles}>
                               {subDocs.map(doc => (
                                 <div
                                   key={doc.id}
-                                  className={styles.fileChip}
+                                  className={styles.fileRow}
                                   draggable
                                   onDragStart={(e) => onDragStart(e, doc.id)}
                                 >
-                                  <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
-                                  <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
-                                  <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
-                                  <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
-                                    <Download className={styles.fileChipDownload} size={14} />
-                                  </a>
-                                  <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} />
+                                  <div className={styles.fileRowLeft}>
+                                    <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                                    <span className={styles.fileRowName} title={doc.name}>{doc.name}</span>
+                                    <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
+                                  </div>
+                                  <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                                    <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                      <Eye size={13} />
+                                    </button>
+                                    <a href={doc.url} download={doc.name} className={styles.actionBtn} title="Download">
+                                      <Download size={13} />
+                                    </a>
+                                    <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
+                                      <Trash2 size={13} />
+                                    </button>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -545,17 +592,26 @@ export default function ClientDetailPage() {
                       {folderDocs.filter(d => !d.subfolder).map(doc => (
                         <div
                           key={doc.id}
-                          className={styles.fileChip}
+                          className={styles.fileRow}
                           draggable
                           onDragStart={(e) => onDragStart(e, doc.id)}
                         >
-                          <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
-                          <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
-                          <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
-                          <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
-                            <Download className={styles.fileChipDownload} size={14} />
-                          </a>
-                          <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} />
+                          <div className={styles.fileRowLeft}>
+                            <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                            <span className={styles.fileRowName} title={doc.name}>{doc.name}</span>
+                            <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
+                          </div>
+                          <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                            <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                              <Eye size={13} />
+                            </button>
+                            <a href={doc.url} download={doc.name} className={styles.actionBtn} title="Download">
+                              <Download size={13} />
+                            </a>
+                            <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>

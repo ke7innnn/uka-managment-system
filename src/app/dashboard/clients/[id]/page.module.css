@@ -524,212 +524,453 @@
 /* ── Structured Document Storage ── */
 
 .dropZone {
-  border: 1.5px dashed rgba(124, 92, 252, 0.4);
-  border-radius: 12px;
-  padding: 22px;
+  border: 1.5px dashed rgba(200, 169, 110, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 24px;
   margin-bottom: 24px;
   text-align: center;
-  background: rgba(124, 92, 252, 0.05);
+  background: rgba(200, 169, 110, 0.04);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
+
+.dropZone:hover {
+  border-color: rgba(200, 169, 110, 0.6);
+  background: rgba(200, 169, 110, 0.07);
+}
+
 .dropZone.dragOver {
-  border-color: rgba(124, 92, 252, 1);
-  background: rgba(124, 92, 252, 0.15);
-  color: var(--text-main);
+  border-color: var(--primary);
+  background: rgba(200, 169, 110, 0.12);
+  color: var(--text);
+  box-shadow: 0 0 20px rgba(200, 169, 110, 0.08);
 }
+
 .dropZoneIcon {
-  margin-bottom: 8px;
-  color: rgba(124, 92, 252, 1);
+  margin-bottom: 10px;
+  color: var(--primary);
+  filter: drop-shadow(0 2px 8px rgba(200, 169, 110, 0.15));
 }
+
 .stagedFiles {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 8px;
+  margin-top: 16px;
 }
 
 .foldersGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 16px;
 }
 
 .folderCard {
-  background: var(--surface);
+  background: var(--bg-raised);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: border-color 0.2s, transform 0.15s;
+  transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
-.folderCard:hover { border-color: rgba(124, 92, 252, 0.4); }
+
+.folderCard:hover {
+  border-color: rgba(200, 169, 110, 0.25);
+  box-shadow: 0 6px 24px rgba(200, 169, 110, 0.04);
+}
+
 .folderCard.dropTarget {
-  border-color: rgba(124, 92, 252, 1);
-  background: var(--surface-hover);
-  transform: scale(1.01);
+  border-color: var(--primary);
+  background: var(--bg-hover);
+  transform: translateY(-2px) scale(1.005);
+  box-shadow: 0 8px 32px rgba(200, 169, 110, 0.08);
 }
 
 .folderHeader {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 16px 18px;
   cursor: pointer;
   border-bottom: 1px solid transparent;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
   user-select: none;
 }
-.folderHeader:hover { border-bottom-color: var(--border); }
+
+.folderHeader:hover {
+  background: var(--bg-hover);
+  border-bottom-color: var(--border);
+}
 
 .folderIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: rgba(124, 92, 252, 0.1);
-  border: 1px solid rgba(124, 92, 252, 0.3);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  background: rgba(200, 169, 110, 0.08);
+  border: 1px solid rgba(200, 169, 110, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(124, 92, 252, 1);
+  color: var(--primary);
   flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
-.folderInfo { flex: 1; min-width: 0; }
+.folderCard:hover .folderIcon {
+  background: rgba(200, 169, 110, 0.12);
+  border-color: rgba(200, 169, 110, 0.35);
+  transform: scale(1.05);
+}
+
+.folderInfo {
+  flex: 1;
+  min-width: 0;
+}
+
 .folderName {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--text-main);
+  color: var(--text);
+  letter-spacing: -0.01em;
 }
+
 .folderMeta {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-family: var(--font-sans);
-  margin-top: 2px;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.folderHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.folderActionBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.folderActionBtn:hover {
+  color: var(--primary);
+  border-color: rgba(200, 169, 110, 0.4);
+  background: var(--bg-hover);
+  transform: translateY(-1px);
 }
 
 .folderToggle {
-  color: var(--text-muted);
-  transition: transform 0.25s;
+  color: var(--text-secondary);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   flex-shrink: 0;
 }
-.folderCardOpen .folderToggle { transform: rotate(180deg); }
 
-.folderBody { display: none; padding: 10px 12px 12px; }
-.folderCardOpen .folderBody { display: block; }
+.folderCardOpen .folderToggle {
+  transform: rotate(180deg);
+  color: var(--primary);
+}
+
+.folderBody {
+  display: none;
+  padding: 12px 14px 14px;
+  background: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid var(--border);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.folderCardOpen .folderBody {
+  display: block;
+}
 
 .subfolder {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  margin-bottom: 4px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  margin-bottom: 6px;
   border: 1px solid var(--border);
-  background: var(--surface-hover);
+  background: var(--bg-elevated);
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text);
   cursor: pointer;
-  transition: all 0.15s;
-  min-height: 38px;
+  transition: all 0.2s ease;
+  min-height: 40px;
 }
+
 .subfolder:hover {
-  border-color: rgba(124, 92, 252, 0.4);
-  color: var(--text-main);
-  background: rgba(124, 92, 252, 0.05);
+  border-color: rgba(200, 169, 110, 0.3);
+  color: var(--text);
+  background: var(--bg-hover);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
 .subfolder.dropTarget {
-  border-color: rgba(124, 92, 252, 1);
-  background: rgba(124, 92, 252, 0.15);
-  color: var(--text-main);
+  border-color: var(--primary);
+  background: rgba(200, 169, 110, 0.08);
+  color: var(--text);
+  transform: scale(1.01);
 }
-.subfolderIcon { color: rgba(124, 92, 252, 1); flex-shrink: 0; }
-.subfolderName { flex: 1; color: var(--text-main); }
-.subfolderCode {
-  font-size: 10px;
-  padding: 2px 7px;
-  border-radius: 4px;
-  background: rgba(124, 92, 252, 0.12);
-  color: rgba(124, 92, 252, 1);
+
+.subfolderIcon {
+  color: var(--primary);
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.subfolderName {
+  flex: 1;
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subfolderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
 }
 
-.subfolderFiles {
-  padding: 4px 4px 4px 30px;
+.subfolderCode {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(200, 169, 110, 0.1);
+  color: var(--primary);
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.subfolderActionBtn {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.subfolderActionBtn:hover {
+  color: var(--primary);
+  border-color: rgba(200, 169, 110, 0.4);
+  background: var(--bg-active);
+}
+
+.subfolderFiles {
+  padding: 4px 4px 8px 16px;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
+  border-left: 1.5px solid var(--border);
+  margin-left: 20px;
+  margin-bottom: 8px;
 }
 
 .folderDropArea {
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: var(--radius);
   border: 1.5px dashed var(--border);
   text-align: center;
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   background: transparent;
+  cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
+
+.folderDropArea:hover {
+  border-color: rgba(200, 169, 110, 0.3);
+  color: var(--text);
+  background: rgba(200, 169, 110, 0.02);
+}
+
 .folderDropArea.dragOver {
-  border-color: rgba(124, 92, 252, 1);
-  background: rgba(124, 92, 252, 0.1);
-  color: var(--text-main);
+  border-color: var(--primary);
+  background: rgba(200, 169, 110, 0.06);
+  color: var(--text);
 }
 
 .rootFiles {
-  padding: 6px 4px 0;
+  padding: 8px 4px 0;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 4px;
 }
 
 .fileChip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  background: var(--surface-hover);
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
-  color: var(--text-main);
+  color: var(--text);
   cursor: grab;
-  max-width: 200px;
+  max-width: 220px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  transition: border-color 0.15s;
+  transition: all 0.2s ease;
 }
-.fileChip:hover { border-color: rgba(124, 92, 252, 0.5); }
-.fileChipIcon { color: rgba(124, 92, 252, 1); flex-shrink: 0; }
-.fileChipName {
-  max-width: 130px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.fileChipRemove {
-  color: var(--text-muted);
-  cursor: pointer;
-  padding-left: 4px;
-  flex-shrink: 0;
-}
-.fileChipRemove:hover { color: #f47055; }
-.fileChipDownload {
-  color: var(--text-muted);
-  cursor: pointer;
-  padding-left: 2px;
-  flex-shrink: 0;
-}
-.fileChipDownload:hover { color: #3b82f6; }
 
+.fileChip:hover {
+  border-color: rgba(200, 169, 110, 0.4);
+  background: var(--bg-hover);
+  box-shadow: 0 0 10px rgba(200, 169, 110, 0.05);
+}
+
+.fileChipIcon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.fileChipName {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileChipDownload,
+.fileChipRemove {
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.15s;
+  margin-left: 2px;
+}
+
+.fileChipDownload:hover {
+  color: var(--accent);
+}
+
+.fileChipRemove:hover {
+  color: var(--red);
+}
+
+/* Luxury Non-Deforming File Rows inside Folders */
+.fileRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-top: 4px;
+  gap: 8px;
+  cursor: grab;
+  transition: border-color 0.2s, background-color 0.2s, transform 0.1s;
+}
+
+.fileRow:hover {
+  border-color: rgba(200, 169, 110, 0.3);
+  background: var(--bg-hover);
+}
+
+.fileRow:active {
+  cursor: grabbing;
+  transform: scale(0.99);
+}
+
+.fileRowLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.fileRowIcon {
+  color: var(--primary);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.fileRowName {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.fileRowSize {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.fileRowActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.actionBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: all 0.15s;
+}
+
+.actionBtn:hover {
+  color: var(--text);
+  background: var(--bg-active);
+}
+
+.actionBtn.deleteBtn:hover {
+  color: var(--red);
+  background: var(--red-bg);
+}
 
 /* ── Global Mobile Sweep ── */
 @media (max-width: 768px) {
@@ -741,4 +982,5 @@
   .docGrid { grid-template-columns: 1fr; }
   .tableWrap { overflow-x: auto; }
   .foldersGrid { grid-template-columns: 1fr; }
+  .subfolderFiles { padding-left: 10px; margin-left: 10px; }
 }
