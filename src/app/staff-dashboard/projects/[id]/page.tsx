@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients, isStaffAuthenticated } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
-import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload } from 'lucide-react';
+import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2 } from 'lucide-react';
 import styles from '@/app/dashboard/clients/[id]/page.module.css';
 
 const FOLDERS = [
@@ -22,7 +22,8 @@ const FOLDERS = [
   { id: '3', name: "Technical Papers", code: "TEC", subfolders: [
     { id: "3a", code: "3.A", name: "Architect Papers" },
     { id: "3b", code: "3.B", name: "Structural Engineer Papers" },
-    { id: "3c", code: "3.C", name: "Site Supervisor Papers" }
+    { id: "3c", code: "3.C", name: "Site Supervisor Papers" },
+    { id: "3d", code: "3.D", name: "Others" }
   ]},
   { id: '4', name: "VVMC NOC's", code: "NOC", subfolders: [] },
   { id: '5', name: "VVCMC Previous Approvals", code: "VPA", subfolders: [] },
@@ -60,6 +61,9 @@ export default function ClientDetailPage() {
   const [draggedDocId, setDraggedDocId] = useState<string | null>(null);
   const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
   const [uploadTarget, setUploadTarget] = useState<{ folderId?: string; subfolderId?: string } | null>(null);
+  const [uploadingFolders, setUploadingFolders] = useState<Record<string, boolean>>({});
+  const [uploadingSubfolders, setUploadingSubfolders] = useState<Record<string, boolean>>({});
+  const [isUploadingGeneral, setIsUploadingGeneral] = useState(false);
 
   const toggleFolder = (folderId: string) => {
     setOpenFolders(prev => ({ ...prev, [folderId]: !prev[folderId] }));
@@ -260,50 +264,87 @@ export default function ClientDetailPage() {
   };
 
   // ── Document actions ───────────────────────────────────────────────────────
-  const processFiles = (files: File[], folderId?: string, subfolderId?: string) => {
-    files.forEach(async (file) => {
-      if (file.type.startsWith('image/')) {
-        // Compress image first, then upload
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-          const img = new globalThis.Image();
-          img.onload = async () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const maxSize = 800;
-            let width = img.width;
-            let height = img.height;
-            if (width > height) {
-              if (width > maxSize) { height *= maxSize / width; width = maxSize; }
-            } else {
-              if (height > maxSize) { width *= maxSize / height; height = maxSize; }
-            }
-            canvas.width = width;
-            canvas.height = height;
-            ctx?.drawImage(img, 0, 0, width, height);
-            canvas.toBlob(async (blob) => {
-              if (!blob) return;
-              const ext = 'jpg';
-              const path = `documents/${params.id}/${crypto.randomUUID()}.${ext}`;
-              const { error } = await supabase.storage.from('uka-storage').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
-              if (error) { alert('Upload failed: ' + error.message); return; }
-              const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
-              saveDocument(file.name, publicUrl, 'image/jpeg', blob.size, folderId, subfolderId);
-            }, 'image/jpeg', 0.75);
-          };
-          img.src = event.target?.result as string;
-        };
-        reader.readAsDataURL(file);
+  const processFiles = async (files: File[], folderId?: string, subfolderId?: string) => {
+    if (subfolderId) {
+      setUploadingSubfolders(prev => ({ ...prev, [subfolderId]: true }));
+    } else if (folderId) {
+      setUploadingFolders(prev => ({ ...prev, [folderId]: true }));
+    } else {
+      setIsUploadingGeneral(true);
+    }
+
+    try {
+      const uploadPromises = files.map(async (file) => {
+        return new Promise<void>((resolve) => {
+          if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              const img = new globalThis.Image();
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const maxSize = 800;
+                let width = img.width;
+                let height = img.height;
+                if (width > height) {
+                  if (width > maxSize) { height *= maxSize / width; width = maxSize; }
+                } else {
+                  if (height > maxSize) { width *= maxSize / height; height = maxSize; }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                ctx?.drawImage(img, 0, 0, width, height);
+                canvas.toBlob(async (blob) => {
+                  if (!blob) { resolve(); return; }
+                  try {
+                    const ext = 'jpg';
+                    const path = `documents/${params.id}/${crypto.randomUUID()}.${ext}`;
+                    const { error } = await supabase.storage.from('uka-storage').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+                    if (error) { alert('Upload failed: ' + error.message); resolve(); return; }
+                    const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
+                    saveDocument(file.name, publicUrl, 'image/jpeg', blob.size, folderId, subfolderId);
+                    resolve();
+                  } catch (err) {
+                    console.error(err);
+                    resolve();
+                  }
+                }, 'image/jpeg', 0.75);
+              };
+              img.onerror = () => resolve();
+              img.src = event.target?.result as string;
+            };
+            reader.onerror = () => resolve();
+            reader.readAsDataURL(file);
+          } else {
+            (async () => {
+              try {
+                const ext = file.name.split('.').pop() || 'bin';
+                const path = `documents/${params.id}/${crypto.randomUUID()}.${ext}`;
+                const { error } = await supabase.storage.from('uka-storage').upload(path, file, { contentType: file.type, upsert: true });
+                if (error) { alert('Upload failed: ' + error.message); resolve(); return; }
+                const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
+                saveDocument(file.name, publicUrl, file.type, file.size, folderId, subfolderId);
+                resolve();
+              } catch (err) {
+                console.error(err);
+                resolve();
+              }
+            })();
+          }
+        });
+      });
+      await Promise.all(uploadPromises);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (subfolderId) {
+        setUploadingSubfolders(prev => ({ ...prev, [subfolderId]: false }));
+      } else if (folderId) {
+        setUploadingFolders(prev => ({ ...prev, [folderId]: false }));
       } else {
-        // Upload raw file directly to Supabase Storage
-        const ext = file.name.split('.').pop() || 'bin';
-        const path = `documents/${params.id}/${crypto.randomUUID()}.${ext}`;
-        const { error } = await supabase.storage.from('uka-storage').upload(path, file, { contentType: file.type, upsert: true });
-        if (error) { alert('Upload failed: ' + error.message); return; }
-        const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
-        saveDocument(file.name, publicUrl, file.type, file.size, folderId, subfolderId);
+        setIsUploadingGeneral(false);
       }
-    });
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -599,10 +640,22 @@ export default function ClientDetailPage() {
           >
             <div className={styles.dropZoneContent}>
               <div className={styles.dropZoneIconContainer}>
-                <CloudUpload className={styles.dropZoneIcon} size={28} strokeWidth={1.5} />
+                {isUploadingGeneral ? (
+                  <Loader2 className={`${styles.dropZoneIcon} animate-spin`} size={28} strokeWidth={1.5} />
+                ) : (
+                  <CloudUpload className={styles.dropZoneIcon} size={28} strokeWidth={1.5} />
+                )}
               </div>
-              <div className={styles.dropZoneTitle}>Drag &amp; drop files here, or <span className={styles.highlight}>click to select</span></div>
-              <div className={styles.dropZoneSub}>Assign documents to their corresponding folders below</div>
+              <div className={styles.dropZoneTitle}>
+                {isUploadingGeneral ? (
+                  <span>Compressing &amp; uploading staged files...</span>
+                ) : (
+                  <>Drag &amp; drop files here, or <span className={styles.highlight}>click to select</span></>
+                )}
+              </div>
+              <div className={styles.dropZoneSub}>
+                {isUploadingGeneral ? "Please wait, syncing with Supabase" : "Assign documents to their corresponding folders below"}
+              </div>
             </div>
           </div>
 
@@ -680,13 +733,21 @@ export default function ClientDetailPage() {
                     <div className={styles.folderIcon}><Folder size={18} strokeWidth={2} /></div>
                     <div className={styles.folderInfo}>
                       <div className={styles.folderName}>{folder.name}</div>
-                      <div className={styles.folderMeta}>{folder.code} &nbsp;&middot;&nbsp; <span>{totalDocs}</span> files</div>
+                      <div className={styles.folderMeta}>
+                        {folder.code} &nbsp;&middot;&nbsp; <span>{totalDocs}</span> files
+                        {uploadingFolders[folder.id] && (
+                          <span style={{ marginLeft: '10px', color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                            <Loader2 size={12} className="animate-spin" /> Uploading...
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className={styles.folderHeaderActions} onClick={(e) => e.stopPropagation()}>
                       <button
                         className={styles.folderActionBtn}
                         onClick={(e) => triggerFolderUpload(e, folder.id)}
                         title={`Upload file directly to ${folder.name}`}
+                        disabled={uploadingFolders[folder.id]}
                       >
                         <Upload size={13} />
                       </button>
@@ -709,11 +770,18 @@ export default function ClientDetailPage() {
                             <span className={styles.subfolderName}>{sub.name}</span>
                             
                             <div className={styles.subfolderActions} onClick={(e) => e.stopPropagation()}>
-                              <span className={styles.subfolderCode}>{sub.code}</span>
+                              {uploadingSubfolders[sub.id] ? (
+                                <span style={{ color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', fontWeight: 600, marginRight: '8px' }}>
+                                  <Loader2 size={11} className="animate-spin" /> Uploading...
+                                </span>
+                              ) : (
+                                <span className={styles.subfolderCode}>{sub.code}</span>
+                              )}
                               <button
                                 className={styles.subfolderActionBtn}
                                 onClick={(e) => triggerSubfolderUpload(e, folder.id, sub.id)}
                                 title={`Upload file directly to ${sub.name}`}
+                                disabled={uploadingSubfolders[sub.id]}
                               >
                                 <Upload size={11} />
                               </button>
