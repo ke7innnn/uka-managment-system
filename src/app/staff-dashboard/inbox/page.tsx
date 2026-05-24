@@ -17,8 +17,12 @@ const TEMPLATE_LABELS: Record<string, string> = {
   'day-1-light':    '💬 Day 1 Reminder',
   'day-2-moderate': '📌 Day 2 Follow-up',
   'day-3-warning':  '⚠️ Day 3 Warning',
-  'deadline-breach':'🚨 Deadline Breached',
-  'repeat-harsh':   '🚨 Critical Overdue',
+  'reminder-1':     '⚠️ Reminder 1 (Mild)',
+  'reminder-2':     '⚠️ Reminder 2 (Second Warning)',
+  'reminder-3':     '🚨 Reminder 3 (Salary Threat)',
+  'reminder-4':     '🚨 Reminder 4 (Salary Deduction)',
+  'reminder-5':     '🚨 Reminder 5 (Team Deduction)',
+  'reminder-6':     '🚨 Reminder 6 (Final Deduction)',
 };
 
 export default function StaffInboxPage() {

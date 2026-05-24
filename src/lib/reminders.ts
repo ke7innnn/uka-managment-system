@@ -121,8 +121,29 @@ export function processReminders(clients: Client[]): void {
     let severity: 'info' | 'warning' | 'urgent' | 'critical';
 
     if (deadlinePassed) {
-      templateKey = 'repeat-harsh';
-      severity = 'critical';
+      const deadlineDate = new Date(phase.timeBound + 'T23:59:59');
+      const msOverdue = now.getTime() - deadlineDate.getTime();
+      const daysOverdue = Math.floor(msOverdue / (1000 * 60 * 60 * 24)) + 1;
+
+      if (daysOverdue === 1) {
+        templateKey = 'reminder-1';
+        severity = 'warning';
+      } else if (daysOverdue === 2) {
+        templateKey = 'reminder-2';
+        severity = 'warning';
+      } else if (daysOverdue === 3) {
+        templateKey = 'reminder-3';
+        severity = 'urgent';
+      } else if (daysOverdue === 4) {
+        templateKey = 'reminder-4';
+        severity = 'urgent';
+      } else if (daysOverdue === 5) {
+        templateKey = 'reminder-5';
+        severity = 'critical';
+      } else {
+        templateKey = 'reminder-6';
+        severity = 'critical';
+      }
     } else if (hoursElapsed >= 72) {
       templateKey = 'day-3-warning';
       severity = 'urgent';
@@ -135,15 +156,6 @@ export function processReminders(clients: Client[]): void {
     } else {
       templateKey = 'stage-start';
       severity = 'info';
-    }
-
-    // Check if we should fire 'deadline-breach' (first time deadline passed)
-    const existingBreachAlert = getAlerts().find(
-      a => a.clientId === client.id && a.stageName === phase.name && a.templateKey === 'deadline-breach'
-    );
-    if (deadlinePassed && !existingBreachAlert) {
-      templateKey = 'deadline-breach';
-      severity = 'urgent';
     }
 
     const msg = buildMessage(templateKey, client.name, phase.name, pendingTasks.length, pendingTasks.slice(0, 5), assignedTo, phase.timeBound);
@@ -210,6 +222,9 @@ function buildMessage(
     ? `Tasks pending:\n${sampleTasks.map(t => `  • ${t}`).join('\n')}${pendingCount > sampleTasks.length ? `\n  ...and ${pendingCount - sampleTasks.length} more` : ''}`
     : '';
 
+  // Extract first name for a direct, WhatsApp feel like @UZAID
+  const primaryName = assignedTo.split('&')[0].split(' ')[0].trim().toUpperCase();
+
   switch (templateKey) {
     case 'stage-start':
       return `✅ ${stageName} has been started for client ${clientName}.\n\nAssigned to: ${assignedTo}.\n${deadlineStr}\n\n${taskList}\n\nPlease begin your assigned tasks immediately and update progress regularly.`;
@@ -223,11 +238,24 @@ function buildMessage(
     case 'day-3-warning':
       return `⚠️ Attention Required — Day 3\n\n${stageName} for ${clientName} has ${pendingCount} incomplete task(s) after 3 days. The admin team has been notified.\n\n${taskList}\n\n${deadlineStr}\n\nIf you are facing any difficulties, please communicate immediately on the workspace chat. Delays at this stage affect the entire project pipeline.`;
 
-    case 'deadline-breach':
-      return `🚨 DEADLINE BREACHED\n\n${stageName} for client ${clientName} has passed its deadline with ${pendingCount} task(s) still incomplete.\n\n${taskList}\n\nAssigned to: ${assignedTo}.\n\nThis requires IMMEDIATE action. Please complete all pending tasks and report your status to the admin at the earliest.`;
+    // ── NEW 6 POST-DEADLINE ESCALATING REMINDERS ──
+    case 'reminder-1':
+      return `⚠️ REMINDER 1 (MILD)\n\nDEAR ${assignedTo.toUpperCase()},\nTHE DEADLINE WHICH YOU HAVE COMMITTED TO YOUR BOSS HAS CROSSED. PLEASE EXPEDITE THE WORK AND COMPLETE THE DEADLINE WITHIN THE NEXT 24 HOURS.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
 
-    case 'repeat-harsh':
-      return `🚨 CRITICAL — STAGE OVERDUE\n\n${stageName} for ${clientName} is now past its deadline. ${pendingCount} task(s) remain INCOMPLETE.\n\n${taskList}\n\nAssigned to: ${assignedTo}.\n\nThis is a repeated critical alert. Continued non-completion will be escalated to an administrative review. Complete these tasks immediately.`;
+    case 'reminder-2':
+      return `⚠️ REMINDER 2\n\nDEAR ${assignedTo.toUpperCase()},\nTHIS IS THE SECOND REMINDER FOR THE PENDING WORK !!! THE SECOND DEADLINE GIVEN BY YOU HAS ALSO LAPSED.. CONNECT WITH BOSS IMMEDIATELY.. PUT YOUR CLARIFICATIONS FOR THE SAME!! YOUR DEADLINE SHALL BE ONLY EXTENDED TO THE NEXT 24 HOURS.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
+
+    case 'reminder-3':
+      return `🚨 REMINDER 3\n\n@${primaryName} THIS IS EXTREME UNPROFESSIONAL BEHAVIOUR... SHALL BE REPORTED TO BOSS.. PUT UP YOUR CLARIFICATIONS REGARDING THE PROJECT IMMEDIATELY... THE THIRD DEADLINE WHEN CROSSED SHALL LEAD TO DEDUCTIONS IN SALARY OF YOU AND YOUR TEAM AS DECIDED BY BOSS... RESOLVE THE PROBLEM IN THE NEXT 24 HOURS AND PASS ON THE PROJECT FURTHER IMMEDIATELY.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
+
+    case 'reminder-4':
+      return `🚨 REMINDER 4\n\n@${primaryName} AMOUNT OF ₹1,500 SHALL BE DEDUCTED TILL DATE FOR NON PERFORMANCE AND FAILURE TO FOLLOW DEADLINE AS INSTRUCTED BY BOSS FOR PROJECT: ${clientName.toUpperCase()}.\n\nStage: ${stageName}\n${taskList}`;
+
+    case 'reminder-5':
+      return `🚨 REMINDER 5\n\nDEAR TEAM, PLS HELP ${primaryName} TO RESOLVE HIS PROBLEM WITHIN THE DEADLINE... FAILING WHICH SIMILAR DEDUCTION SHALL BE APPLICABLE FROM YOUR SALARY TOO.. BOSS IS DISAPPOINTED.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
+
+    case 'reminder-6':
+      return `🚨 REMINDER 6\n\nAMOUNT OF ₹3,000 TILL DATE SHALL BE DEDUCTED FROM THE SALARIES OF THE FOLLOWING STAFF FOR NOT RESOLVING THE PROBLEMS AND NOT PROVIDING CLARIFICATIONS FOR THE DELAY: ${assignedTo.toUpperCase()}.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
 
     default:
       return `Reminder: ${pendingCount} task(s) pending in ${stageName} for ${clientName}. Assigned to: ${assignedTo}.`;
