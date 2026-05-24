@@ -482,7 +482,7 @@
   min-width: 0;
   background: rgba(0,0,0,0.3);
   border: 1px solid var(--primary);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 2px rgba(200, 169, 110, 0.2);
   padding: 0.3rem 0.5rem;
   border-radius: 6px;
   color: var(--text-main);

@@ -464,20 +464,44 @@ export default function ClientDetailPage() {
             
             <div className={styles.stagedFiles}>
               {client.documents.filter(d => !d.folder && !d.subfolder).map(doc => (
-                <div
-                  key={doc.id}
-                  className={styles.fileChip}
-                  draggable
-                  onDragStart={(e) => onDragStart(e, doc.id)}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
-                  <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
-                  <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
-                  <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
-                    <Download className={styles.fileChipDownload} size={14} />
-                  </a>
-                  <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} />
+                <div key={doc.id} onClick={(e) => e.stopPropagation()}>
+                  {renamingId === doc.id ? (
+                    <div className={styles.renameRow} style={{ maxWidth: 220, padding: '4px 8px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '20px' }}>
+                      <input
+                        type="text"
+                        ref={renameInputRef}
+                        value={renameDraft}
+                        onChange={(e) => setRenameDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitRename();
+                          if (e.key === 'Escape') cancelRename();
+                        }}
+                        className={styles.renameInput}
+                        style={{ height: 26, fontSize: 11, borderRadius: 14 }}
+                      />
+                      <button className={styles.renameSave} onClick={commitRename} style={{ width: 22, height: 22, borderRadius: 11 }} title="Save">
+                        <Check size={12} />
+                      </button>
+                      <button className={styles.renameCancel} onClick={cancelRename} style={{ width: 22, height: 22, borderRadius: 11 }} title="Cancel">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      className={styles.fileChip}
+                      draggable
+                      onDragStart={(e) => onDragStart(e, doc.id)}
+                    >
+                      <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
+                      <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
+                      <Pencil className={styles.fileChipDownload} size={14} onClick={() => startRename(doc)} />
+                      <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
+                      <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
+                        <Download className={styles.fileChipDownload} size={14} />
+                      </a>
+                      <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -552,25 +576,52 @@ export default function ClientDetailPage() {
                                 <div
                                   key={doc.id}
                                   className={styles.fileRow}
-                                  draggable
+                                  draggable={renamingId !== doc.id}
                                   onDragStart={(e) => onDragStart(e, doc.id)}
                                 >
-                                  <div className={styles.fileRowLeft}>
-                                    <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
-                                    <span className={styles.fileRowName} title={doc.name}>{doc.name}</span>
-                                    <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
-                                  </div>
-                                  <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
-                                    <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
-                                      <Eye size={13} />
-                                    </button>
-                                    <a href={doc.url} download={doc.name} className={styles.actionBtn} title="Download">
-                                      <Download size={13} />
-                                    </a>
-                                    <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
-                                      <Trash2 size={13} />
-                                    </button>
-                                  </div>
+                                  {renamingId === doc.id ? (
+                                    <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
+                                      <input
+                                        type="text"
+                                        ref={renameInputRef}
+                                        value={renameDraft}
+                                        onChange={(e) => setRenameDraft(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') commitRename();
+                                          if (e.key === 'Escape') cancelRename();
+                                        }}
+                                        className={styles.renameInput}
+                                      />
+                                      <button className={styles.renameSave} onClick={commitRename} title="Save">
+                                        <Check size={14} />
+                                      </button>
+                                      <button className={styles.renameCancel} onClick={cancelRename} title="Cancel">
+                                        <X size={14} />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <div className={styles.fileRowLeft}>
+                                        <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                                        <span className={styles.fileRowName} title={doc.name}>{doc.name}</span>
+                                        <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
+                                      </div>
+                                      <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                                        <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                          <Pencil size={13} />
+                                        </button>
+                                        <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                          <Eye size={13} />
+                                        </button>
+                                        <a href={doc.url} download={doc.name} className={styles.actionBtn} title="Download">
+                                          <Download size={13} />
+                                        </a>
+                                        <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
+                                          <Trash2 size={13} />
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -593,25 +644,52 @@ export default function ClientDetailPage() {
                         <div
                           key={doc.id}
                           className={styles.fileRow}
-                          draggable
+                          draggable={renamingId !== doc.id}
                           onDragStart={(e) => onDragStart(e, doc.id)}
                         >
-                          <div className={styles.fileRowLeft}>
-                            <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
-                            <span className={styles.fileRowName} title={doc.name}>{doc.name}</span>
-                            <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
-                          </div>
-                          <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
-                            <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
-                              <Eye size={13} />
-                            </button>
-                            <a href={doc.url} download={doc.name} className={styles.actionBtn} title="Download">
-                              <Download size={13} />
-                            </a>
-                            <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
+                          {renamingId === doc.id ? (
+                            <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="text"
+                                ref={renameInputRef}
+                                value={renameDraft}
+                                onChange={(e) => setRenameDraft(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') commitRename();
+                                  if (e.key === 'Escape') cancelRename();
+                                }}
+                                className={styles.renameInput}
+                              />
+                              <button className={styles.renameSave} onClick={commitRename} title="Save">
+                                <Check size={14} />
+                              </button>
+                              <button className={styles.renameCancel} onClick={cancelRename} title="Cancel">
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className={styles.fileRowLeft}>
+                                <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                                <span className={styles.fileRowName} title={doc.name}>{doc.name}</span>
+                                <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
+                              </div>
+                              <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                                <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                  <Pencil size={13} />
+                                </button>
+                                <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                  <Eye size={13} />
+                                </button>
+                                <a href={doc.url} download={doc.name} className={styles.actionBtn} title="Download">
+                                  <Download size={13} />
+                                </a>
+                                <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>
