@@ -40,8 +40,10 @@ export default function ProjectsPage() {
       ) : (
         <div className={styles.projectGrid}>
           {withProjects.map((client) => {
-            const done = client.phases.filter((p) => p.completed).length;
-            const pct = client.phases.length > 0 ? Math.round((done / client.phases.length) * 100) : 0;
+            const allTasks = client.phases.flatMap(p => p.tasks || []);
+            const doneTasks = allTasks.filter(t => t.completed).length;
+            const totalTasks = allTasks.length;
+            const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
             return (
               <Link key={client.id} href={`/dashboard/clients/${client.id}?tab=phases`} className={`glass-panel ${styles.projectCard}`}>
                 <div className={styles.cardTop}>
@@ -76,7 +78,7 @@ export default function ProjectsPage() {
                     {client.phases.map((phase) => (
                       <div
                         key={phase.id}
-                        className={`${styles.phaseChip} ${phase.completed ? styles.phaseChipDone : ''}`}
+                        className={`${styles.phaseChip} ${(phase.status === 'completed' || phase.completed) ? styles.phaseChipDone : ''}`}
                         title={phase.name}
                       >
                         <span className={styles.phaseChipDot} />
