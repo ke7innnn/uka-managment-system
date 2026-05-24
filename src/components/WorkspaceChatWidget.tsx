@@ -54,7 +54,7 @@ export default function WorkspaceChatWidget() {
         <button
           onClick={() => setIsOpen(true)}
           style={{
-            position: 'fixed', bottom: '2rem', left: '2rem', zIndex: 9998,
+            position: 'fixed', bottom: '2rem', left: '18rem', zIndex: 9998,
             width: '60px', height: '60px', borderRadius: '50%',
             background: 'var(--surface)', border: '1px solid var(--border)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
@@ -82,7 +82,7 @@ export default function WorkspaceChatWidget() {
 
       {isOpen && (
         <div style={{
-          position: 'fixed', bottom: '2rem', left: '2rem', zIndex: 9999,
+          position: 'fixed', bottom: '2rem', left: '18rem', zIndex: 9999,
           width: '100%', maxWidth: '380px', height: '600px', maxHeight: '80vh',
           background: 'var(--bg)', borderRadius: '16px', border: '1px solid var(--border)',
           boxShadow: '0 20px 60px rgba(0,0,0,0.8)', overflow: 'hidden',
