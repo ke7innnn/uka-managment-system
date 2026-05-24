@@ -16,6 +16,7 @@ type FormData = {
   tags: string;
   projectName: string;
   projectStatus: Client['projectStatus'];
+  priority: 'low' | 'medium' | 'high';
 };
 
 interface Props {
@@ -36,6 +37,7 @@ export default function ClientForm({ client, mode }: Props) {
     tags: client?.tags?.join(', ') || '',
     projectName: client?.projectName || '',
     projectStatus: client?.projectStatus || 'pending',
+    priority: client?.priority || 'medium',
   });
   const [error, setError] = useState('');
 
@@ -63,6 +65,7 @@ export default function ClientForm({ client, mode }: Props) {
         tags,
         projectName: form.projectName.trim() || undefined,
         projectStatus: form.projectStatus,
+        priority: form.priority,
         phases: [],
         documents: [],
       });
@@ -79,6 +82,7 @@ export default function ClientForm({ client, mode }: Props) {
         tags,
         projectName: form.projectName.trim() || undefined,
         projectStatus: form.projectStatus,
+        priority: form.priority,
       });
       router.push(`/dashboard/clients/${client!.id}`);
     }
@@ -114,6 +118,19 @@ export default function ClientForm({ client, mode }: Props) {
               <option value="active">Active</option>
               <option value="on-hold">On Hold</option>
               <option value="completed">Completed</option>
+            </select>
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="priority" className={styles.label}>Project Priority</label>
+            <select
+              id="priority"
+              value={form.priority}
+              onChange={(e) => set('priority', e.target.value as FormData['priority'])}
+              className={styles.select}
+            >
+              <option value="low">Low Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="high">High Priority</option>
             </select>
           </div>
         </div>

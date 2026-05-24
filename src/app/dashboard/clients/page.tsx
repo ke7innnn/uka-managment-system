@@ -118,16 +118,32 @@ export default function ClientsPage() {
                     </td>
                     <td>{client.projectName || <span className={styles.na}>—</span>}</td>
                     <td>
-                      <span
-                        className={styles.badge}
-                        style={{
-                          background: `${STATUS_COLORS[client.projectStatus]}22`,
-                          color: STATUS_COLORS[client.projectStatus],
-                          border: `1px solid ${STATUS_COLORS[client.projectStatus]}44`,
-                        }}
-                      >
-                        {client.projectStatus.charAt(0).toUpperCase() + client.projectStatus.slice(1).replace('-', ' ')}
-                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-start' }}>
+                        <span
+                          className={styles.badge}
+                          style={{
+                            background: `${STATUS_COLORS[client.projectStatus]}22`,
+                            color: STATUS_COLORS[client.projectStatus],
+                            border: `1px solid ${STATUS_COLORS[client.projectStatus]}44`,
+                            width: 'fit-content'
+                          }}
+                        >
+                          {client.projectStatus.charAt(0).toUpperCase() + client.projectStatus.slice(1).replace('-', ' ')}
+                        </span>
+                        <span
+                          className={styles.badge}
+                          style={{
+                            background: client.priority === 'high' ? 'rgba(192, 96, 96, 0.1)' : client.priority === 'low' ? 'rgba(106, 170, 132, 0.1)' : 'rgba(200, 169, 110, 0.1)',
+                            color: client.priority === 'high' ? '#c06060' : client.priority === 'low' ? '#6aaa84' : '#c8a96e',
+                            border: client.priority === 'high' ? '1px solid rgba(192, 96, 96, 0.2)' : client.priority === 'low' ? '1px solid rgba(106, 170, 132, 0.2)' : '1px solid rgba(200, 169, 110, 0.2)',
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            width: 'fit-content'
+                          }}
+                        >
+                          {(client.priority || 'medium').toUpperCase()}
+                        </span>
+                      </div>
                     </td>
                     <td>
                       {client.phases.length > 0 ? (

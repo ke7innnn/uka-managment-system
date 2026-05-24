@@ -415,7 +415,7 @@ export default function ClientDetailPage() {
             </div>
           </div>
         </div>
-        <div className={styles.heroRight}>
+        <div className={styles.heroRight} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <span
             className={styles.statusBadge}
             style={{
@@ -425,6 +425,16 @@ export default function ClientDetailPage() {
             }}
           >
             {client.projectStatus.charAt(0).toUpperCase() + client.projectStatus.slice(1).replace('-', ' ')}
+          </span>
+          <span
+            className={styles.statusBadge}
+            style={{
+              background: client.priority === 'high' ? 'rgba(192, 96, 96, 0.1)' : client.priority === 'low' ? 'rgba(106, 170, 132, 0.1)' : 'rgba(200, 169, 110, 0.1)',
+              color: client.priority === 'high' ? '#c06060' : client.priority === 'low' ? '#6aaa84' : '#c8a96e',
+              border: client.priority === 'high' ? '1px solid rgba(192, 96, 96, 0.25)' : client.priority === 'low' ? '1px solid rgba(106, 170, 132, 0.25)' : '1px solid rgba(200, 169, 110, 0.25)',
+            }}
+          >
+            {(client.priority || 'medium').charAt(0).toUpperCase() + (client.priority || 'medium').slice(1)} Priority
           </span>
           <Link href={`/dashboard/clients/${client.id}/edit`} className={styles.editBtn}>
             Edit Client

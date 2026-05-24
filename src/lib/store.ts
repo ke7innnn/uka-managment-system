@@ -46,6 +46,7 @@ export interface Client {
   documents: Document[];
   projectName?: string;
   projectStatus: 'active' | 'completed' | 'on-hold' | 'pending';
+  priority?: 'low' | 'medium' | 'high';
 }
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
@@ -173,6 +174,7 @@ export function addClient(data: Omit<Client, 'id' | 'createdAt'>): Client {
     ...data,
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
+    priority: data.priority || 'medium',
     phases: data.phases && data.phases.length > 0 ? data.phases : DEFAULT_PHASES_TEMPLATE.map((stage, idx) => ({
       id: crypto.randomUUID(),
       name: stage.name,
