@@ -48,7 +48,8 @@ export async function pullFromSupabase() {
       })),
       documents: (c.documents || []).map((d: any) => ({
         id: d.id, name: d.name, url: d.url, uploadedAt: d.uploaded_at,
-        type: d.type || 'unknown', size: d.size || 0, uploadedBy: d.uploaded_by || ''
+        type: d.type || 'unknown', size: d.size || 0, uploadedBy: d.uploaded_by || '',
+        folder: d.folder || undefined, subfolder: d.subfolder || undefined
       }))
     }));
 
@@ -172,8 +173,16 @@ export async function pushClientsToSupabase(clients: Client[]) {
     });
     c.documents.forEach(d => {
       docRows.push({
-        id: d.id, client_id: c.id, name: d.name, url: d.url,
-        uploaded_at: d.uploadedAt, type: d.type, size: d.size, uploaded_by: d.uploadedBy
+        id: d.id,
+        client_id: c.id,
+        name: d.name,
+        url: d.url,
+        uploaded_at: d.uploadedAt,
+        type: d.type,
+        size: d.size,
+        uploaded_by: d.uploadedBy,
+        folder: d.folder || null,
+        subfolder: d.subfolder || null
       });
     });
   });
