@@ -90,16 +90,16 @@
 }
 
 .docClient {
-  color: #a5b4fc;
+  color: var(--primary);
   font-weight: 500;
   transition: color 0.15s;
 }
-.docClient:hover { color: var(--primary); }
+.docClient:hover { color: var(--primary-hover); }
 
 .downloadBtn {
-  background: rgba(99, 102, 241, 0.12);
-  color: #a5b4fc;
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: rgba(200, 169, 110, 0.08);
+  color: var(--primary);
+  border: 1px solid rgba(200, 169, 110, 0.2);
   padding: 0.45rem 1rem;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -108,7 +108,38 @@
   transition: all 0.15s ease;
   flex-shrink: 0;
 }
-.downloadBtn:hover { background: rgba(99, 102, 241, 0.22); }
+.downloadBtn:hover {
+  background: rgba(200, 169, 110, 0.15);
+  border-color: rgba(200, 169, 110, 0.35);
+}
+
+.docTags {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.docProjectTag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(200, 169, 110, 0.08);
+  color: var(--primary);
+  border: 1px solid rgba(200, 169, 110, 0.15);
+}
+
+.docFolderTag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
 
 
 /* ── Global Mobile Sweep ── */
