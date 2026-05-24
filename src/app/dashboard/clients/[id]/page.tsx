@@ -454,11 +454,11 @@ export default function ClientDetailPage() {
                 >
                   <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
                   <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
-                  <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} title="View" />
+                  <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
                   <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
                     <Download className={styles.fileChipDownload} size={14} />
                   </a>
-                  <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} title="Delete" />
+                  <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} />
                 </div>
               ))}
             </div>
@@ -519,11 +519,11 @@ export default function ClientDetailPage() {
                                 >
                                   <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
                                   <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
-                                  <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} title="View" />
+                                  <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
                                   <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
                                     <Download className={styles.fileChipDownload} size={14} />
                                   </a>
-                                  <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} title="Delete" />
+                                  <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} />
                                 </div>
                               ))}
                             </div>
@@ -551,11 +551,11 @@ export default function ClientDetailPage() {
                         >
                           <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
                           <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
-                          <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} title="View" />
+                          <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
                           <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
                             <Download className={styles.fileChipDownload} size={14} />
                           </a>
-                          <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} title="Delete" />
+                          <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} />
                         </div>
                       ))}
                     </div>
