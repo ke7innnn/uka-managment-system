@@ -5,8 +5,29 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
-import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock } from 'lucide-react';
+import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload } from 'lucide-react';
 import styles from './page.module.css';
+
+const FOLDERS = [
+  { id: '1', name: "Revenue", code: "REV", subfolders: [
+    { id: "1a", code: "1.A", name: "7/12 Extract / Property Card" },
+    { id: "1b", code: "1.B", name: "6/12 Extracts" },
+    { id: "1c", code: "1.C", name: "Pikpahani Extracts" },
+    { id: "1d", code: "1.D", name: "8A Extract" },
+    { id: "1e", code: "1.E", name: "Advocate Reports" },
+    { id: "1f", code: "1.F", name: "Others" }
+  ]},
+  { id: '2', name: "VVCMC Bonds & Forms", code: "VBF", subfolders: [] },
+  { id: '3', name: "Technical Papers", code: "TEC", subfolders: [
+    { id: "3a", code: "3.A", name: "Architect Papers" },
+    { id: "3b", code: "3.B", name: "Structural Engineer Papers" },
+    { id: "3c", code: "3.C", name: "Site Supervisor Papers" }
+  ]},
+  { id: '4', name: "VVMC NOC's", code: "NOC", subfolders: [] },
+  { id: '5', name: "VVCMC Previous Approvals", code: "VPA", subfolders: [] },
+  { id: '6', name: "Courts Cases / Complaints / Notices", code: "CCN", subfolders: [] },
+  { id: '7', name: "Others", code: "OTH", subfolders: [] }
+];
 
 const STATUS_COLORS: Record<Client['projectStatus'], string> = {
   active: '#10b981',
@@ -26,6 +47,47 @@ export default function ClientDetailPage() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
+
+  // Drag and drop state
+  const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
+  const [draggedDocId, setDraggedDocId] = useState<string | null>(null);
+  const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
+
+  const toggleFolder = (folderId: string) => {
+    setOpenFolders(prev => ({ ...prev, [folderId]: !prev[folderId] }));
+  };
+
+  const onDragStart = (e: React.DragEvent, docId: string) => {
+    setDraggedDocId(docId);
+    e.dataTransfer.setData('text/plain', docId);
+  };
+
+  const onDragOver = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (dragOverTarget !== targetId) setDragOverTarget(targetId);
+  };
+
+  const onDragLeave = (e: React.DragEvent) => {
+    setDragOverTarget(null);
+  };
+
+  const onDrop = (e: React.DragEvent, folderId?: string, subfolderId?: string) => {
+    e.preventDefault();
+    setDragOverTarget(null);
+    if (draggedDocId) {
+      const doc = client?.documents.find(d => d.id === draggedDocId);
+      if (client && doc && (doc.folder !== folderId || doc.subfolder !== subfolderId)) {
+        const updated = client.documents.map(d => 
+          d.id === doc.id ? { ...d, folder: folderId, subfolder: subfolderId } : d
+        );
+        updateClient(client.id, { documents: updated });
+        reload();
+      }
+      setDraggedDocId(null);
+    } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(Array.from(e.dataTransfer.files), folderId, subfolderId);
+    }
+  };
 
   const reload = () => {
     const c = getClientById(params.id);
@@ -78,8 +140,7 @@ export default function ClientDetailPage() {
   };
 
   // ── Document actions ───────────────────────────────────────────────────────
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+  const processFiles = (files: File[], folderId?: string, subfolderId?: string) => {
     files.forEach(async (file) => {
       if (file.type.startsWith('image/')) {
         // Compress image first, then upload
@@ -107,7 +168,7 @@ export default function ClientDetailPage() {
               const { error } = await supabase.storage.from('uka-storage').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
               if (error) { alert('Upload failed: ' + error.message); return; }
               const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
-              saveDocument(file.name, publicUrl, 'image/jpeg', blob.size);
+              saveDocument(file.name, publicUrl, 'image/jpeg', blob.size, folderId, subfolderId);
             }, 'image/jpeg', 0.75);
           };
           img.src = event.target?.result as string;
@@ -120,13 +181,18 @@ export default function ClientDetailPage() {
         const { error } = await supabase.storage.from('uka-storage').upload(path, file, { contentType: file.type, upsert: true });
         if (error) { alert('Upload failed: ' + error.message); return; }
         const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
-        saveDocument(file.name, publicUrl, file.type, file.size);
+        saveDocument(file.name, publicUrl, file.type, file.size, folderId, subfolderId);
       }
     });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    processFiles(files);
     e.target.value = '';
   };
 
-  const saveDocument = (name: string, url: string, type: string, size: number) => {
+  const saveDocument = (name: string, url: string, type: string, size: number, folder?: string, subfolder?: string) => {
     const doc: Doc = {
       id: crypto.randomUUID(),
       name,
@@ -134,6 +200,8 @@ export default function ClientDetailPage() {
       uploadedAt: new Date().toISOString(),
       type: type || 'unknown',
       size,
+      folder,
+      subfolder,
     };
     const c = getClientById(params.id);
     if (!c) return;
@@ -196,13 +264,13 @@ export default function ClientDetailPage() {
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   };
 
-  const fileIcon = (type: string) => {
-    if (type.includes('image')) return <Image size={20} strokeWidth={1.5} />;
-    if (type.includes('pdf')) return <FileText size={20} strokeWidth={1.5} />;
-    if (type.includes('word') || type.includes('document')) return <FileText size={20} strokeWidth={1.5} />;
-    if (type.includes('sheet') || type.includes('excel')) return <FileSpreadsheet size={20} strokeWidth={1.5} />;
-    if (type.includes('video')) return <Video size={20} strokeWidth={1.5} />;
-    return <Paperclip size={20} strokeWidth={1.5} />;
+  const fileIcon = (type: string, size = 20) => {
+    if (type.includes('image')) return <Image size={size} strokeWidth={1.5} />;
+    if (type.includes('pdf')) return <FileText size={size} strokeWidth={1.5} />;
+    if (type.includes('word') || type.includes('document')) return <FileText size={size} strokeWidth={1.5} />;
+    if (type.includes('sheet') || type.includes('excel')) return <FileSpreadsheet size={size} strokeWidth={1.5} />;
+    if (type.includes('video')) return <Video size={size} strokeWidth={1.5} />;
+    return <Paperclip size={size} strokeWidth={1.5} />;
   };
 
   return (
@@ -365,81 +433,137 @@ export default function ClientDetailPage() {
       {/* ── Documents Tab ─────────────────────────────────────────────────────── */}
       {activeTab === 'documents' && (
         <div className={styles.tabContent}>
-          <div className={styles.uploadRow}>
-            <button className={styles.uploadBtn} onClick={() => fileInputRef.current?.click()}>
-              <Upload size={15} strokeWidth={2} style={{ marginRight: 6, verticalAlign: 'middle' }} />Upload Files
-            </button>
-            <span className={styles.uploadHint}>Images, PDFs, Word, Excel, Video… · Click the pencil icon on a file to rename it</span>
-            <input
-              type="file"
-              multiple
-              ref={fileInputRef}
-              className={styles.hiddenInput}
-              onChange={handleFileUpload}
-              id="file-upload-input"
-            />
-          </div>
-
-          {client.documents.length === 0 ? (
-            <div className={styles.emptyState}>No documents uploaded yet.</div>
-          ) : (
-            <div className={styles.docGrid}>
-              {client.documents.map((doc) => (
-                <div key={doc.id} className={`glass-panel ${styles.docCard}`}>
-                  <div className={styles.docIcon}>{fileIcon(doc.type)}</div>
-
-                  <div className={styles.docInfo}>
-                    {renamingId === doc.id ? (
-                      /* ── Inline rename input ── */
-                      <div className={styles.renameRow}>
-                        <input
-                          ref={renameInputRef}
-                          type="text"
-                          value={renameDraft}
-                          onChange={(e) => setRenameDraft(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') commitRename();
-                            if (e.key === 'Escape') cancelRename();
-                          }}
-                          className={styles.renameInput}
-                          id={`rename-input-${doc.id}`}
-                          aria-label="Rename document"
-                        />
-                        <button className={styles.renameSave} onClick={commitRename} title="Save"><Check size={14} strokeWidth={2.5} /></button>
-                        <button className={styles.renameCancel} onClick={cancelRename} title="Cancel"><X size={14} strokeWidth={2.5} /></button>
-                      </div>
-                    ) : (
-                      /* ── Normal name display ── */
-                      <div className={styles.docNameRow}>
-                        <p className={styles.docName} title={doc.name}>{doc.name}</p>
-                        <button
-                          className={styles.renameBtn}
-                          onClick={() => startRename(doc)}
-                          title="Rename document"
-                          id={`rename-btn-${doc.id}`}
-                        >
-                          <Pencil size={13} strokeWidth={1.75} />
-                        </button>
-                      </div>
-                    )}
-                    <p className={styles.docMeta}>
-                      {formatSize(doc.size)} · {new Date(doc.uploadedAt).toLocaleDateString('en-IN')}
-                    </p>
-                  </div>
-
-                  <div className={styles.docActions}>
-                    <button onClick={() => viewDocumentSafe(doc.url)} className={styles.docDownload} title="View" style={{ marginRight: '0.25rem', border: 'none', background: 'none', cursor: 'pointer' }}><Eye size={15} strokeWidth={1.75} /></button>
-                    <a href={doc.url} download={doc.name} className={styles.docDownload} title="Download"><Download size={15} strokeWidth={1.75} /></a>
-                    <button
-                      className={styles.docDelete}
-                      onClick={() => deleteDocument(doc.id)}
-                      title="Delete"
-                    ><Trash2 size={14} strokeWidth={1.75} /></button>
-                  </div>
+          <div
+            className={`${styles.dropZone} ${dragOverTarget === 'main' ? styles.dragOver : ''}`}
+            onDragOver={(e) => onDragOver(e, 'main')}
+            onDragLeave={onDragLeave}
+            onDrop={(e) => onDrop(e, undefined, undefined)}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <CloudUpload className={styles.dropZoneIcon} size={26} strokeWidth={1.5} style={{ margin: '0 auto' }} />
+            Drag &amp; drop files here, or <strong style={{ color: 'var(--primary)' }}>click to select</strong> — then assign to a folder below
+            
+            <div className={styles.stagedFiles}>
+              {client.documents.filter(d => !d.folder && !d.subfolder).map(doc => (
+                <div
+                  key={doc.id}
+                  className={styles.fileChip}
+                  draggable
+                  onDragStart={(e) => onDragStart(e, doc.id)}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
+                  <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
+                  <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} title="View" />
+                  <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
+                    <Download className={styles.fileChipDownload} size={14} />
+                  </a>
+                  <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} title="Delete" />
                 </div>
               ))}
             </div>
-          )}
+          </div>
+          <input
+            type="file"
+            multiple
+            ref={fileInputRef}
+            className={styles.hiddenInput}
+            onChange={handleFileUpload}
+            id="file-upload-input"
+          />
+
+          <div className={styles.foldersGrid}>
+            {FOLDERS.map((folder) => {
+              const folderDocs = client.documents.filter(d => d.folder === folder.id);
+              const totalDocs = folderDocs.length;
+              const isOpen = openFolders[folder.id];
+
+              return (
+                <div key={folder.id} className={`${styles.folderCard} ${isOpen ? styles.folderCardOpen : ''} ${dragOverTarget === folder.id ? styles.dropTarget : ''}`}
+                  onDragOver={(e) => onDragOver(e, folder.id)}
+                  onDragLeave={onDragLeave}
+                  onDrop={(e) => onDrop(e, folder.id, undefined)}
+                >
+                  <div className={styles.folderHeader} onClick={() => toggleFolder(folder.id)}>
+                    <div className={styles.folderIcon}><Folder size={18} strokeWidth={2} /></div>
+                    <div className={styles.folderInfo}>
+                      <div className={styles.folderName}>{folder.name}</div>
+                      <div className={styles.folderMeta}>{folder.code} &nbsp;&middot;&nbsp; <span>{totalDocs}</span> files</div>
+                    </div>
+                    <ChevronDown className={styles.folderToggle} size={16} strokeWidth={2} />
+                  </div>
+                  
+                  <div className={styles.folderBody}>
+                    {folder.subfolders.map(sub => {
+                      const subDocs = folderDocs.filter(d => d.subfolder === sub.id);
+                      return (
+                        <div key={sub.id}>
+                          <div
+                            className={`${styles.subfolder} ${dragOverTarget === sub.id ? styles.dropTarget : ''}`}
+                            onDragOver={(e) => { e.stopPropagation(); onDragOver(e, sub.id); }}
+                            onDragLeave={onDragLeave}
+                            onDrop={(e) => { e.stopPropagation(); onDrop(e, folder.id, sub.id); }}
+                          >
+                            <FolderOpen className={styles.subfolderIcon} size={14} strokeWidth={1.5} />
+                            <span className={styles.subfolderName}>{sub.name}</span>
+                            <span className={styles.subfolderCode}>{sub.code}</span>
+                          </div>
+                          {subDocs.length > 0 && (
+                            <div className={styles.subfolderFiles}>
+                              {subDocs.map(doc => (
+                                <div
+                                  key={doc.id}
+                                  className={styles.fileChip}
+                                  draggable
+                                  onDragStart={(e) => onDragStart(e, doc.id)}
+                                >
+                                  <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
+                                  <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
+                                  <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} title="View" />
+                                  <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
+                                    <Download className={styles.fileChipDownload} size={14} />
+                                  </a>
+                                  <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} title="Delete" />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    <div
+                      className={`${styles.folderDropArea} ${dragOverTarget === `${folder.id}-root` ? styles.dragOver : ''}`}
+                      onDragOver={(e) => { e.stopPropagation(); onDragOver(e, `${folder.id}-root`); }}
+                      onDragLeave={onDragLeave}
+                      onDrop={(e) => { e.stopPropagation(); onDrop(e, folder.id, undefined); }}
+                    >
+                      <Plus size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Drop files here — root of {folder.name}
+                    </div>
+
+                    <div className={styles.rootFiles}>
+                      {folderDocs.filter(d => !d.subfolder).map(doc => (
+                        <div
+                          key={doc.id}
+                          className={styles.fileChip}
+                          draggable
+                          onDragStart={(e) => onDragStart(e, doc.id)}
+                        >
+                          <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
+                          <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
+                          <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} title="View" />
+                          <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
+                            <Download className={styles.fileChipDownload} size={14} />
+                          </a>
+                          <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} title="Delete" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

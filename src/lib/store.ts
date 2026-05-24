@@ -16,6 +16,8 @@ export interface Document {
   type: string;          // MIME or label
   size?: number;
   uploadedBy?: string;
+  folder?: string;       // NEW: folder ID or name
+  subfolder?: string;    // NEW: subfolder ID or name
 }
 
 export interface Client {

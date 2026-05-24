@@ -37,7 +37,9 @@ CREATE TABLE documents (
   uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   type TEXT,
   size BIGINT,
-  uploaded_by TEXT
+  uploaded_by TEXT,
+  folder TEXT,
+  subfolder TEXT
 );
 
 -- 4. Staff Table
