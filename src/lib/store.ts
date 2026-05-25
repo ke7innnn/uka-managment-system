@@ -50,6 +50,7 @@ export interface Client {
   priority?: 'low' | 'medium' | 'high';
   progressChecklist?: string[];
   syncStatus?: 'pending' | 'synced';
+  ocChecklist?: string[];
 }
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
@@ -656,4 +657,30 @@ export const PROGRESS_CHECKLIST_ITEMS = [
   { id: "62", label: "RIGHT OF WAY REGISTERED AGREEMENT" },
   { id: "63", label: "EC DRAWING WITH NOC" },
   { id: "64", label: "TDR UTILISATION FORM" }
+];
+
+export const OC_CHECKLIST_ITEMS = [
+  // MANDATORY
+  { id: "1", label: "APPENDIX G", type: "mandatory" },
+  { id: "2", label: "COMPLETION DRAWING", type: "mandatory" },
+  { id: "3", label: "RCC STABILITY CERTIFICATE FROM STRUCTURAL ENGINEER", type: "mandatory" },
+  { id: "4", label: "STRUCTURAL DESIGN ADEQUACY (CERTIFICATE AS PER APPENDIX C-4.3)", type: "mandatory" },
+  { id: "5", label: "NOC FROM FIRE DEPARTMENT FOR OCCUPATION", type: "mandatory" },
+  { id: "6", label: "NOC FROM WATER SUPPLY DEPARTMENT", type: "mandatory" },
+  { id: "7", label: "COMPLETION CERTIFICATE FOR SEWAGE TREATMENT PLANT (STP) FROM DRAINAGE DEPARTMENT", type: "mandatory" },
+  { id: "8", label: "ENCROACHMENT DEPARTMENT NOC", type: "mandatory" },
+  { id: "9", label: "NOC FROM TREE AUTHORITY", type: "mandatory" },
+  { id: "10", label: "TAX NOC", type: "mandatory" },
+  { id: "11", label: "LIFT NOC", type: "mandatory" },
+  { id: "12", label: "COMPLETION CERTIFICATE NOC FROM STORM WATER DEPARTMENT", type: "mandatory" },
+
+  // OPTIONAL
+  { id: "13", label: "APPENDIX – J FOR OCCUPANCY (INDEMNITY BOND)", type: "optional" },
+  { id: "14", label: "SOLAR WATER HEATING SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
+  { id: "15", label: "RAIN WATER HARVESTING SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
+  { id: "16", label: "ORGANIC WATER DISPOSAL SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
+  { id: "17", label: "CCTV SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
+  { id: "18", label: "HANDOVER RECEIPT OF BUILT-UP AMENITY / INCLUSIVE HOUSING TENEMENTS", type: "optional" },
+  { id: "19", label: "CERTIFICATE FROM ARCHITECT REGARDING NO. OF PARKINGS REQUIRED FOR THE PROPOSED BUILDING AND AVAILABLE AS PER BUILT PLAN", type: "optional" },
+  { id: "20", label: "CONSENT TO OPERATE FROM MPCB (POLLUTION CONTROL BOARD NOC)", type: "optional" }
 ];

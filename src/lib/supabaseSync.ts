@@ -41,6 +41,7 @@ export async function pullFromSupabase() {
       createdAt: c.created_at,
       tags: c.tags || [],
       progressChecklist: c.progress_checklist || [],
+      ocChecklist: c.oc_checklist || [],
       syncStatus: 'synced',
       phases: (c.phases || []).map((p: any) => ({
         id: p.id, name: p.name, completed: p.completed, order: p.order,
@@ -156,7 +157,8 @@ export async function pushClientsToSupabase(clients: Client[]) {
     project_status: c.projectStatus,
     created_at: c.createdAt,
     tags: c.tags,
-    progress_checklist: c.progressChecklist || []
+    progress_checklist: c.progressChecklist || [],
+    oc_checklist: c.ocChecklist || []
   }));
 
   const phaseRows: any[] = [];

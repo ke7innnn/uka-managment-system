@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS } from '@/lib/store';
+import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
 import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare } from 'lucide-react';
@@ -44,9 +44,49 @@ export default function ClientDetailPage() {
   const [client, setClient] = useState<Client | null>(null);
   const [newPhaseName, setNewPhaseName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'documents' | 'progress'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'documents' | 'progress' | 'oc'>('overview');
   
   // Client progress checklist search/filters & success state
+  const [progressSearch, setProgressSearch] = useState('');
+  const [progressFilter, setProgressFilter] = useState<'all' | 'completed' | 'pending'>('all');
+  const [showSendSuccess, setShowSendSuccess] = useState(false);
+
+  const handleSendProgress = () => {
+    setShowSendSuccess(true);
+    setTimeout(() => setShowSendSuccess(false), 4000);
+  };
+
+  const handleToggleChecklist = (itemId: string) => {
+    if (!client) return;
+    const current = client.progressChecklist || [];
+    const updated = current.includes(itemId)
+      ? current.filter(id => id !== itemId)
+      : [...current, itemId];
+    
+    updateClient(client.id, { progressChecklist: updated });
+    reload();
+  };
+
+  // OC checklist search/filters & success state
+  const [ocSearch, setOcSearch] = useState('');
+  const [ocFilter, setOcFilter] = useState<'all' | 'completed' | 'pending'>('all');
+  const [showOcSendSuccess, setShowOcSendSuccess] = useState(false);
+
+  const handleSendOc = () => {
+    setShowOcSendSuccess(true);
+    setTimeout(() => setShowOcSendSuccess(false), 4000);
+  };
+
+  const handleToggleOcChecklist = (itemId: string) => {
+    if (!client) return;
+    const current = client.ocChecklist || [];
+    const updated = current.includes(itemId)
+      ? current.filter(id => id !== itemId)
+      : [...current, itemId];
+    
+    updateClient(client.id, { ocChecklist: updated });
+    reload();
+  };
   const [progressSearch, setProgressSearch] = useState('');
   const [progressFilter, setProgressFilter] = useState<'all' | 'completed' | 'pending'>('all');
   const [showSendSuccess, setShowSendSuccess] = useState(false);
@@ -593,7 +633,7 @@ export default function ClientDetailPage() {
 
       {/* Tabs */}
       <div className={styles.tabs}>
-        {(['overview', 'phases', 'documents', 'progress'] as const).map((tab) => (
+        {(['overview', 'phases', 'documents', 'progress', 'oc'] as const).map((tab) => (
           <button
             key={tab}
             className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
@@ -603,13 +643,19 @@ export default function ClientDetailPage() {
             {tab === 'phases' && <List size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
             {tab === 'documents' && <FolderOpen size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
             {tab === 'progress' && <ClipboardCheck size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
-            {tab === 'progress' ? 'Client Progress' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === 'oc' && <ClipboardCheck size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
+            {tab === 'progress' ? 'Client Progress' : tab === 'oc' ? 'OC List' : tab.charAt(0).toUpperCase() + tab.slice(1)}
             {tab === 'documents' && client.documents.length > 0 && (
               <span className={styles.tabCount}>{client.documents.length}</span>
             )}
             {tab === 'progress' && (client.progressChecklist || []).length > 0 && (
               <span className={styles.tabCount} style={{ background: '#25d366', color: '#fff', border: 'none' }}>
                 {(client.progressChecklist || []).length}
+              </span>
+            )}
+            {tab === 'oc' && (client.ocChecklist || []).length > 0 && (
+              <span className={styles.tabCount} style={{ background: '#25d366', color: '#fff', border: 'none' }}>
+                {(client.ocChecklist || []).length}
               </span>
             )}
           </button>
@@ -790,6 +836,187 @@ export default function ClientDetailPage() {
                         <div
                           key={item.id}
                           onClick={() => handleToggleChecklist(item.id)}
+                          className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1rem',
+                            padding: '0.85rem 1.25rem',
+                            background: isChecked ? 'rgba(37, 211, 102, 0.04)' : 'rgba(255, 255, 255, 0.01)',
+                            border: '1px solid var(--border)',
+                            borderColor: isChecked ? 'rgba(37, 211, 102, 0.2)' : 'var(--border)',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <div style={{
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '4px',
+                            border: '2px solid',
+                            borderColor: isChecked ? '#25d366' : 'var(--text-tertiary)',
+                            background: isChecked ? '#25d366' : 'transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#fff',
+                            flexShrink: 0
+                          }}>
+                            {isChecked && <Check size={14} strokeWidth={3} />}
+                          </div>
+
+                          <div style={{
+                            fontSize: '0.9rem',
+                            color: isChecked ? 'var(--text-main)' : 'var(--text-secondary)',
+                            fontWeight: 500,
+                            lineHeight: 1.4
+                          }}>
+                            <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
+                              {item.id}.
+                            </span>
+                            {item.label}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            });
+          })()}
+        </div>
+      )}
+
+      {/* ── OC List Tab ────────────────────────────────────────────────── */}
+      {activeTab === 'oc' && (
+        <div className={`animate-fade-in ${styles.progressContainer}`}>
+          
+          {/* Summary Card */}
+          <div className={`glass-panel ${styles.progressCard}`}>
+            <div className={styles.progressFlex}>
+              <div>
+                <h2 className={styles.progressTitle}>Occupancy Certificate (OC) Checklist</h2>
+                <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Track receipt and filing of mandatory and optional documents required for Occupancy Certificate.
+                </p>
+              </div>
+              <button className={styles.sendBtn} onClick={handleSendOc}>
+                <MessageSquare size={16} /> Send OC Progress (WhatsApp)
+              </button>
+            </div>
+
+            {showOcSendSuccess && (
+              <div style={{
+                background: 'rgba(37, 211, 102, 0.1)',
+                border: '1px solid rgba(37, 211, 102, 0.25)',
+                color: '#25d366',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                marginBottom: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                animation: 'fadeIn 0.2s ease-out'
+              }}>
+                <span>✅</span>
+                <span>OC Progress update message generated! WhatsApp Interakt API transmission triggered for <strong>{client.name}</strong> ({client.phone || 'No phone set'}).</span>
+              </div>
+            )}
+
+            {/* Checklist Progress Bar */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                <span>OC Document Gathering & Verification Progress</span>
+                <span>
+                  {Math.round(((client.ocChecklist || []).length / OC_CHECKLIST_ITEMS.length) * 100)}%
+                </span>
+              </div>
+              <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  background: 'linear-gradient(90deg, #25d366, #128c7e)',
+                  width: `${Math.round(((client.ocChecklist || []).length / OC_CHECKLIST_ITEMS.length) * 100)}%`,
+                  transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }} />
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                {(client.ocChecklist || []).length} of {OC_CHECKLIST_ITEMS.length} documents collected and verified.
+              </p>
+            </div>
+          </div>
+
+          {/* Search & Filter Row */}
+          <div className={styles.progressFilterRow}>
+            <div className={styles.searchWrapper}>
+              <Search size={16} className={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder="Search OC documents..."
+                value={ocSearch}
+                onChange={e => setOcSearch(e.target.value)}
+                className={styles.searchInput}
+              />
+            </div>
+            
+            <div className={styles.filterBtns}>
+              {(['all', 'completed', 'pending'] as const).map(f => (
+                <button
+                  key={f}
+                  onClick={() => setOcFilter(f)}
+                  className={`${styles.filterBtn} ${ocFilter === f ? styles.filterBtnActive : ''}`}
+                >
+                  {f.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Checklist Items Grouped */}
+          {(() => {
+            const groups = [
+              {
+                title: "MANDATORY DOCUMENTS",
+                items: OC_CHECKLIST_ITEMS.filter(item => item.type === 'mandatory')
+              },
+              {
+                title: "OPTIONAL DOCUMENTS",
+                items: OC_CHECKLIST_ITEMS.filter(item => item.type === 'optional')
+              }
+            ];
+
+            return groups.map((grp, grpIdx) => {
+              // Apply search & filter
+              const filteredItems = grp.items.filter(item => {
+                const matchesSearch = item.label.toLowerCase().includes(ocSearch.toLowerCase()) || item.id === ocSearch;
+                const isChecked = (client.ocChecklist || []).includes(item.id);
+                if (ocFilter === 'completed') return matchesSearch && isChecked;
+                if (ocFilter === 'pending') return matchesSearch && !isChecked;
+                return matchesSearch;
+              });
+
+              if (filteredItems.length === 0) return null;
+
+              const completedInGroup = filteredItems.filter(item => (client.ocChecklist || []).includes(item.id)).length;
+
+              return (
+                <div key={grpIdx} className={styles.checklistGroup}>
+                  <div className={styles.groupHeader}>
+                    <span>{grp.title}</span>
+                    <span className={styles.groupCountBadge}>
+                      {completedInGroup} / {filteredItems.length} Done
+                    </span>
+                  </div>
+
+                  <div className={styles.checklistGrid}>
+                    {filteredItems.map(item => {
+                      const isChecked = (client.ocChecklist || []).includes(item.id);
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => handleToggleOcChecklist(item.id)}
                           className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''}`}
                           style={{
                             display: 'flex',
