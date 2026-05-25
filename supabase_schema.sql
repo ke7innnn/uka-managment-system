@@ -6,6 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. Clients Table
 CREATE TABLE clients (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  client_id TEXT,
   name TEXT NOT NULL,
   company TEXT,
   email TEXT,
@@ -25,7 +26,11 @@ CREATE TABLE phases (
   client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   completed BOOLEAN DEFAULT false,
-  "order" INTEGER DEFAULT 0
+  "order" INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'not-started',
+  time_bound TEXT,
+  started_at TEXT,
+  tasks TEXT DEFAULT '[]'
 );
 
 -- 3. Documents Table

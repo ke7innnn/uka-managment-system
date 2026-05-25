@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients } from '@/lib/store';
-import { initStageReminders, clearStageReminders, processReminders } from '@/lib/reminders';
+import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
 import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2 } from 'lucide-react';
 import styles from './page.module.css';
@@ -230,9 +230,20 @@ export default function ClientDetailPage() {
     const updated = client.phases.map((p) =>
       p.id === phaseId ? { ...p, timeBound: timeBoundDraft } : p
     );
+    
+    // Update reminder schedule if stage is in-progress
+    const phase = client.phases.find((p) => p.id === phaseId);
+    if (phase && phase.status === 'in-progress') {
+      const updatedPhase = { ...phase, timeBound: timeBoundDraft };
+      updateStageReminderSchedule(client, updatedPhase);
+    }
+    
     updateClient(client.id, { phases: updated });
     setEditingTimeBound(null);
     reload();
+    
+    // Process reminders immediately
+    processReminders(getClients());
   };
 
   const formatDeadline = (dateStr?: string) => {

@@ -190,10 +190,16 @@ export async function pushClientsToSupabase(clients: Client[]) {
   });
 
   const { error } = await supabase.from('clients').upsert(clientRows);
-  if (error) { console.error('pushClientsToSupabase error:', error.message); return; }
+  if (error) { console.error('pushClientsToSupabase clients error:', error.message); return; }
   
-  if (phaseRows.length > 0) await supabase.from('phases').upsert(phaseRows);
-  if (docRows.length > 0) await supabase.from('documents').upsert(docRows);
+  if (phaseRows.length > 0) {
+    const { error: phaseErr } = await supabase.from('phases').upsert(phaseRows);
+    if (phaseErr) console.error('pushClientsToSupabase phases error:', phaseErr.message);
+  }
+  if (docRows.length > 0) {
+    const { error: docErr } = await supabase.from('documents').upsert(docRows);
+    if (docErr) console.error('pushClientsToSupabase documents error:', docErr.message);
+  }
 
   // Clean up orphans
   const clientIds = clients.map(c => c.id);

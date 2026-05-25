@@ -85,6 +85,36 @@ export function initStageReminders(client: Client, phase: Phase): void {
 }
 
 /**
+ * Call this when admin changes or adds a stage deadline (timeBound).
+ * Creates or updates the reminder schedule.
+ */
+export function updateStageReminderSchedule(client: Client, phase: Phase): void {
+  if (phase.status !== 'in-progress') return;
+
+  const now = new Date();
+  const schedules = getSchedules();
+  const existingIdx = schedules.findIndex(s => s.stageId === phase.id && s.clientId === client.id);
+
+  if (existingIdx !== -1) {
+    // If a schedule already exists, force check immediately to process newly added deadline
+    schedules[existingIdx].nextFireAt = now.toISOString();
+  } else {
+    // If schedule doesn't exist, initialize it
+    const isOverdue = phase.timeBound ? now > new Date(phase.timeBound + 'T23:59:59') : false;
+    const nextFireAt = isOverdue ? now : new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    schedules.push({
+      stageId: phase.id,
+      clientId: client.id,
+      startedAt: phase.startedAt || now.toISOString(),
+      lastFiredAt: now.toISOString(),
+      nextFireAt: nextFireAt.toISOString(),
+      templateIndex: 1
+    });
+  }
+  saveSchedules(schedules);
+}
+
+/**
  * Call this on every page load. Checks for due reminders and fires them.
  */
 export function processReminders(clients: Client[]): void {
