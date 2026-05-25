@@ -395,12 +395,70 @@
 
 /* ── Global Mobile Sweep ── */
 @media (max-width: 768px) {
-  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .headerActions { width: 100%; }
-  .addBtn { width: 100%; justify-content: center; }
-  .statsGrid { grid-template-columns: 1fr; }
-  .assignForm { grid-template-columns: 1fr; }
-  .staffGrid { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .title { font-size: 1.6rem; }
+  .statsRow { grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .quickAssignGrid { grid-template-columns: 1fr; gap: 0.75rem; }
+  .submitBtn { width: 100%; }
+  .filters { gap: 0.75rem; }
+  .colorFilters { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  
+  .staffCard {
+    position: relative;
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+  
+  .cardTop {
+    align-items: center;
+  }
+  
+  .colorBadge {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .cardName {
+    padding-right: 6.5rem;
+    word-break: break-word;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+  
+  .metaRow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .metaItem {
+    align-items: center;
+    text-align: center;
+  }
+  
+  .metaVal {
+    font-size: 0.85rem;
+  }
+  
+  .metaLabel {
+    font-size: 0.6rem;
+  }
+  
+  .cardActions {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  
+  .cardActions button, .cardActions a {
+    font-size: 0.75rem;
+    padding: 0.55rem;
+  }
+  
+  .cardActions .deleteBtn {
+    grid-column: span 2;
+  }
 }
 
 /* ── Premium Quick Assign Card ── */

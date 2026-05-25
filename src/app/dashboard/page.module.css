@@ -354,4 +354,29 @@
     min-height: 260px;
   }
   .actionGrid { grid-template-columns: 1fr; }
+  
+  .clientRow {
+    position: relative;
+    padding-right: 5.5rem;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .clientRight {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+  
+  .clientName {
+    word-break: break-word;
+    line-height: 1.35;
+    font-size: 0.85rem;
+  }
+  
+  .clientMeta {
+    font-size: 0.65rem;
+    word-break: break-all;
+    margin-top: 0.15rem;
+  }
 }

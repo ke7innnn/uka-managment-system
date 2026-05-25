@@ -273,9 +273,123 @@
 
 /* ── Global Mobile Sweep ── */
 @media (max-width: 768px) {
-  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .grid { grid-template-columns: 1fr; }
-  .taskForm { flex-direction: column; align-items: stretch; }
-  .attendanceForm { grid-template-columns: 1fr; }
-  .tableWrap { overflow-x: auto; }
+  .hero {
+    position: relative;
+    padding: 1.25rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
+  }
+  
+  .heroLeft {
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .heroInfo {
+    align-items: center;
+  }
+  
+  .heroMeta {
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  
+  .heroRight {
+    align-items: center;
+    width: 100%;
+    gap: 0.75rem;
+  }
+  
+  .heroBadge {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.75rem;
+  }
+  
+  .editBtn {
+    width: 100%;
+    text-align: center;
+    padding: 0.6rem;
+  }
+
+  .summaryStrip {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .summaryCard {
+    padding: 0.85rem 1rem;
+    gap: 0.5rem;
+    min-width: 0;
+    align-items: center;
+  }
+  
+  .summaryVal {
+    font-size: 1.05rem;
+  }
+  
+  .summaryLabel {
+    font-size: 0.62rem;
+  }
+  
+  .tabs {
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.2rem;
+    padding: 0.3rem;
+  }
+  
+  .tabBtn {
+    flex: 1;
+    white-space: nowrap;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .infoGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .addTaskRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .taskInput, .dateInput, .addBtn {
+    width: 100%;
+    flex: none;
+  }
+  
+  .attForm {
+    padding: 1.25rem;
+  }
+  
+  .attFormGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .attCard {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+  
+  .attCardLeft {
+    width: 100%;
+  }
+  
+  .attDelete {
+    align-self: flex-end;
+    padding: 0.4rem;
+  }
 }
