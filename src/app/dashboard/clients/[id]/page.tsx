@@ -667,6 +667,22 @@ export default function ClientDetailPage() {
           {client.kyc && (
             <div className={styles.notesBox} style={{ marginTop: '2rem' }}>
               <h3 className={styles.notesTitle}>KYC Details</h3>
+              {client.kyc.proposedSub && (
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '6px',
+                  padding: '1rem',
+                  fontSize: '0.9rem',
+                  lineHeight: 1.5,
+                  color: 'var(--text-main)',
+                  marginTop: '0.75rem',
+                  fontWeight: 600
+                }}>
+                  <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Subject Line (SUB)</span>
+                  {client.kyc.proposedSub}
+                </div>
+              )}
               <div className={styles.infoGrid} style={{ marginTop: '1rem' }}>
                 {client.clientPassword && <InfoItem label="Client Password" value={client.clientPassword} />}
                 <InfoItem label="Proposed Development" value={client.kyc.proposedDevelopment} />

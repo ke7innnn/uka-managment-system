@@ -32,6 +32,7 @@ export interface Document {
 }
 
 export interface KycData {
+  proposedSub?: string;
   proposedDevelopment?: string; // RESIDENTIAL CUM SHOPLINE / COMMERCIAL / RESIDENTIAL / INDUSTRIAL
   landBearingSno?: string;
   landBearingPlotNo?: string;

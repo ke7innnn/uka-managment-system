@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Client, addClient, updateClient } from '@/lib/store';
 import styles from './ClientForm.module.css';
@@ -21,6 +21,7 @@ type FormData = {
   priority: 'low' | 'medium' | 'high';
   
   // KYC fields
+  proposedSub: string;
   proposedDevelopment: string;
   landBearingSno: string;
   landBearingPlotNo: string;
@@ -94,6 +95,7 @@ export default function ClientForm({ client, mode }: Props) {
     priority: client?.priority || 'medium',
     
     // KYC initial states
+    proposedSub: client?.kyc?.proposedSub || '',
     proposedDevelopment: client?.kyc?.proposedDevelopment || 'RESIDENTIAL CUM SHOPLINE',
     landBearingSno: client?.kyc?.landBearingSno || '',
     landBearingPlotNo: client?.kyc?.landBearingPlotNo || '',
@@ -148,6 +150,17 @@ export default function ClientForm({ client, mode }: Props) {
   const set = (field: keyof FormData, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
+  // Auto-generate proposedSub when dependencies change, unless manually modified
+  useEffect(() => {
+    setForm((prev) => {
+      const defaultText = `PROPOSED REDEVELOPMENT / DEVELOPMENT PERMISSION FOR PROPOSED ${prev.proposedDevelopment || 'RESIDENTIAL CUM SHOPLINE'} BUILDING ON LAND BEARING S.NO. ${prev.landBearingSno || '______'}, PLOT NO. ${prev.landBearingPlotNo || '_____'} OF VILLAGE: ${prev.landBearingVillage || '________'} TAL: ${prev.landBearingTal || 'VASAI'}, DIST.: ${prev.landBearingDist || 'PALGHAR'}.`;
+      if (!prev.proposedSub || prev.proposedSub.startsWith("PROPOSED REDEVELOPMENT")) {
+        return { ...prev, proposedSub: defaultText };
+      }
+      return prev;
+    });
+  }, [form.proposedDevelopment, form.landBearingSno, form.landBearingPlotNo, form.landBearingVillage, form.landBearingTal, form.landBearingDist]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) { setError('Client name is required.'); return; }
@@ -158,6 +171,7 @@ export default function ClientForm({ client, mode }: Props) {
       .filter(Boolean);
 
     const kycData = {
+      proposedSub: form.proposedSub,
       proposedDevelopment: form.proposedDevelopment,
       landBearingSno: form.landBearingSno,
       landBearingPlotNo: form.landBearingPlotNo,
@@ -302,6 +316,18 @@ export default function ClientForm({ client, mode }: Props) {
 
       <Section title="KYC Details">
         <div className={styles.grid}>
+          {/* Proposed Subject Line */}
+          <div className={styles.fieldGroup} style={{ gridColumn: '1 / -1' }}>
+            <label htmlFor="proposedSub" className={styles.label}>SUB: - Proposed Development Subject Line (Auto-Generated & Editable)</label>
+            <textarea
+              id="proposedSub"
+              value={form.proposedSub}
+              onChange={(e) => set('proposedSub', e.target.value)}
+              placeholder="Proposed redevelopment subject line details"
+              rows={3}
+              className={styles.textarea}
+            />
+          </div>
           {/* Proposed Development & Land Bearing */}
           <div className={styles.fieldGroup}>
             <label htmlFor="proposedDevelopment" className={styles.label}>Proposed Development Type</label>
