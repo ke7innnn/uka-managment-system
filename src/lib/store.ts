@@ -140,8 +140,16 @@ export function getClients(): Client[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsedClients: Client[] = raw ? JSON.parse(raw) : [];
     
+    // Tombstone check for deleted clients
+    const deletedRaw = localStorage.getItem('uka_deleted_client_ids');
+    const deletedIds = new Set<string>(deletedRaw ? JSON.parse(deletedRaw) : []);
+    
     const deduplicatedMap = new Map<string, Client>();
-    parsedClients.forEach(c => deduplicatedMap.set(c.id, c));
+    parsedClients.forEach(c => {
+      if (!deletedIds.has(c.id)) {
+        deduplicatedMap.set(c.id, c);
+      }
+    });
     const clients = Array.from(deduplicatedMap.values());
     
     let migrated = false;
@@ -390,18 +398,37 @@ export function updateClient(id: string, data: Partial<Client>): Client | undefi
 export function deleteClient(id: string): void {
   const clients = getClients().filter((c) => c.id !== id);
   // Save locally first
-  if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+    
+    // Add to tombstone list to prevent sync from bringing it back
+    const deletedRaw = localStorage.getItem('uka_deleted_client_ids');
+    const deleted: string[] = deletedRaw ? JSON.parse(deletedRaw) : [];
+    if (!deleted.includes(id)) {
+      deleted.push(id);
+      localStorage.setItem('uka_deleted_client_ids', JSON.stringify(deleted));
+    }
+  }
+
   // Delete from Supabase in background
   import('./supabase').then(({ supabase }) => {
-    supabase.from('phases').delete().eq('client_id', id).then(({ error }) => {
-      if (error) console.error('Delete phases error:', error.message);
-    });
-    supabase.from('documents').delete().eq('client_id', id).then(({ error }) => {
-      if (error) console.error('Delete documents error:', error.message);
-    });
-    supabase.from('clients').delete().eq('id', id).then(({ error }) => {
-      if (error) console.error('Delete clients error:', error.message);
-    });
+    Promise.all([
+      supabase.from('phases').delete().eq('client_id', id),
+      supabase.from('documents').delete().eq('client_id', id),
+      supabase.from('clients').delete().eq('id', id)
+    ]).then(([phaseRes, docRes, clientRes]) => {
+      if (clientRes.error) {
+        console.error('Delete clients error:', clientRes.error.message);
+      } else {
+        // Successfully deleted from Supabase, remove from tombstone
+        const deletedRaw = localStorage.getItem('uka_deleted_client_ids');
+        if (deletedRaw) {
+          const deleted: string[] = JSON.parse(deletedRaw);
+          const updated = deleted.filter(deletedId => deletedId !== id);
+          localStorage.setItem('uka_deleted_client_ids', JSON.stringify(updated));
+        }
+      }
+    }).catch(console.error);
   }).catch(console.error);
 }
 

@@ -89,20 +89,26 @@ export async function pullFromSupabase() {
     const localClients: Client[] = localClientsRaw ? JSON.parse(localClientsRaw) : [];
     const localStaff: StaffMember[] = localStaffRaw ? JSON.parse(localStaffRaw) : [];
 
-    const supabaseClientIds = new Set(supabaseClients.map(c => c.id));
+    // Tombstone check for deleted clients
+    const deletedRaw = localStorage.getItem('uka_deleted_client_ids');
+    const deletedIds = new Set<string>(deletedRaw ? JSON.parse(deletedRaw) : []);
+
+    const activeSupabaseClients = supabaseClients.filter(c => !deletedIds.has(c.id));
+
+    const supabaseClientIds = new Set(activeSupabaseClients.map(c => c.id));
     // For staff, deduplicate by BOTH id AND name to prevent clones
     const supabaseStaffIds = new Set(supabaseStaff.map(s => s.id));
     const supabaseStaffNames = new Set(supabaseStaff.map(s => s.name.toLowerCase()));
 
-    // Clients pending push: local clients that have explicitly been marked as 'pending' syncStatus
-    const pendingLocalClients = localClients.filter(c => c.syncStatus === 'pending');
+    // Clients pending push: local clients that have explicitly been marked as 'pending' syncStatus (and not deleted)
+    const pendingLocalClients = localClients.filter(c => c.syncStatus === 'pending' && !deletedIds.has(c.id));
     // Staff pending push: not in Supabase by ID AND not already there by name (prevents clones)
     const pendingLocalStaff = localStaff.filter(s =>
       !supabaseStaffIds.has(s.id) && !supabaseStaffNames.has(s.name.toLowerCase())
     );
 
     const mergedClientsMap = new Map<string, Client>();
-    supabaseClients.forEach(c => mergedClientsMap.set(c.id, c));
+    activeSupabaseClients.forEach(c => mergedClientsMap.set(c.id, c));
     pendingLocalClients.forEach(c => mergedClientsMap.set(c.id, c)); // pending local takes precedence
 
     const mergedStaffMap = new Map<string, StaffMember>();
@@ -116,6 +122,26 @@ export async function pullFromSupabase() {
     localStorage.setItem('uka_staff', JSON.stringify(mergedStaff));
     // Mark that we have synced at least once — getStaff() uses this to skip re-seeding
     localStorage.setItem('uka_supabase_synced', 'true');
+
+    // Retry deletes in the background for any failed tombstoned clients
+    if (deletedIds.size > 0) {
+      deletedIds.forEach(id => {
+        Promise.all([
+          supabase.from('phases').delete().eq('client_id', id),
+          supabase.from('documents').delete().eq('client_id', id),
+          supabase.from('clients').delete().eq('id', id)
+        ]).then(([phaseRes, docRes, clientRes]) => {
+          if (!clientRes.error) {
+            const currentDeletedRaw = localStorage.getItem('uka_deleted_client_ids');
+            if (currentDeletedRaw) {
+              const currentDeleted: string[] = JSON.parse(currentDeletedRaw);
+              const updated = currentDeleted.filter(deletedId => deletedId !== id);
+              localStorage.setItem('uka_deleted_client_ids', JSON.stringify(updated));
+            }
+          }
+        }).catch(console.error);
+      });
+    }
 
     // Retry push for any records that hadn't synced yet
     if (pendingLocalClients.length > 0) {
