@@ -6,6 +6,14 @@
   position: relative;
 }
 
+@media (max-width: 768px) {
+  .wrapper {
+    flex-direction: column;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+}
+
 /* Desktop sidebar container */
 .sidebarDesktop {
   display: block;
@@ -121,10 +129,14 @@
     transform: translateX(-100%);
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 20px 0 30px rgba(0, 0, 0, 0.25);
+    visibility: hidden;         /* Prevent touch blocking when closed */
+    pointer-events: none;      /* Prevent touch blocking when closed */
   }
 
   .mobileSidebarOpen {
     transform: translateX(0);
+    visibility: visible !important;   /* Reactivate when open */
+    pointer-events: auto !important; /* Reactivate when open */
   }
 }
 
