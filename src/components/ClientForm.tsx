@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Client, addClient, updateClient, OtherOwner } from '@/lib/store';
+import { FileText, Image as ImageIcon } from 'lucide-react';
 import styles from './ClientForm.module.css';
 
 type FormData = {
@@ -800,6 +801,9 @@ function ImageField({
     reader.readAsDataURL(file);
   };
 
+  const isPdf = value.startsWith('data:application/pdf') || value.includes('pdf');
+  const isHeic = value.startsWith('data:image/heic') || value.startsWith('data:image/heif') || value.startsWith('data:application/octet-stream') || value.includes('heic') || value.includes('heif');
+
   return (
     <div className={styles.fieldGroup} style={{ gridColumn: 'span 1' }}>
       <label className={styles.label}>{label}</label>
@@ -815,7 +819,19 @@ function ImageField({
           alignItems: 'center',
           gap: '8px'
         }}>
-          <img src={value} alt={label} style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '6px', objectFit: 'contain' }} />
+          {isPdf ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '12px' }}>
+              <FileText size={48} color="var(--primary)" />
+              <span style={{ fontSize: '0.825rem', color: 'var(--text-primary)', fontWeight: 500 }}>PDF Document</span>
+            </div>
+          ) : isHeic ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '12px' }}>
+              <ImageIcon size={48} color="var(--primary)" />
+              <span style={{ fontSize: '0.825rem', color: 'var(--text-primary)', fontWeight: 500 }}>HEIC/HEIF Image</span>
+            </div>
+          ) : (
+            <img src={value} alt={label} style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '6px', objectFit: 'contain' }} />
+          )}
           <button
             type="button"
             onClick={() => onChange('')}
@@ -831,7 +847,7 @@ function ImageField({
               transition: 'background 0.15s ease'
             }}
           >
-            Remove Image
+            Remove File
           </button>
         </div>
       ) : (
@@ -847,11 +863,11 @@ function ImageField({
         }}
         onClick={() => document.getElementById(`file-${id}`)?.click()}
         >
-          <span style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>Click to upload image</span>
+          <span style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>Click to upload file</span>
           <input
             type="file"
             id={`file-${id}`}
-            accept="image/*"
+            accept="image/*,.heic,.heif,.pdf"
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
