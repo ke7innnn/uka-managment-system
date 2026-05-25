@@ -692,12 +692,38 @@ export function updateStaffMember(id: string, data: Partial<StaffMember>): Staff
 
 export function deleteStaffMember(id: string): void {
   const staff = getStaff().filter((s) => s.id !== id);
-  if (typeof window !== 'undefined') localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+  
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+    
+    // Add to tombstone list to prevent sync from bringing it back
+    const deletedRaw = localStorage.getItem('uka_deleted_staff_ids');
+    const deleted: string[] = deletedRaw ? JSON.parse(deletedRaw) : [];
+    if (!deleted.includes(id)) {
+      deleted.push(id);
+      localStorage.setItem('uka_deleted_staff_ids', JSON.stringify(deleted));
+    }
+  }
+
   // Delete from Supabase in background
-  import('./supabase').then(({ supabase }) => {
-    supabase.from('staff_tasks').delete().eq('staff_id', id).then(() => {});
-    supabase.from('attendance_logs').delete().eq('staff_id', id).then(() => {});
-    supabase.from('staff').delete().eq('id', id).then(() => {});
+  import('./supabase').then(async ({ supabase }) => {
+    try {
+      await supabase.from('staff_tasks').delete().eq('staff_id', id);
+      await supabase.from('attendance_logs').delete().eq('staff_id', id);
+      const staffRes = await supabase.from('staff').delete().eq('id', id);
+
+      if (!staffRes.error) {
+        // Successfully deleted from Supabase, remove from tombstone
+        const deletedRaw = localStorage.getItem('uka_deleted_staff_ids');
+        if (deletedRaw) {
+          const deleted: string[] = JSON.parse(deletedRaw);
+          const updated = deleted.filter(deletedId => deletedId !== id);
+          localStorage.setItem('uka_deleted_staff_ids', JSON.stringify(updated));
+        }
+      }
+    } catch (err) {
+      console.error('Delete staff member sequential error:', err);
+    }
   }).catch(console.error);
 }
 

@@ -89,22 +89,26 @@ export async function pullFromSupabase() {
     const localClients: Client[] = localClientsRaw ? JSON.parse(localClientsRaw) : [];
     const localStaff: StaffMember[] = localStaffRaw ? JSON.parse(localStaffRaw) : [];
 
-    // Tombstone check for deleted clients
+    // Tombstone check for deleted clients and staff
     const deletedRaw = localStorage.getItem('uka_deleted_client_ids');
     const deletedIds = new Set<string>(deletedRaw ? JSON.parse(deletedRaw) : []);
 
+    const deletedStaffRaw = localStorage.getItem('uka_deleted_staff_ids');
+    const deletedStaffIds = new Set<string>(deletedStaffRaw ? JSON.parse(deletedStaffRaw) : []);
+
     const activeSupabaseClients = supabaseClients.filter(c => !deletedIds.has(c.id));
+    const activeSupabaseStaff = supabaseStaff.filter(s => !deletedStaffIds.has(s.id));
 
     const supabaseClientIds = new Set(activeSupabaseClients.map(c => c.id));
     // For staff, deduplicate by BOTH id AND name to prevent clones
-    const supabaseStaffIds = new Set(supabaseStaff.map(s => s.id));
-    const supabaseStaffNames = new Set(supabaseStaff.map(s => s.name.toLowerCase()));
+    const supabaseStaffIds = new Set(activeSupabaseStaff.map(s => s.id));
+    const supabaseStaffNames = new Set(activeSupabaseStaff.map(s => s.name.toLowerCase()));
 
     // Clients pending push: local clients that have explicitly been marked as 'pending' syncStatus (and not deleted)
     const pendingLocalClients = localClients.filter(c => c.syncStatus === 'pending' && !deletedIds.has(c.id));
-    // Staff pending push: not in Supabase by ID AND not already there by name (prevents clones)
+    // Staff pending push: not in Supabase by ID AND not already there by name (prevents clones) and not deleted
     const pendingLocalStaff = localStaff.filter(s =>
-      !supabaseStaffIds.has(s.id) && !supabaseStaffNames.has(s.name.toLowerCase())
+      !supabaseStaffIds.has(s.id) && !supabaseStaffNames.has(s.name.toLowerCase()) && !deletedStaffIds.has(s.id)
     );
 
     const mergedClientsMap = new Map<string, Client>();
@@ -112,7 +116,7 @@ export async function pullFromSupabase() {
     pendingLocalClients.forEach(c => mergedClientsMap.set(c.id, c)); // pending local takes precedence
 
     const mergedStaffMap = new Map<string, StaffMember>();
-    supabaseStaff.forEach(s => mergedStaffMap.set(s.id, s));
+    activeSupabaseStaff.forEach(s => mergedStaffMap.set(s.id, s));
     pendingLocalStaff.forEach(s => mergedStaffMap.set(s.id, s));
 
     const mergedClients = Array.from(mergedClientsMap.values());
@@ -141,6 +145,28 @@ export async function pullFromSupabase() {
           }
         } catch (err) {
           console.error('Retry delete client sequential error:', err);
+        }
+      });
+    }
+
+    // Retry deletes in the background sequentially for any failed tombstoned staff members
+    if (deletedStaffIds.size > 0) {
+      deletedStaffIds.forEach(async (id) => {
+        try {
+          await supabase.from('staff_tasks').delete().eq('staff_id', id);
+          await supabase.from('attendance_logs').delete().eq('staff_id', id);
+          const staffRes = await supabase.from('staff').delete().eq('id', id);
+
+          if (!staffRes.error) {
+            const currentDeletedRaw = localStorage.getItem('uka_deleted_staff_ids');
+            if (currentDeletedRaw) {
+              const currentDeleted: string[] = JSON.parse(currentDeletedRaw);
+              const updated = currentDeleted.filter(deletedId => deletedId !== id);
+              localStorage.setItem('uka_deleted_staff_ids', JSON.stringify(updated));
+            }
+          }
+        } catch (err) {
+          console.error('Retry delete staff sequential error:', err);
         }
       });
     }
