@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS } from '@/lib/store';
+import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
 import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare } from 'lucide-react';
@@ -225,15 +225,25 @@ export default function ClientDetailPage() {
 
   const startStage = (phaseId: string) => {
     const phase = client.phases.find(p => p.id === phaseId);
+    if (!phase) return;
+
+    let finalTimeBound = phase.timeBound;
+    if (!finalTimeBound) {
+      const days = getStageDefaultWorkingDays(phase.name);
+      if (days > 0) {
+        finalTimeBound = calculateDefaultDeadline(days);
+      }
+    }
+
+    const startedAt = new Date().toISOString();
     const updated = client.phases.map((p) =>
-      p.id === phaseId ? { ...p, status: 'in-progress' as const, startedAt: new Date().toISOString() } : p
+      p.id === phaseId ? { ...p, status: 'in-progress' as const, startedAt, timeBound: finalTimeBound } : p
     );
     updateClient(client.id, { phases: updated });
+    
     // Fire reminders & workspace message
-    if (phase) {
-      const updatedPhase = { ...phase, status: 'in-progress' as const, startedAt: new Date().toISOString() };
-      initStageReminders(client, updatedPhase);
-    }
+    const updatedPhase = { ...phase, status: 'in-progress' as const, startedAt, timeBound: finalTimeBound };
+    initStageReminders(client, updatedPhase);
     reload();
   };
 

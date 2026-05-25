@@ -98,7 +98,7 @@ export default function ClientsPage() {
             </thead>
             <tbody>
               {filtered.map((client) => {
-                const donePhases = client.phases.filter((p) => p.completed).length;
+                const donePhases = client.phases.filter((p) => p.status === 'completed' || p.completed).length;
                 return (
                   <tr key={client.id}>
                     <td>

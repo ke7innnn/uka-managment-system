@@ -166,88 +166,111 @@ export function getClientById(id: string): Client | undefined {
 
 export const DEFAULT_PHASES_TEMPLATE = [
   {
-    name: "Stage 1 — File Preparation",
+    name: "Stage 1a — Sadhana/Uzaid: File Prep & Order Placement (3 Working Days)",
     status: "not-started" as const,
     tasks: [
-      // Sadhana & Uzaid — 2 Working Days together
-      { title: "Filing with sticker and basic papers — 7/12, physical survey with surroundings and gutbook superimposed for D.P, gutbook, site photos, KYC questionnaire, Architect Appointment Letter", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      { title: "Give entire paperwork checklist of approval to client", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Filing with sticker and basic papers (7.12, physical survey with surroundings and gutbook superimposed for D.P, gutbook, site photos, KYC questionnaire, ARCHITECT APPOINTMENT LETTER, give ENTIRE PAPERWORK CHECKLIST of approval to client)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Place order for 2 sets of TILR/NOCs (mention DATE & whether client is doing it or responsible persons name)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Place order for 2 sets of all revenue papers (mention DATE whether client is doing it or responsible persons name)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
       { title: "Upload project on website", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      { title: "Give it Office UIN and form WhatsApp group", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      { title: "Send summarized auto prompt to client and boss on group", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      // Vijay & Uzaid — 3 Working Days together
-      { title: "Upload basic plot on DP marking, CRZ, Wetland, Eco Sensitive Zone Corridor, Heritage, KMZ images on website and give remark", assignedTo: "Vijay Palkar & Uzaid Khan" },
-      { title: "Check whether additional NOCs required (Forest, Railway, Environmental Clearance, Highway Access, etc.) and mention remark accordingly", assignedTo: "Vijay Palkar & Uzaid Khan" },
-      { title: "Place order for 2 sets of TILR/NOCs — mention date and whether client is doing it or responsible person's name", assignedTo: "Vijay Palkar & Uzaid Khan" },
-      { title: "Place order for 2 sets of all revenue papers — mention date, whether client is doing it or responsible person's name", assignedTo: "Vijay Palkar & Uzaid Khan" },
-      { title: "Send summarized auto prompt to document provider, client and boss on group", assignedTo: "Vijay Palkar & Uzaid Khan" }
+      { title: "Give it OFFICE UIN and form WhatsApp group (Vrushali madam)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Summarized Auto prompt is sent to client and boss on group.", assignedTo: "Sadhana Kanojiya & Uzaid Khan" }
     ]
   },
   {
-    name: "Stage 2 — Paper Procurement",
+    name: "Stage 1b — Vijay/Uzaid: Plot Details & NOC Checks (3 Working Days)",
     status: "not-started" as const,
     tasks: [
-      // Sadhana & Uzaid — 5 Working Days
-      { title: "Prepare 1 office file copy and 1 VVCMC file copy", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Upload basic plot on DP marking, CRZ, WETLAND, eco sensitive zone CORRIDOR, HERITAGE, KMZ images on website and give remark.", assignedTo: "Vijay Palkar & Uzaid Khan" },
+      { title: "Check whether any other NOC like Forest, Railway, Environmental clearance, Highway access NOC, etc is required and mention remark accordingly.", assignedTo: "Vijay Palkar & Uzaid Khan" },
+      { title: "Summarized Auto prompt is sent to document provider, client and boss on group.", assignedTo: "Vijay Palkar & Uzaid Khan" }
+    ]
+  },
+  {
+    name: "Stage 2c — Sadhana/Uzaid: Paper Procurement (5 Working Days)",
+    status: "not-started" as const,
+    tasks: [
+      { title: "Ready half CHECKLIST", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Prepare 1 office file copy and 1 vvcmc file copy", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
       { title: "Complete balance typing as per entire checklist", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
       { title: "Finalise the file and upload on web", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      { title: "Forward to Vrushali Madam for online inward", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      { title: "Forward to Vijay Sir for Legal and Tree NOC (1 set VVCMC hard copy)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      { title: "Fast track TILR with client", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      { title: "Produce rough challan estimate", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      { title: "Send summarized auto prompt to client and boss on group", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      // Vrushali — upon forwarding
-      { title: "Receive file forwarded for online inward", assignedTo: "Vrushali Thakur" },
-      { title: "Process online inward of the file", assignedTo: "Vrushali Thakur" }
+      { title: "Forward to Vrushali madam for online Inward", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Forward to Vijay Sir for legal and tree NOC (1 SET VVCMC HARD COPY)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Fast track TILR with client.", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Produce Rough challan estimate AND Rough Architect billing Estimate. (Vrushali)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Summarized Auto prompt is sent to client and boss on group.", assignedTo: "Sadhana Kanojiya & Uzaid Khan" }
     ]
   },
   {
-    name: "Stage 3 — Legal / Tree NOC",
+    name: "Stage 3d — Vijay: Legal/Tree NOC (21 Working Days)",
     status: "not-started" as const,
     tasks: [
-      // Vijay Palkar — 21 Working Days
-      { title: "Mention compliances of legal department and tree department scrutiny periodically", assignedTo: "Vijay Palkar" },
+      { title: "Mention compliances of legal department, tree department scrutiny time to time.", assignedTo: "Vijay Palkar" },
       { title: "Confirm and upload final TILR document on web", assignedTo: "Vijay Palkar" },
-      { title: "Upload final legal and tree NOC signed noting", assignedTo: "Vijay Palkar" },
+      { title: "Upload final legal, tree NOC signed noting", assignedTo: "Vijay Palkar" },
       { title: "Upload DP marking", assignedTo: "Vijay Palkar" },
-      // Uzaid & Vrushali — 14 Days upon receipt of TILR and plans from Uday
-      { title: "Prepare and upload offline drawing", assignedTo: "Uzaid Khan & Vrushali Thakur" },
-      { title: "Ready online clear report and drawing and upload", assignedTo: "Uzaid Khan & Vrushali Thakur" },
-      { title: "Complete final offline docket as per checklist", assignedTo: "Uzaid Khan & Vrushali Thakur" },
-      { title: "Any issues/clarifications to be mentioned to Nihal on live chat window (no verbal communication)", assignedTo: "Uzaid Khan & Vrushali Thakur" },
-      // Uzaid only
-      { title: "Ensure Nihal acknowledges offline docket receipt", assignedTo: "Uzaid Khan" },
-      { title: "Ensure file is inwarded and covering letter with online/offline number is uploaded on site", assignedTo: "Uzaid Khan" },
-      // Nihal Gharat — upon receipt of offline docket
-      { title: "Acknowledge that offline docket has been successfully received", assignedTo: "Nihal Gharat" },
-      { title: "Ensure that file is inwarded", assignedTo: "Nihal Gharat" },
-      { title: "Upload covering letter with online/offline number identification on the site", assignedTo: "Nihal Gharat" },
-      // Uday Arekar — 2 Days
-      { title: "Attach final signed drawing from client on site for further drafting by Vrushali Madam", assignedTo: "Uday Arekar" },
-      // Crystal Nadar — 4 Days
-      { title: "Attach service drawings and EE report", assignedTo: "Crystal Nadar" }
+      { title: "FINAL PLAN & COMMENTS FROM UDAY.", assignedTo: "Vijay Palkar" },
+      { title: "PRE-AUTO DCR - Sadhana/Vrushali madam (7 DAYS)", assignedTo: "Vijay Palkar" },
+      { title: "HARSH/UDAY to attach service drawings and EE report (7 days)", assignedTo: "Vijay Palkar" },
+      { title: "Summarized Auto prompt is sent to client and boss on group (CHECKLIST COMPLETE)", assignedTo: "Vijay Palkar" }
     ]
   },
   {
-    name: "Stage 3 — Upon Obtaining Permission",
+    name: "Stage 3e — Uzaid/Vrushali/Nihal: Drawing, Report & Inwarding (14 Days upon TILR/Plans)",
     status: "not-started" as const,
     tasks: [
-      // Uzaid Khan
-      { title: "Update the master file sheet", assignedTo: "Uzaid Khan" },
-      { title: "Upload all scanning of orders and blueprints", assignedTo: "Uzaid Khan" },
-      { title: "Forward to Crystal for Rera letters / On-site handling", assignedTo: "Uzaid Khan" },
-      // Vrushali Thakur
-      { title: "Update the master file sheet", assignedTo: "Vrushali Thakur" },
-      { title: "Upload all scanning of orders and blueprints", assignedTo: "Vrushali Thakur" },
-      { title: "Handle Rera letters / On-site handling (forwarded from Uzaid)", assignedTo: "Vrushali Thakur" },
-      // Crystal Nadar
-      { title: "Handle Rera letters", assignedTo: "Crystal Nadar" },
-      { title: "On-site handling", assignedTo: "Crystal Nadar" },
-      // Ganesh Kadam — within 2 days from online permission
-      { title: "Provide images of notings upon issue of online permission", assignedTo: "Ganesh Kadam" }
+      { title: "Prepare and upload offline drawing", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
+      { title: "Online clear report and drawing to be readied and uploaded", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
+      { title: "Summarized Auto prompt is sent to client and boss on group (REPORT/DRAWING IS COMPLETE AND ATTACHMENT IS AUTO SENT)", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
+      { title: "MARGINAL CONCESSION DIAGRAM AS PER REPORT- 1 DAY", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
+      { title: "Complete FINAL OFFLINE DOCKET to be readied as per checklist", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
+      { title: "Any issues/clarifications/CHANGES to be mentioned by Vrushali/uzaid to nihal and me on the site itself without verbal communication AND PROCESS E TO BE REPEATED (live chat window)", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
+      { title: "Nihal to acknowledge that offline docket has been successfully received", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
+      { title: "Nihal to ensure that file is inwarded and covering letter with online/offline number identification is uploaded on the site", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" }
+    ]
+  },
+  {
+    name: "Stage 3f — Uzaid/Vrushali: Final Approval & Receipts (Upon obtaining permission)",
+    status: "not-started" as const,
+    tasks: [
+      { title: "AUTO PROMPT TO CLIENT AND BOSS- PROJECT HAS BEEN APPROVED VIA OFFLINE MODE BY HON. COMMISSIONER SIR ON………. FURTHER PROCESS FOR ONLINE APPROVAL AND CHALLANS HAS BEEN INITIATED.", assignedTo: "Uzaid Khan & Vrushali Thakur" },
+      { title: "VRUSHALI/VIJAY – 2 DAYS FOR FINAL CHALLAN CALCULATION AND SAME TO BE SENT TO NIHAL/BOSS/CLIENT", assignedTo: "Uzaid Khan & Vrushali Thakur" },
+      { title: "VRUSHALI – TO PREPARE FINAL RECEIPTS", assignedTo: "Uzaid Khan & Vrushali Thakur" },
+      { title: "AUTOPROMPT TO CLIENT FOR MAKING FINAL PAYMENTS WITH RECEIPT AND FORMAT", assignedTo: "Uzaid Khan & Vrushali Thakur" },
+      { title: "FINAL ARCHITECTURAL BILL SETTLEMENT (MANUAL)- VRUSHALI/BOSS.", assignedTo: "Uzaid Khan & Vrushali Thakur" },
+      { title: "ONLINE APPROVAL IS RECEIVED – SADHANA OKAYS Update the master file sheet", assignedTo: "Uzaid Khan & Vrushali Thakur" },
+      { title: "Ganesh to provide images of notings upon issue of online permission ( within 2 days from online permission )", assignedTo: "Uzaid Khan & Vrushali Thakur" },
+      { title: "Upload all the scanning of orders and blueprints", assignedTo: "Uzaid Khan & Vrushali Thakur" },
+      { title: "FINAL PERMISSION COPY TO BE FORWARDED to BOSS/NIHAL/UDAY/ Crystal (MANUAL- NO AUTO PROMPT)", assignedTo: "Uzaid Khan & Vrushali Thakur" },
+      { title: "BOSS FORWARDS PERMISSION COPY TO CLIENT", assignedTo: "Uzaid Khan & Vrushali Thakur" }
     ]
   }
 ];
+
+export function getStageDefaultWorkingDays(stageName: string): number {
+  const name = stageName.toLowerCase();
+  if (name.includes("1a")) return 3;
+  if (name.includes("1b")) return 3;
+  if (name.includes("2c")) return 5;
+  if (name.includes("3d")) return 21;
+  if (name.includes("3e")) return 14;
+  return 0;
+}
+
+export function calculateDefaultDeadline(days: number): string {
+  const startDate = new Date();
+  let count = 0;
+  const date = new Date(startDate.getTime());
+  while (count < days) {
+    date.setDate(date.getDate() + 1);
+    const day = date.getDay();
+    if (day !== 0 && day !== 6) { // skip Saturday and Sunday
+      count++;
+    }
+  }
+  return date.toISOString().split('T')[0];
+}
+
 
 export function addClient(data: Omit<Client, 'id' | 'createdAt'>): Client {
   const clients = getClients();

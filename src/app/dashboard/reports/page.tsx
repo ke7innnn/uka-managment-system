@@ -52,7 +52,7 @@ export default function ReportsPage() {
 
   // --- Client/Project Analytics ---
   const projectsWithStats = clients.map(c => {
-    const donePhases = c.phases.filter(p => p.completed).length;
+    const donePhases = c.phases.filter(p => p.status === 'completed' || p.completed).length;
     const totalPhases = c.phases.length;
     const pct = totalPhases === 0 ? 0 : Math.round((donePhases / totalPhases) * 100);
     return { ...c, donePhases, totalPhases, pct };
