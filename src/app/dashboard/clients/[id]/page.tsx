@@ -1674,64 +1674,143 @@ function InfoItem({ label, value }: { label: string; value?: string }) {
 }
 
 function FilePreviewCard({ src, label, height = 110 }: { src: string; label: string; height?: number }) {
-  const isPdf = src.startsWith('data:application/pdf') || src.toLowerCase().includes('/pdf');
-  const isDocx = src.startsWith('data:application/vnd') || src.toLowerCase().includes('wordprocessingml') || src.toLowerCase().includes('/msword');
-  const isHeic = src.startsWith('data:image/heic') || src.startsWith('data:image/heif') || src.toLowerCase().includes('heic') || src.toLowerCase().includes('heif');
+  const [isMobile, setIsMobile] = React.useState(false);
+  React.useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  // ── Detect real MIME from data URL (most reliable method) ─────────────────
+  const getMime = (): string => {
+    if (src.startsWith('data:')) {
+      const m = src.match(/^data:([^;,]+)/);
+      return m ? m[1] : 'application/octet-stream';
+    }
+    // Remote URL — infer from extension
+    const ext = src.split('?')[0].split('.').pop()?.toLowerCase() || '';
+    const extMap: Record<string, string> = {
+      pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg',
+      jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp',
+      heic: 'image/heic', heif: 'image/heif',
+      doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    };
+    return extMap[ext] || 'application/octet-stream';
+  };
+
+  const mime = getMime();
+  const isPdf  = mime === 'application/pdf';
+  const isDocx = mime === 'application/msword' || mime.includes('wordprocessingml');
+  const isHeic = mime === 'image/heic' || mime === 'image/heif';
+  const isOctet = mime === 'application/octet-stream'; // iOS HEIC / unknown
+  const isImage = mime.startsWith('image/') && !isHeic; // standard web image
+
+  // Extension from MIME — always correct
+  const getExt = (): string => {
+    const m: Record<string, string> = {
+      'application/pdf': 'pdf', 'image/png': 'png', 'image/jpeg': 'jpg',
+      'image/gif': 'gif', 'image/webp': 'webp', 'image/heic': 'heic', 'image/heif': 'heif',
+      'application/msword': 'doc',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    };
+    return m[mime] || 'bin';
+  };
+
+  // Convert base64 data URL → Blob URL (avoids HTML download, works everywhere)
+  const toBlobUrl = (forceMime?: string): string => {
+    if (src.startsWith('data:')) {
+      try {
+        const comma = src.indexOf(',');
+        const b64 = src.slice(comma + 1);
+        const binary = atob(b64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return URL.createObjectURL(new Blob([bytes], { type: forceMime || mime }));
+      } catch { return src; }
+    }
+    return src; // already a remote URL
+  };
 
   const handleDownload = () => {
-    const a = document.createElement('a');
-    a.href = src;
-    const ext = isPdf ? 'pdf' : isDocx ? 'docx' : isHeic ? 'heic' : 'jpg';
-    a.download = `${label.replace(/\s+/g, '_')}.${ext}`;
-    a.click();
+    const filename = `${label.replace(/\s+/g, '_')}.${getExt()}`;
+    if (src.startsWith('data:')) {
+      const url = toBlobUrl();
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } else {
+      // Remote URL — fetch as blob to force download (not navigate)
+      fetch(src).then(r => r.blob()).then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      }).catch(() => window.open(src, '_blank'));
+    }
   };
 
   const handleView = () => {
-    if (isPdf) {
-      const w = window.open('', '_blank');
-      if (w) {
-        w.document.write(`<html><body style="margin:0;background:#000"><embed src="${src}" type="application/pdf" width="100%" height="100%"/></body></html>`);
-        w.document.close();
-      }
-    } else if (isDocx) {
-      handleDownload();
+    if (isDocx) { handleDownload(); return; } // browsers can't render DOCX
+    if (src.startsWith('data:')) {
+      const viewMime = isHeic || isOctet ? 'image/jpeg' : mime; // try as jpeg for HEIC
+      const url = toBlobUrl(viewMime);
+      window.open(url, '_blank');
+      // revoke after delay
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
     } else {
-      const w = window.open('', '_blank');
-      if (w) {
-        w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${src}" style="max-width:100%;max-height:100vh;object-fit:contain"/></body></html>`);
-        w.document.close();
-      }
+      window.open(src, '_blank');
     }
   };
+
+  // Stripped placeholder
+  if (src === '[BASE64_STRIPPED]' || !src) {
+    return (
+      <div style={{ border: '1px dashed var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255,255,255,0.01)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textAlign: 'center' }}>{label}</span>
+        <div style={{ width: '100%', height: `${height}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', gap: '4px' }}>
+          <FileText size={28} color="var(--text-muted)" />
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textAlign: 'center' }}>Please re-upload</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
       <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textAlign: 'center' }}>{label}</span>
+
+      {/* Preview area */}
       {isPdf ? (
-        <div style={{ width: '100%', height: `${height}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.08)', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer' }} onClick={handleView}>
+        <div style={{ width: '100%', height: `${height}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.08)', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer' }} onClick={isMobile ? handleDownload : handleView}>
           <FileText size={36} color="#ef4444" />
           <span style={{ fontSize: '0.7rem', color: '#ef4444', fontWeight: 600, marginTop: '4px' }}>PDF Document</span>
-          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>Click to view</span>
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>{isMobile ? 'Tap to download' : 'Click to view'}</span>
         </div>
       ) : isDocx ? (
         <div style={{ width: '100%', height: `${height}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(59,130,246,0.08)', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.2)', cursor: 'pointer' }} onClick={handleDownload}>
           <FileText size={36} color="#3b82f6" />
           <span style={{ fontSize: '0.7rem', color: '#3b82f6', fontWeight: 600, marginTop: '4px' }}>Word Document</span>
-          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>Click to download</span>
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>Tap to download</span>
         </div>
-      ) : isHeic ? (
+      ) : isHeic || isOctet ? (
         <div style={{ width: '100%', height: `${height}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(16,185,129,0.08)', borderRadius: '6px', border: '1px solid rgba(16,185,129,0.2)', cursor: 'pointer' }} onClick={handleDownload}>
           <Image size={36} color="#10b981" />
           <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600, marginTop: '4px' }}>HEIC/HEIF Image</span>
-          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>Click to download</span>
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>Tap to download</span>
         </div>
       ) : (
-        <img src={src} alt={label} onClick={handleView} style={{ width: '100%', height: `${height}px`, borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+        <img src={src} alt={label} onClick={isMobile ? handleDownload : handleView} style={{ width: '100%', height: `${height}px`, borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
       )}
+
+      {/* Buttons */}
       <div style={{ display: 'flex', gap: '4px', width: '100%' }}>
-        <button onClick={handleView} style={{ flex: 1, padding: '4px 6px', background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
-          <Eye size={10} /> View
-        </button>
+        {!isMobile && !isDocx && (
+          <button onClick={handleView} style={{ flex: 1, padding: '4px 6px', background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+            <Eye size={10} /> View
+          </button>
+        )}
         <button onClick={handleDownload} style={{ flex: 1, padding: '4px 6px', background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
           <Download size={10} /> Download
         </button>
