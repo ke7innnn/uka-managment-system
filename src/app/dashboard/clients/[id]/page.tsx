@@ -688,6 +688,10 @@ export default function ClientDetailPage() {
                 <InfoItem label="Site Engineer" value={client.kyc.siteEng} />
                 <InfoItem label="Site Supervisor" value={client.kyc.siteSupervisor} />
                 <InfoItem label="Regulations" value={client.kyc.regulations} />
+                <InfoItem label="S.No / H/PLOT.NO" value={`${client.kyc.sNo || '—'} / ${client.kyc.hNo || '—'}`} />
+                <InfoItem label="Village / Taluka" value={`${client.kyc.village || '—'}, ${client.kyc.tal || '—'}`} />
+                <InfoItem label="Use / Bldgs / Floor" value={`${client.kyc.use || '—'} / ${client.kyc.noOfBldgs || '—'} / ${client.kyc.floor || '—'}`} />
+                <InfoItem label="Subject / P-Line" value={`${client.kyc.subSecondary || '—'} / ${client.kyc.pLine || '—'}`} />
                 <InfoItem label="Architect" value={client.kyc.architect} />
                 <InfoItem label="Structural Engineer" value={client.kyc.structuralEngName} />
                 <InfoItem label="Digital Signature Available" value={client.kyc.isDigitalSignature} />

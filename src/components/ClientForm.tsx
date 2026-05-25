@@ -691,7 +691,7 @@ export default function ClientForm({ client, mode }: Props) {
 
           {/* Secondary Details */}
           <Field label="S.No." id="sNo" value={form.sNo} onChange={(v) => set('sNo', v)} placeholder="Survey Number" />
-          <Field label="H.No." id="hNo" value={form.hNo} onChange={(v) => set('hNo', v)} placeholder="Hissa Number" />
+          <Field label="H/PLOT.NO" id="hNo" value={form.hNo} onChange={(v) => set('hNo', v)} placeholder="Hissa / Plot Number" />
           <Field label="Village Name" id="village" value={form.village} onChange={(v) => set('village', v)} placeholder="Village" />
           <Field label="Taluka Name" id="tal" value={form.tal} onChange={(v) => set('tal', v)} placeholder="Taluka" />
           <Field label="Site Address (Secondary)" id="siteAddSecondary" value={form.siteAddSecondary} onChange={(v) => set('siteAddSecondary', v)} placeholder="Secondary Site Address" />
