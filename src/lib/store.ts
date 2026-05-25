@@ -81,6 +81,7 @@ export interface KycData {
   architect?: string;
   structuralEngName?: string;
   isDigitalSignature?: string;
+  digitalSignaturePhoto?: string;
 }
 
 export interface Client {

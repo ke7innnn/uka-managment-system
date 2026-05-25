@@ -709,8 +709,6 @@ export default function ClientDetailPage() {
                 <InfoItem label="Site Engineer" value={client.kyc.siteEng} />
                 <InfoItem label="Site Supervisor" value={client.kyc.siteSupervisor} />
                 <InfoItem label="Regulations" value={client.kyc.regulations} />
-                <InfoItem label="Road" value={client.kyc.road} />
-                <InfoItem label="Side" value={client.kyc.side} />
                 <InfoItem label="S.No / H.No" value={`${client.kyc.sNo || '—'} / ${client.kyc.hNo || '—'}`} />
                 <InfoItem label="Village / Taluka" value={`${client.kyc.village || '—'}, ${client.kyc.tal || '—'}`} />
                 <InfoItem label="Use / Bldgs / Floor" value={`${client.kyc.use || '—'} / ${client.kyc.noOfBldgs || '—'} / ${client.kyc.floor || '—'}`} />
@@ -720,6 +718,57 @@ export default function ClientDetailPage() {
                 <InfoItem label="Digital Signature Available" value={client.kyc.isDigitalSignature} />
                 <InfoItem label="Contact / Other" value={`${client.kyc.contactNo || '—'} / ${client.kyc.anyOther || '—'}`} />
               </div>
+
+              {/* Site Photos Gallery */}
+              {(client.kyc.northPhoto || client.kyc.southPhoto || client.kyc.eastPhoto || client.kyc.westPhoto || client.kyc.road || client.kyc.side || client.kyc.digitalSignaturePhoto) && (
+                <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1rem' }}>Site Photos & Digital Signature</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
+                    {client.kyc.northPhoto && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>North Side</span>
+                        <img src={client.kyc.northPhoto} alt="North Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.northPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.southPhoto && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>South Side</span>
+                        <img src={client.kyc.southPhoto} alt="South Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.southPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.eastPhoto && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>East Side</span>
+                        <img src={client.kyc.eastPhoto} alt="East Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.eastPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.westPhoto && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>West Side</span>
+                        <img src={client.kyc.westPhoto} alt="West Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.westPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.road && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Road Photo</span>
+                        <img src={client.kyc.road} alt="Road Photo" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.road || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.side && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Side Photo</span>
+                        <img src={client.kyc.side} alt="Side Photo" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.side || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.digitalSignaturePhoto && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Digital Signature Photo</span>
+                        <img src={client.kyc.digitalSignaturePhoto} alt="Digital Signature" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.digitalSignaturePhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {client.tags && client.tags.length > 0 && (

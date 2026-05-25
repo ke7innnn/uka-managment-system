@@ -70,6 +70,7 @@ type FormData = {
   architect: string;
   structuralEngName: string;
   isDigitalSignature: string;
+  digitalSignaturePhoto: string;
 };
 
 interface Props {
@@ -143,7 +144,8 @@ export default function ClientForm({ client, mode }: Props) {
     pLine: client?.kyc?.pLine || '',
     architect: client?.kyc?.architect || '',
     structuralEngName: client?.kyc?.structuralEngName || '',
-    isDigitalSignature: client?.kyc?.isDigitalSignature || '',
+    isDigitalSignature: client?.kyc?.isDigitalSignature || 'NO',
+    digitalSignaturePhoto: client?.kyc?.digitalSignaturePhoto || '',
   });
   const [error, setError] = useState('');
 
@@ -220,6 +222,7 @@ export default function ClientForm({ client, mode }: Props) {
       architect: form.architect,
       structuralEngName: form.structuralEngName,
       isDigitalSignature: form.isDigitalSignature,
+      digitalSignaturePhoto: form.digitalSignaturePhoto,
     };
 
     if (mode === 'new') {
@@ -445,12 +448,12 @@ export default function ClientForm({ client, mode }: Props) {
           <Field label="Site Address" id="siteAdd" value={form.siteAdd} onChange={(v) => set('siteAdd', v)} placeholder="Site Address" />
 
           {/* Site Direction Photos */}
-          <Field label="Site Photo - North Side" id="northPhoto" value={form.northPhoto} onChange={(v) => set('northPhoto', v)} placeholder="North direction details" />
-          <Field label="Site Photo - South Side" id="southPhoto" value={form.southPhoto} onChange={(v) => set('southPhoto', v)} placeholder="South direction details" />
-          <Field label="Site Photo - East Side" id="eastPhoto" value={form.eastPhoto} onChange={(v) => set('eastPhoto', v)} placeholder="East direction details" />
-          <Field label="Site Photo - West Side" id="westPhoto" value={form.westPhoto} onChange={(v) => set('westPhoto', v)} placeholder="West direction details" />
-          <Field label="Road" id="road" value={form.road} onChange={(v) => set('road', v)} placeholder="Road details" />
-          <Field label="Side" id="side" value={form.side} onChange={(v) => set('side', v)} placeholder="Side details" />
+          <ImageField label="Site Photo - North Side" id="northPhoto" value={form.northPhoto} onChange={(v) => set('northPhoto', v)} />
+          <ImageField label="Site Photo - South Side" id="southPhoto" value={form.southPhoto} onChange={(v) => set('southPhoto', v)} />
+          <ImageField label="Site Photo - East Side" id="eastPhoto" value={form.eastPhoto} onChange={(v) => set('eastPhoto', v)} />
+          <ImageField label="Site Photo - West Side" id="westPhoto" value={form.westPhoto} onChange={(v) => set('westPhoto', v)} />
+          <ImageField label="Road Photo" id="road" value={form.road} onChange={(v) => set('road', v)} />
+          <ImageField label="Side Photo" id="side" value={form.side} onChange={(v) => set('side', v)} />
 
           {/* Secondary Details */}
           <Field label="S.No." id="sNo" value={form.sNo} onChange={(v) => set('sNo', v)} placeholder="Survey Number" />
@@ -474,7 +477,21 @@ export default function ClientForm({ client, mode }: Props) {
           <Field label="P-Line" id="pLine" value={form.pLine} onChange={(v) => set('pLine', v)} placeholder="P-Line details" />
           <Field label="Architect Name" id="architect" value={form.architect} onChange={(v) => set('architect', v)} placeholder="Architect" />
           <Field label="Structural Engineer Name" id="structuralEngName" value={form.structuralEngName} onChange={(v) => set('structuralEngName', v)} placeholder="Structural Engineer" />
-          <Field label="Is Digital Signature Available" id="isDigitalSignature" value={form.isDigitalSignature} onChange={(v) => set('isDigitalSignature', v)} placeholder="Signature details" />
+          <div className={styles.fieldGroup}>
+            <label htmlFor="isDigitalSignature" className={styles.label}>Is Digital Signature Available</label>
+            <select
+              id="isDigitalSignature"
+              value={form.isDigitalSignature}
+              onChange={(e) => set('isDigitalSignature', e.target.value)}
+              className={styles.select}
+            >
+              <option value="NO">NO</option>
+              <option value="YES">YES</option>
+            </select>
+          </div>
+          {form.isDigitalSignature === 'YES' && (
+            <ImageField label="Digital Signature Photo" id="digitalSignaturePhoto" value={form.digitalSignaturePhoto} onChange={(v) => set('digitalSignaturePhoto', v)} />
+          )}
         </div>
       </Section>
 
@@ -530,6 +547,82 @@ function Field({
         placeholder={placeholder}
         className={styles.input}
       />
+    </div>
+  );
+}
+
+function ImageField({
+  label, id, value, onChange
+}: {
+  label: string; id: string; value: string; onChange: (v: string) => void;
+}) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      onChange(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className={styles.fieldGroup} style={{ gridColumn: 'span 1' }}>
+      <label className={styles.label}>{label}</label>
+      {value ? (
+        <div style={{
+          position: 'relative',
+          border: '1px solid var(--border)',
+          borderRadius: '8px',
+          padding: '8px',
+          background: 'rgba(255, 255, 255, 0.02)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <img src={value} alt={label} style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '6px', objectFit: 'contain' }} />
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            style={{
+              padding: '4px 8px',
+              background: '#ef4444',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              fontWeight: 600,
+              transition: 'background 0.15s ease'
+            }}
+          >
+            Remove Image
+          </button>
+        </div>
+      ) : (
+        <div style={{
+          border: '2px dashed var(--border)',
+          borderRadius: '8px',
+          padding: '1.5rem',
+          textAlign: 'center',
+          background: 'rgba(255, 255, 255, 0.01)',
+          cursor: 'pointer',
+          position: 'relative',
+          transition: 'all 0.15s ease'
+        }}
+        onClick={() => document.getElementById(`file-${id}`)?.click()}
+        >
+          <span style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>Click to upload image</span>
+          <input
+            type="file"
+            id={`file-${id}`}
+            accept="image/*"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
+        </div>
+      )}
     </div>
   );
 }
