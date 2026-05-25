@@ -139,15 +139,91 @@ export function getClients(): Client[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const clients: Client[] = raw ? JSON.parse(raw) : [];
-    // Data Migration for old Phase objects
-    return clients.map(client => ({
-      ...client,
-      phases: client.phases.map(p => ({
-        ...p,
-        status: p.status || (p.completed ? 'completed' : 'not-started'),
-        tasks: p.tasks || []
-      }))
-    }));
+    
+    let migrated = false;
+    const migratedClients = clients.map(client => {
+      // Check if they have the old phases format or no phases at all
+      const hasOldPhases = !client.phases || client.phases.length === 0 || client.phases.some(p => 
+        p.name === "Stage 1 — File Preparation" || 
+        p.name === "Stage 2 — Paper Procurement" || 
+        p.name === "Stage 3 — Legal / Tree NOC" || 
+        p.name === "Stage 3 — Upon Obtaining Permission" ||
+        (!p.name.includes("1a") && !p.name.includes("1b") && !p.name.includes("2c") && !p.name.includes("3d") && !p.name.includes("3e") && !p.name.includes("3f"))
+      );
+
+      if (hasOldPhases) {
+        migrated = true;
+        
+        const oldStage1 = client.phases?.find(p => p.name.includes("File Preparation"));
+        const oldStage2 = client.phases?.find(p => p.name.includes("Paper Procurement"));
+        const oldStage3 = client.phases?.find(p => p.name.includes("Legal / Tree NOC"));
+        const oldStage4 = client.phases?.find(p => p.name.includes("Obtaining Permission"));
+
+        const newPhases = DEFAULT_PHASES_TEMPLATE.map((stage, idx) => {
+          let matchingOld = oldStage1;
+          if (stage.name.includes("2c")) matchingOld = oldStage2;
+          else if (stage.name.includes("3d") || stage.name.includes("3e")) matchingOld = oldStage3;
+          else if (stage.name.includes("3f")) matchingOld = oldStage4;
+
+          const status = matchingOld ? matchingOld.status : ("not-started" as const);
+          const startedAt = matchingOld ? matchingOld.startedAt : undefined;
+          const timeBound = matchingOld ? matchingOld.timeBound : undefined;
+
+          // Map completed tasks where possible
+          const tasks = stage.tasks.map(t => {
+            let completed = false;
+            if (matchingOld) {
+              const matchedTask = matchingOld.tasks?.find(ot => 
+                ot.title.toLowerCase().substring(0, 15) === t.title.toLowerCase().substring(0, 15) ||
+                ot.title.toLowerCase().includes(t.title.toLowerCase().split(' ')[0])
+              );
+              if (matchedTask) {
+                completed = matchedTask.completed;
+              }
+            }
+            return {
+              id: crypto.randomUUID(),
+              title: t.title,
+              completed,
+              assignedTo: t.assignedTo
+            };
+          });
+
+          return {
+            id: crypto.randomUUID(),
+            name: stage.name,
+            status,
+            order: idx,
+            tasks,
+            startedAt,
+            timeBound
+          };
+        });
+
+        return {
+          ...client,
+          phases: newPhases,
+          syncStatus: 'pending' as const
+        };
+      }
+
+      return {
+        ...client,
+        phases: client.phases.map(p => ({
+          ...p,
+          status: p.status || (p.completed ? 'completed' : 'not-started'),
+          tasks: p.tasks || []
+        }))
+      };
+    });
+
+    if (migrated) {
+      setTimeout(() => {
+        saveClients(migratedClients);
+      }, 0);
+    }
+
+    return migratedClients;
   } catch {
     return [];
   }
