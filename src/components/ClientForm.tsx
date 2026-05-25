@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Client, addClient, updateClient } from '@/lib/store';
+import { Client, addClient, updateClient, OtherOwner } from '@/lib/store';
 import styles from './ClientForm.module.css';
 
 type FormData = {
@@ -77,6 +77,10 @@ type FormData = {
   structuralEngName: string;
   isDigitalSignature: string;
   digitalSignaturePhoto: string;
+  clientAadharNo: string;
+  clientAadharPhoto: string;
+  clientPanNo: string;
+  clientPanPhoto: string;
 };
 
 interface Props {
@@ -158,7 +162,12 @@ export default function ClientForm({ client, mode }: Props) {
     structuralEngName: client?.kyc?.structuralEngName || '',
     isDigitalSignature: client?.kyc?.isDigitalSignature || 'NO',
     digitalSignaturePhoto: client?.kyc?.digitalSignaturePhoto || '',
+    clientAadharNo: client?.kyc?.clientAadharNo || '',
+    clientAadharPhoto: client?.kyc?.clientAadharPhoto || '',
+    clientPanNo: client?.kyc?.clientPanNo || '',
+    clientPanPhoto: client?.kyc?.clientPanPhoto || '',
   });
+  const [otherOwners, setOtherOwners] = useState<OtherOwner[]>(client?.kyc?.otherOwners || []);
   const [error, setError] = useState('');
 
   const set = (field: keyof FormData, value: string) =>
@@ -241,6 +250,11 @@ export default function ClientForm({ client, mode }: Props) {
       structuralEngName: form.structuralEngName,
       isDigitalSignature: form.isDigitalSignature,
       digitalSignaturePhoto: form.digitalSignaturePhoto,
+      clientAadharNo: form.clientAadharNo,
+      clientAadharPhoto: form.clientAadharPhoto,
+      clientPanNo: form.clientPanNo,
+      clientPanPhoto: form.clientPanPhoto,
+      otherOwners: otherOwners,
     };
 
     if (mode === 'new') {
@@ -298,6 +312,171 @@ export default function ClientForm({ client, mode }: Props) {
           <Field label="Phone" id="phone" type="tel" value={form.phone} onChange={(v) => set('phone', v)} placeholder="+91 98765 43210" />
           <Field label="City / Place" id="place" value={form.place} onChange={(v) => set('place', v)} placeholder="Mumbai" />
           <Field label="Full Address" id="address" value={form.address} onChange={(v) => set('address', v)} placeholder="Street, City, State…" />
+        </div>
+      </Section>
+
+      <Section title="Client Identification Documents">
+        <div className={styles.grid}>
+          <Field label="Client Aadhaar Card Number" id="clientAadharNo" value={form.clientAadharNo} onChange={(v) => set('clientAadharNo', v)} placeholder="12-digit Aadhaar Card Number" />
+          <ImageField label="Client Aadhaar Card Photo" id="clientAadharPhoto" value={form.clientAadharPhoto} onChange={(v) => set('clientAadharPhoto', v)} />
+          
+          <Field label="Client PAN Card Number" id="clientPanNo" value={form.clientPanNo} onChange={(v) => set('clientPanNo', v)} placeholder="10-digit PAN Card Number" />
+          <ImageField label="Client PAN Card Photo" id="clientPanPhoto" value={form.clientPanPhoto} onChange={(v) => set('clientPanPhoto', v)} />
+        </div>
+      </Section>
+
+      <Section title="Multiple Owners / Other Owners (If Applicable)">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {otherOwners.map((owner, idx) => (
+            <div key={owner.id} style={{
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              padding: '1.5rem',
+              background: 'rgba(255, 255, 255, 0.01)',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#10b981' }}>Owner #{idx + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtherOwners((prev) => prev.filter((o) => o.id !== owner.id));
+                  }}
+                  style={{
+                    padding: '4px 10px',
+                    background: '#ef4444',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  Remove Owner
+                </button>
+              </div>
+              <div className={styles.grid}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label}>Owner Name</label>
+                  <input
+                    type="text"
+                    value={owner.name}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      setOtherOwners((prev) => prev.map((o) => o.id === owner.id ? { ...o, name } : o));
+                    }}
+                    placeholder="Owner's Full Name"
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label}>Phone Number</label>
+                  <input
+                    type="tel"
+                    value={owner.phone}
+                    onChange={(e) => {
+                      const phone = e.target.value;
+                      setOtherOwners((prev) => prev.map((o) => o.id === owner.id ? { ...o, phone } : o));
+                    }}
+                    placeholder="Owner's Phone Number"
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.fieldGroup} style={{ gridColumn: '1 / -1' }}>
+                  <label className={styles.label}>Full Address</label>
+                  <input
+                    type="text"
+                    value={owner.address}
+                    onChange={(e) => {
+                      const address = e.target.value;
+                      setOtherOwners((prev) => prev.map((o) => o.id === owner.id ? { ...o, address } : o));
+                    }}
+                    placeholder="Owner's Address"
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label}>Aadhaar Card Number</label>
+                  <input
+                    type="text"
+                    value={owner.aadharNo}
+                    onChange={(e) => {
+                      const aadharNo = e.target.value;
+                      setOtherOwners((prev) => prev.map((o) => o.id === owner.id ? { ...o, aadharNo } : o));
+                    }}
+                    placeholder="12-digit Aadhaar Number"
+                    className={styles.input}
+                  />
+                </div>
+                <ImageField
+                  label="Aadhaar Card Photo"
+                  id={`owner-aadhar-${owner.id}`}
+                  value={owner.aadharPhoto}
+                  onChange={(v) => {
+                    setOtherOwners((prev) => prev.map((o) => o.id === owner.id ? { ...o, aadharPhoto: v } : o));
+                  }}
+                />
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label}>PAN Card Number</label>
+                  <input
+                    type="text"
+                    value={owner.panNo}
+                    onChange={(e) => {
+                      const panNo = e.target.value;
+                      setOtherOwners((prev) => prev.map((o) => o.id === owner.id ? { ...o, panNo } : o));
+                    }}
+                    placeholder="10-digit PAN Number"
+                    className={styles.input}
+                  />
+                </div>
+                <ImageField
+                  label="PAN Card Photo"
+                  id={`owner-pan-${owner.id}`}
+                  value={owner.panPhoto}
+                  onChange={(v) => {
+                    setOtherOwners((prev) => prev.map((o) => o.id === owner.id ? { ...o, panPhoto: v } : o));
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+          
+          <button
+            type="button"
+            onClick={() => {
+              setOtherOwners((prev) => [
+                ...prev,
+                {
+                  id: crypto.randomUUID(),
+                  name: '',
+                  phone: '',
+                  address: '',
+                  aadharNo: '',
+                  aadharPhoto: '',
+                  panNo: '',
+                  panPhoto: '',
+                }
+              ]);
+            }}
+            style={{
+              padding: '10px 16px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px dashed var(--border)',
+              borderRadius: '6px',
+              color: 'var(--text-main)',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            + Add Other Owner
+          </button>
         </div>
       </Section>
 

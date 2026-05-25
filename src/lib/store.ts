@@ -31,6 +31,17 @@ export interface Document {
   subfolder?: string;    // NEW: subfolder ID or name
 }
 
+export interface OtherOwner {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  aadharNo: string;
+  aadharPhoto: string; // Base64
+  panNo: string;
+  panPhoto: string; // Base64
+}
+
 export interface KycData {
   proposedSub?: string;
   proposedDevelopment?: string; // RESIDENTIAL CUM SHOPLINE / COMMERCIAL / RESIDENTIAL / INDUSTRIAL
@@ -53,6 +64,11 @@ export interface KycData {
   requiredDigitalSignature?: string; // YES / NO
   officeAdd?: string;
   siteAdd?: string;
+  clientAadharNo?: string;
+  clientAadharPhoto?: string;
+  clientPanNo?: string;
+  clientPanPhoto?: string;
+  otherOwners?: OtherOwner[];
   northPhoto?: string;
   northDetails?: string;
   southPhoto?: string;

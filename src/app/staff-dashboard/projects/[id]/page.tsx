@@ -694,14 +694,28 @@ export default function ClientDetailPage() {
                 <InfoItem label="Architect" value={client.kyc.architect} />
                 <InfoItem label="Structural Engineer" value={client.kyc.structuralEngName} />
                 <InfoItem label="Digital Signature Available" value={client.kyc.isDigitalSignature} />
+                <InfoItem label="Client Aadhaar No." value={client.kyc.clientAadharNo} />
+                <InfoItem label="Client PAN No." value={client.kyc.clientPanNo} />
                 <InfoItem label="Contact / Other" value={`${client.kyc.contactNo || '—'} / ${client.kyc.anyOther || '—'}`} />
               </div>
 
               {/* Site Photos Gallery */}
-              {(client.kyc.northPhoto || client.kyc.northDetails || client.kyc.southPhoto || client.kyc.southDetails || client.kyc.eastPhoto || client.kyc.eastDetails || client.kyc.westPhoto || client.kyc.westDetails || client.kyc.road || client.kyc.roadDetails || client.kyc.side || client.kyc.sideDetails || client.kyc.digitalSignaturePhoto) && (
+              {(client.kyc.northPhoto || client.kyc.northDetails || client.kyc.southPhoto || client.kyc.southDetails || client.kyc.eastPhoto || client.kyc.eastDetails || client.kyc.westPhoto || client.kyc.westDetails || client.kyc.road || client.kyc.roadDetails || client.kyc.side || client.kyc.sideDetails || client.kyc.digitalSignaturePhoto || client.kyc.clientAadharPhoto || client.kyc.clientPanPhoto) && (
                 <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1rem' }}>Site Photos & Digital Signature</h4>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1rem' }}>Client Documents & Site Photos</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                    {client.kyc.clientAadharPhoto && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Client Aadhaar Photo</span>
+                        <img src={client.kyc.clientAadharPhoto} alt="Client Aadhaar" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.clientAadharPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.clientPanPhoto && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Client PAN Photo</span>
+                        <img src={client.kyc.clientPanPhoto} alt="Client PAN" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.clientPanPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
                     {client.kyc.northPhoto && (
                       <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>North Side Photo</span>
@@ -780,6 +794,44 @@ export default function ClientDetailPage() {
                         <img src={client.kyc.digitalSignaturePhoto} alt="Digital Signature" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.digitalSignaturePhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
                       </div>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* Other Owners Details Section */}
+              {client.kyc.otherOwners && client.kyc.otherOwners.length > 0 && (
+                <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1rem' }}>Other Owners / Multiple Owners</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {client.kyc.otherOwners.map((owner: any, idx: number) => (
+                      <div key={owner.id || idx} style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '1rem', background: 'rgba(255, 255, 255, 0.01)' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#10b981', marginBottom: '0.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.25rem' }}>
+                          Owner #{idx + 1}: {owner.name || '—'}
+                        </div>
+                        <div className={styles.infoGrid} style={{ marginBottom: '1rem' }}>
+                          <InfoItem label="Phone Number" value={owner.phone} />
+                          <InfoItem label="Address" value={owner.address} />
+                          <InfoItem label="Aadhaar Card No" value={owner.aadharNo} />
+                          <InfoItem label="PAN Card No" value={owner.panNo} />
+                        </div>
+                        {(owner.aadharPhoto || owner.panPhoto) && (
+                          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem' }}>
+                            {owner.aadharPhoto && (
+                              <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '6px', background: 'rgba(255, 255, 255, 0.02)', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '4px', width: '130px' }}>
+                                <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Aadhaar Photo</span>
+                                <img src={owner.aadharPhoto} alt="Aadhaar Photo" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${owner.aadharPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '70px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                              </div>
+                            )}
+                            {owner.panPhoto && (
+                              <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '6px', background: 'rgba(255, 255, 255, 0.02)', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '4px', width: '130px' }}>
+                                <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-secondary)' }}>PAN Photo</span>
+                                <img src={owner.panPhoto} alt="PAN Photo" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${owner.panPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '70px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
