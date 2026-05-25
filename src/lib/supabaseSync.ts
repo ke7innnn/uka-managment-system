@@ -41,6 +41,7 @@ export async function pullFromSupabase() {
       createdAt: c.created_at,
       tags: c.tags || [],
       progressChecklist: c.progress_checklist || [],
+      syncStatus: 'synced',
       phases: (c.phases || []).map((p: any) => ({
         id: p.id, name: p.name, completed: p.completed, order: p.order,
         status: p.status || (p.completed ? 'completed' : 'not-started'),
@@ -90,8 +91,8 @@ export async function pullFromSupabase() {
     const supabaseStaffIds = new Set(supabaseStaff.map(s => s.id));
     const supabaseStaffNames = new Set(supabaseStaff.map(s => s.name.toLowerCase()));
 
-    // Clients pending push: not in Supabase by ID
-    const pendingLocalClients = localClients.filter(c => !supabaseClientIds.has(c.id));
+    // Clients pending push: local clients that have explicitly been marked as 'pending' syncStatus
+    const pendingLocalClients = localClients.filter(c => c.syncStatus === 'pending');
     // Staff pending push: not in Supabase by ID AND not already there by name (prevents clones)
     const pendingLocalStaff = localStaff.filter(s =>
       !supabaseStaffIds.has(s.id) && !supabaseStaffNames.has(s.name.toLowerCase())
@@ -201,6 +202,17 @@ export async function pushClientsToSupabase(clients: Client[]) {
   if (docRows.length > 0) {
     const { error: docErr } = await supabase.from('documents').upsert(docRows);
     if (docErr) console.error('pushClientsToSupabase documents error:', docErr.message);
+  }
+
+  // Update local storage to mark successfully pushed clients as 'synced'
+  if (typeof window !== 'undefined') {
+    const localRaw = localStorage.getItem('uka_clients');
+    if (localRaw) {
+      const local: Client[] = JSON.parse(localRaw);
+      const pushedIds = new Set(clients.map(c => c.id));
+      const updated = local.map(c => pushedIds.has(c.id) ? { ...c, syncStatus: 'synced' as const } : c);
+      localStorage.setItem('uka_clients', JSON.stringify(updated));
+    }
   }
 
   // Clean up orphans

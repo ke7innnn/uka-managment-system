@@ -49,6 +49,7 @@ export interface Client {
   projectStatus: 'active' | 'completed' | 'on-hold' | 'pending';
   priority?: 'low' | 'medium' | 'high';
   progressChecklist?: string[];
+  syncStatus?: 'pending' | 'synced';
 }
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
@@ -177,6 +178,7 @@ export function addClient(data: Omit<Client, 'id' | 'createdAt'>): Client {
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
     priority: data.priority || 'medium',
+    syncStatus: 'pending',
     phases: data.phases && data.phases.length > 0 ? data.phases : DEFAULT_PHASES_TEMPLATE.map((stage, idx) => ({
       id: crypto.randomUUID(),
       name: stage.name,
@@ -199,7 +201,7 @@ export function updateClient(id: string, data: Partial<Client>): Client | undefi
   const clients = getClients();
   const idx = clients.findIndex((c) => c.id === id);
   if (idx === -1) return undefined;
-  clients[idx] = { ...clients[idx], ...data };
+  clients[idx] = { ...clients[idx], ...data, syncStatus: 'pending' };
   saveClients(clients);
   return clients[idx];
 }
@@ -210,9 +212,15 @@ export function deleteClient(id: string): void {
   if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
   // Delete from Supabase in background
   import('./supabase').then(({ supabase }) => {
-    supabase.from('phases').delete().eq('client_id', id).then(() => {});
-    supabase.from('documents').delete().eq('client_id', id).then(() => {});
-    supabase.from('clients').delete().eq('id', id).then(() => {});
+    supabase.from('phases').delete().eq('client_id', id).then(({ error }) => {
+      if (error) console.error('Delete phases error:', error.message);
+    });
+    supabase.from('documents').delete().eq('client_id', id).then(({ error }) => {
+      if (error) console.error('Delete documents error:', error.message);
+    });
+    supabase.from('clients').delete().eq('id', id).then(({ error }) => {
+      if (error) console.error('Delete clients error:', error.message);
+    });
   }).catch(console.error);
 }
 
