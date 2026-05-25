@@ -27,7 +27,11 @@ export default function AdminInboxPage() {
   const [alerts, setAlerts] = useState<PerformanceAlert[]>([]);
 
   const load = () => setAlerts(getAlerts().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    window.addEventListener('uka-sync-complete', load);
+    return () => window.removeEventListener('uka-sync-complete', load);
+  }, []);
 
   const markRead = (id: string) => { markAlertRead(id, 'admin'); load(); };
 

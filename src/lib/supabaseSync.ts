@@ -215,6 +215,7 @@ export async function pullFromSupabase() {
         templateKey: a.template_key,
         message: a.message,
         assignedTo: a.assigned_to,
+        timeBound: a.time_bound || null,
         createdAt: a.created_at,
         readBy: typeof a.read_by === 'string' ? JSON.parse(a.read_by) : (a.read_by || [])
       }));
