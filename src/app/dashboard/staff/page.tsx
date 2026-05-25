@@ -263,66 +263,62 @@ export default function StaffPage() {
                   </span>
                 </div>
 
-                {/* Task progress */}
-                <div className={styles.progressSection}>
-                  <div className={styles.progressHeader}>
-                    <span className={styles.progressLabel}>Task Completion</span>
-                    <span className={styles.progressFraction} style={{ color: c.text }}>
-                      {done}/{member.tasks.length}
-                    </span>
+                {/* Card body */}
+                <div className={styles.cardBody}>
+                  {/* Task progress */}
+                  <div className={styles.progressSection}>
+                    <div className={styles.progressHeader}>
+                      <span>Task Completion</span>
+                      <span className={styles.progressFraction} style={{ color: c.text }}>
+                        {done}/{member.tasks.length}
+                      </span>
+                    </div>
+                    <div className={styles.progressBar}>
+                      <div
+                        className={styles.progressFill}
+                        style={{
+                          width: `${pct}%`,
+                          background: `linear-gradient(90deg, ${c.dot}, ${c.text})`,
+                        }}
+                      />
+                    </div>
+                    <span className={styles.progressPct}>{pct}%</span>
                   </div>
-                  <div className={styles.progressBar}>
-                    <div
-                      className={styles.progressFill}
-                      style={{
-                        width: `${pct}%`,
-                        background: `linear-gradient(90deg, ${c.dot}, ${c.text})`,
-                      }}
-                    />
-                  </div>
-                  <span className={styles.progressPct}>{pct}%</span>
-                </div>
 
-                {/* Meta row */}
-                <div className={styles.metaRow}>
-                  <div className={styles.metaItem}>
-                    <span className={styles.metaIcon}><Clock size={14} strokeWidth={1.5} /></span>
-                    <div>
+                  {/* Meta row */}
+                  <div className={styles.metaRow}>
+                    <div className={styles.metaItem}>
+                      <span className={styles.metaIcon}><Clock size={13} strokeWidth={1.5} /></span>
                       <span className={styles.metaVal}>{hrs.toFixed(1)}h</span>
-                      <span className={styles.metaLabel}>Total Hours</span>
+                      <span className={styles.metaLabel}>Hours</span>
                     </div>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <span className={styles.metaIcon}><Calendar size={14} strokeWidth={1.5} /></span>
-                    <div>
+                    <div className={styles.metaItem}>
+                      <span className={styles.metaIcon}><Calendar size={13} strokeWidth={1.5} /></span>
                       <span className={styles.metaVal}>{member.attendance.length}</span>
-                      <span className={styles.metaLabel}>Days Present</span>
+                      <span className={styles.metaLabel}>Present</span>
                     </div>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <span className={styles.metaIcon}><Hourglass size={14} strokeWidth={1.5} /></span>
-                    <div>
+                    <div className={styles.metaItem}>
+                      <span className={styles.metaIcon}><Hourglass size={13} strokeWidth={1.5} /></span>
                       <span
                         className={styles.metaVal}
                         style={{ color: days !== null && days < 3 ? '#fca5a5' : undefined }}
                       >
-                        {days === null ? '—' : days < 0 ? 'Overdue' : `${days}d left`}
+                        {days === null ? '—' : days < 0 ? 'OD' : `${days}d`}
                       </span>
                       <span className={styles.metaLabel}>Deadline</span>
                     </div>
                   </div>
-                </div>
 
-                {/* Last attendance */}
-                {lastAtt && (
-                  <div className={styles.lastAtt}>
-                    <span className={styles.lastAttIcon}><MapPin size={12} strokeWidth={1.5} style={{ verticalAlign: 'middle', marginRight: 4 }} /></span>
-                    <span className={styles.lastAttText}>
-                      Last in: {lastAtt.date} at {lastAtt.checkIn}
-                      {lastAtt.locationLabel ? ` · ${lastAtt.locationLabel}` : ''}
-                    </span>
-                  </div>
-                )}
+                  {/* Last attendance */}
+                  {lastAtt && (
+                    <div className={styles.lastAtt}>
+                      <span className={styles.lastAttIcon}><MapPin size={12} strokeWidth={1.5} /></span>
+                      <span className={styles.lastAttText}>
+                        Last in: {lastAtt.date} at {lastAtt.checkIn}{lastAtt.locationLabel ? ` · ${lastAtt.locationLabel}` : ''}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
                 {/* Actions */}
                 <div className={styles.cardActions}>

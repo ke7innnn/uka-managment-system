@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { getAlerts, markAlertRead, PerformanceAlert } from '@/lib/store';
-import { Inbox, AlertOctagon, AlertTriangle, Info } from 'lucide-react';
+import { Inbox, AlertOctagon, AlertTriangle, Info, CheckCircle2 } from 'lucide-react';
 
 const SEVERITY_CONFIG = {
   critical: { icon: <AlertOctagon size={18} />, color: '#c06060', bg: 'rgba(192,96,96,0.08)', border: 'rgba(192,96,96,0.3)' },
@@ -15,12 +15,12 @@ const TEMPLATE_LABELS: Record<string, string> = {
   'day-1-light':    '💬 Day 1 Reminder',
   'day-2-moderate': '📌 Day 2 Follow-up',
   'day-3-warning':  '⚠️ Day 3 Warning',
-  'reminder-1':     '⚠️ Reminder 1 (Mild)',
-  'reminder-2':     '⚠️ Reminder 2 (Second Warning)',
-  'reminder-3':     '🚨 Reminder 3 (Salary Threat)',
-  'reminder-4':     '🚨 Reminder 4 (Salary Deduction)',
-  'reminder-5':     '🚨 Reminder 5 (Team Deduction)',
-  'reminder-6':     '🚨 Reminder 6 (Final Deduction)',
+  'reminder-1':     '⚠️ Reminder 1',
+  'reminder-2':     '⚠️ Reminder 2',
+  'reminder-3':     '🚨 Reminder 3',
+  'reminder-4':     '🚨 Reminder 4',
+  'reminder-5':     '🚨 Reminder 5',
+  'reminder-6':     '🚨 Reminder 6',
 };
 
 export default function AdminInboxPage() {
@@ -32,16 +32,18 @@ export default function AdminInboxPage() {
   const markRead = (id: string) => { markAlertRead(id, 'admin'); load(); };
 
   return (
-    <div className="animate-fade-in" style={{ padding: '2rem', maxWidth: 820, margin: '0 auto' }}>
+    <div className="animate-fade-in" style={{ maxWidth: 820, margin: '0 auto', paddingBottom: '4rem' }}>
+      {/* Header */}
       <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 400, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 12, marginBottom: '0.4rem' }}>
-          <Inbox size={24} /> Admin Inbox
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 400, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 10, marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+          <Inbox size={22} /> Admin Inbox
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Stage alerts, reminders and automated notifications for all projects</p>
       </div>
 
+      {/* Empty */}
       {alerts.length === 0 ? (
-        <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+        <div className="glass-panel" style={{ padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
           <Inbox size={40} style={{ marginBottom: 12, opacity: 0.3 }} />
           <p>Your inbox is empty. Automated alerts will appear here when stages are started.</p>
         </div>
@@ -51,23 +53,62 @@ export default function AdminInboxPage() {
             const cfg = SEVERITY_CONFIG[alert.severity];
             const isRead = alert.readBy.includes('admin');
             return (
-              <div key={alert.id} className="glass-panel" onClick={() => markRead(alert.id)} style={{ padding: '1.25rem 1.5rem', borderLeft: `3px solid ${cfg.color}`, background: isRead ? 'var(--bg-raised)' : cfg.bg, opacity: isRead ? 0.65 : 1, cursor: 'pointer', transition: 'all 0.2s' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                  <span style={{ color: cfg.color, marginTop: 2 }}>{cfg.icon}</span>
-                  <div style={{ flex: 1 }}>
+              <div
+                key={alert.id}
+                className="glass-panel"
+                onClick={() => markRead(alert.id)}
+                style={{
+                  padding: '1rem 1.25rem',
+                  borderLeft: `4px solid ${cfg.color}`,
+                  background: isRead ? 'var(--bg-raised)' : cfg.bg,
+                  opacity: isRead ? 0.65 : 1,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  borderRadius: 12,
+                  boxSizing: 'border-box',
+                  width: '100%',
+                  overflow: 'hidden',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, minWidth: 0 }}>
+                  {/* Icon */}
+                  <span style={{ color: cfg.color, marginTop: 2, flexShrink: 0 }}>{cfg.icon}</span>
+
+                  {/* Body */}
+                  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                    {/* Top row */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)' }}>{alert.clientName} — {alert.stageName}</span>
-                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{TEMPLATE_LABELS[alert.templateKey]}</span>
-                      {!isRead && <span style={{ background: 'var(--accent)', color: '#000', padding: '1px 7px', borderRadius: 10, fontSize: '0.6rem', fontWeight: 700 }}>NEW</span>}
+                      <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', wordBreak: 'break-word' }}>
+                        {alert.clientName} — {alert.stageName}
+                      </span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
+                        {TEMPLATE_LABELS[alert.templateKey] || alert.templateKey}
+                      </span>
+                      {!isRead && (
+                        <span style={{ background: 'var(--accent)', color: '#000', padding: '1px 7px', borderRadius: 10, fontSize: '0.6rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                          NEW
+                        </span>
+                      )}
                     </div>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+
+                    {/* Preview message */}
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, wordBreak: 'break-word', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>
                       {alert.message.split('\n')[0]}
                     </p>
-                    <div style={{ marginTop: 6, fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
-                      {new Date(alert.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      · Assigned: {alert.assignedTo}
+
+                    {/* Footer */}
+                    <div style={{ marginTop: 6, fontSize: '0.7rem', color: 'var(--text-tertiary)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <span>{new Date(alert.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>· {alert.assignedTo}</span>
                     </div>
                   </div>
+
+                  {/* Read checkmark hint */}
+                  {!isRead && (
+                    <span style={{ color: 'var(--text-tertiary)', flexShrink: 0, marginTop: 2 }}>
+                      <CheckCircle2 size={14} />
+                    </span>
+                  )}
                 </div>
               </div>
             );
