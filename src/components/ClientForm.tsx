@@ -174,16 +174,18 @@ export default function ClientForm({ client, mode }: Props) {
   const set = (field: keyof FormData, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  // Auto-generate proposedSub when dependencies change, unless manually modified
+  // Auto-generate proposedSub ONLY for new clients when dependencies change
   useEffect(() => {
+    // In edit mode, never overwrite the user's manually saved proposedSub
+    if (mode === 'edit') return;
     setForm((prev) => {
       const defaultText = `PROPOSED REDEVELOPMENT / DEVELOPMENT PERMISSION FOR PROPOSED ${prev.proposedDevelopment || 'RESIDENTIAL CUM SHOPLINE'} BUILDING ON LAND BEARING S.NO. ${prev.landBearingSno || '______'}, PLOT NO. ${prev.landBearingPlotNo || '_____'} OF VILLAGE: ${prev.landBearingVillage || '________'} TAL: ${prev.landBearingTal || 'VASAI'}, DIST.: ${prev.landBearingDist || 'PALGHAR'}.`;
-      if (!prev.proposedSub || prev.proposedSub.startsWith("PROPOSED REDEVELOPMENT")) {
+      if (!prev.proposedSub) {
         return { ...prev, proposedSub: defaultText };
       }
       return prev;
     });
-  }, [form.proposedDevelopment, form.landBearingSno, form.landBearingPlotNo, form.landBearingVillage, form.landBearingTal, form.landBearingDist]);
+  }, [mode, form.proposedDevelopment, form.landBearingSno, form.landBearingPlotNo, form.landBearingVillage, form.landBearingTal, form.landBearingDist]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
