@@ -123,23 +123,23 @@ export async function pullFromSupabase() {
     // Mark that we have synced at least once — getStaff() uses this to skip re-seeding
     localStorage.setItem('uka_supabase_synced', 'true');
 
-    // Retry deletes in the background for any failed tombstoned clients
+    // Retry deletes in the background sequentially for any failed tombstoned clients
     if (deletedIds.size > 0) {
       deletedIds.forEach(id => {
-        Promise.all([
-          supabase.from('phases').delete().eq('client_id', id),
-          supabase.from('documents').delete().eq('client_id', id),
-          supabase.from('clients').delete().eq('id', id)
-        ]).then(([phaseRes, docRes, clientRes]) => {
-          if (!clientRes.error) {
-            const currentDeletedRaw = localStorage.getItem('uka_deleted_client_ids');
-            if (currentDeletedRaw) {
-              const currentDeleted: string[] = JSON.parse(currentDeletedRaw);
-              const updated = currentDeleted.filter(deletedId => deletedId !== id);
-              localStorage.setItem('uka_deleted_client_ids', JSON.stringify(updated));
+        supabase.from('phases').delete().eq('client_id', id)
+          .then(() => supabase.from('documents').delete().eq('client_id', id))
+          .then(() => supabase.from('clients').delete().eq('id', id))
+          .then((clientRes) => {
+            if (!clientRes.error) {
+              const currentDeletedRaw = localStorage.getItem('uka_deleted_client_ids');
+              if (currentDeletedRaw) {
+                const currentDeleted: string[] = JSON.parse(currentDeletedRaw);
+                const updated = currentDeleted.filter(deletedId => deletedId !== id);
+                localStorage.setItem('uka_deleted_client_ids', JSON.stringify(updated));
+              }
             }
-          }
-        }).catch(console.error);
+          })
+          .catch(console.error);
       });
     }
 
