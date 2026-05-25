@@ -1586,8 +1586,8 @@ function InfoItem({ label, value }: { label: string; value?: string }) {
 }
 
 function FilePreviewCard({ src, label, height = 110 }: { src: string; label: string; height?: number }) {
-  const [isMobile, setIsMobile] = React.useState(false);
-  React.useEffect(() => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener('resize', check);

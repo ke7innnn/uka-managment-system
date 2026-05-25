@@ -297,22 +297,22 @@ export async function pushClientsToSupabase(clients: Client[]) {
     return {
       id: c.id,
       client_id: c.clientId || null,
-    name: c.name,
-    company: c.company,
-    email: c.email,
-    phone: c.phone,
-    place: c.place,
-    address: c.address,
-    notes: c.notes,
-    project_name: c.projectName,
-    project_status: c.projectStatus,
-    created_at: c.createdAt,
-    tags: c.tags,
-    progress_checklist: c.progressChecklist || [],
-    oc_checklist: c.ocChecklist || [],
-    client_password: c.clientPassword || null,
-    kyc: safeKyc || {}
-  });
+      name: c.name,
+      company: c.company,
+      email: c.email,
+      phone: c.phone,
+      place: c.place,
+      address: c.address,
+      notes: c.notes,
+      project_name: c.projectName,
+      project_status: c.projectStatus,
+      created_at: c.createdAt,
+      tags: c.tags,
+      progress_checklist: c.progressChecklist || [],
+      oc_checklist: c.ocChecklist || [],
+      client_password: c.clientPassword || null,
+      kyc: safeKyc || {}
+    };
   });
 
   const phaseRows: any[] = [];
@@ -372,20 +372,20 @@ export async function pushClientsToSupabase(clients: Client[]) {
   }
 
   // Clean up orphans
-  const clientIds = clients.map(c => c.id);
-  if (clientIds.length > 0) {
+  const clientIdsForCleanup = clients.map(c => c.id);
+  if (clientIdsForCleanup.length > 0) {
     const currentPhaseIds = phaseRows.map(p => p.id);
     if (currentPhaseIds.length > 0) {
-      await supabase.from('phases').delete().in('client_id', clientIds).not('id', 'in', `(${currentPhaseIds.join(',')})`);
+      await supabase.from('phases').delete().in('client_id', clientIdsForCleanup).not('id', 'in', `(${currentPhaseIds.join(',')})`);
     } else {
-      await supabase.from('phases').delete().in('client_id', clientIds);
+      await supabase.from('phases').delete().in('client_id', clientIdsForCleanup);
     }
 
     const currentDocIds = docRows.map(d => d.id);
     if (currentDocIds.length > 0) {
-      await supabase.from('documents').delete().in('client_id', clientIds).not('id', 'in', `(${currentDocIds.join(',')})`);
+      await supabase.from('documents').delete().in('client_id', clientIdsForCleanup).not('id', 'in', `(${currentDocIds.join(',')})`);
     } else {
-      await supabase.from('documents').delete().in('client_id', clientIds);
+      await supabase.from('documents').delete().in('client_id', clientIdsForCleanup);
     }
   }
 }
