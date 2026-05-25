@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Client, addClient, updateClient, OtherOwner } from '@/lib/store';
-import { FileText, Image as ImageIcon } from 'lucide-react';
+import { FileText, Image as ImageIcon, Eye, Download, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import styles from './ClientForm.module.css';
 
 type FormData = {
@@ -794,57 +795,171 @@ function ImageField({
 }: {
   label: string; id: string; value: string; onChange: (v: string) => void;
 }) {
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      onChange(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+
+    setIsUploading(true);
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'bin';
+      const path = `kyc-files/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+      
+      const { error } = await supabase.storage.from('uka-storage').upload(path, file, {
+        contentType: file.type || 'application/octet-stream',
+        upsert: true
+      });
+
+      if (error) {
+        console.error('Upload error:', error);
+        alert('Failed to upload file. Please try again.');
+        setIsUploading(false);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
+      onChange(publicUrl);
+    } catch (err) {
+      console.error(err);
+      alert('An unexpected error occurred during upload.');
+    } finally {
+      setIsUploading(false);
+      if (e.target) e.target.value = ''; // Reset input
+    }
   };
 
-  const isPdf = value.startsWith('data:application/pdf') || value.includes('pdf');
-  const isHeic = value.startsWith('data:image/heic') || value.startsWith('data:image/heif') || value.startsWith('data:application/octet-stream') || value.includes('heic') || value.includes('heif');
+  const getMime = (): string => {
+    if (value.startsWith('data:')) {
+      const m = value.match(/^data:([^;,]+)/);
+      return m ? m[1] : 'application/octet-stream';
+    }
+    const ext = value.split('?')[0].split('.').pop()?.toLowerCase() || '';
+    const extMap: Record<string, string> = {
+      pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg',
+      jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp',
+      heic: 'image/heic', heif: 'image/heif', doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    };
+    return extMap[ext] || 'application/octet-stream';
+  };
+
+  const isPdf = getMime() === 'application/pdf';
+  const isDocx = getMime() === 'application/msword' || getMime().includes('wordprocessingml');
+  const isHeic = getMime() === 'image/heic' || getMime() === 'image/heif';
+  const isOctet = getMime() === 'application/octet-stream';
+
+  const toBlobUrl = (forceMime?: string): string => {
+    if (value.startsWith('data:')) {
+      try {
+        const comma = value.indexOf(',');
+        const b64 = value.slice(comma + 1);
+        const binary = atob(b64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return URL.createObjectURL(new Blob([bytes], { type: forceMime || getMime() }));
+      } catch { return value; }
+    }
+    return value;
+  };
+
+  const handleDownload = () => {
+    const ext = isPdf ? 'pdf' : isDocx ? 'docx' : isHeic ? 'heic' : 'jpg';
+    const filename = `${label.replace(/\s+/g, '_')}.${ext}`;
+    
+    if (value.startsWith('data:')) {
+      const url = toBlobUrl();
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } else {
+      fetch(value).then(r => r.blob()).then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      }).catch(() => window.open(value, '_blank'));
+    }
+  };
+
+  const handleView = () => {
+    if (isDocx) { handleDownload(); return; }
+    if (value.startsWith('data:')) {
+      const viewMime = isHeic || isOctet ? 'image/jpeg' : getMime();
+      const url = toBlobUrl(viewMime);
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } else {
+      window.open(value, '_blank');
+    }
+  };
 
   return (
     <div className={styles.fieldGroup} style={{ gridColumn: 'span 1' }}>
       <label className={styles.label}>{label}</label>
       {value ? (
         <div style={{
-          position: 'relative',
           border: '1px solid var(--border)',
           borderRadius: '8px',
-          padding: '8px',
+          padding: '12px',
           background: 'rgba(255, 255, 255, 0.02)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           gap: '8px'
         }}>
-          {isPdf ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '12px' }}>
-              <FileText size={48} color="var(--primary)" />
-              <span style={{ fontSize: '0.825rem', color: 'var(--text-primary)', fontWeight: 500 }}>PDF Document</span>
+          {value === '[BASE64_STRIPPED]' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '12px 0' }}>
+              <FileText size={32} color="var(--text-muted)" />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Please re-upload</span>
             </div>
-          ) : isHeic ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '12px' }}>
-              <ImageIcon size={48} color="var(--primary)" />
-              <span style={{ fontSize: '0.825rem', color: 'var(--text-primary)', fontWeight: 500 }}>HEIC/HEIF Image</span>
+          ) : isPdf ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '12px 0' }}>
+              <FileText size={32} color="#ef4444" />
+              <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 600 }}>PDF Document</span>
+            </div>
+          ) : isDocx ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '12px 0' }}>
+              <FileText size={32} color="#3b82f6" />
+              <span style={{ fontSize: '0.75rem', color: '#3b82f6', fontWeight: 600 }}>Word Document</span>
+            </div>
+          ) : isHeic || isOctet ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '12px 0' }}>
+              <ImageIcon size={32} color="#10b981" />
+              <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>HEIC/HEIF Image</span>
             </div>
           ) : (
-            <img src={value} alt={label} style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '6px', objectFit: 'contain' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '12px 0' }}>
+              <ImageIcon size={32} color="var(--primary)" />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-primary)', fontWeight: 500 }}>Uploaded File</span>
+            </div>
           )}
+
+          {value !== '[BASE64_STRIPPED]' && (
+            <div style={{ display: 'flex', gap: '4px', width: '100%', marginTop: '4px' }}>
+              {!isDocx && (
+                <button type="button" onClick={handleView} style={{ flex: 1, padding: '6px', background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                  <Eye size={12} /> View
+                </button>
+              )}
+              <button type="button" onClick={handleDownload} style={{ flex: 1, padding: '6px', background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                <Download size={12} /> Download
+              </button>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={() => onChange('')}
             style={{
-              padding: '4px 8px',
-              background: '#ef4444',
-              color: '#fff',
-              border: 'none',
+              marginTop: '4px',
+              width: '100%',
+              padding: '6px',
+              background: 'rgba(239,68,68,0.1)',
+              color: '#ef4444',
+              border: '1px solid rgba(239,68,68,0.2)',
               borderRadius: '4px',
-              fontSize: '0.75rem',
+              fontSize: '0.7rem',
               cursor: 'pointer',
               fontWeight: 600,
               transition: 'background 0.15s ease'
@@ -860,20 +975,31 @@ function ImageField({
           padding: '1.5rem',
           textAlign: 'center',
           background: 'rgba(255, 255, 255, 0.01)',
-          cursor: 'pointer',
+          cursor: isUploading ? 'not-allowed' : 'pointer',
           position: 'relative',
-          transition: 'all 0.15s ease'
+          transition: 'all 0.15s ease',
+          opacity: isUploading ? 0.7 : 1
         }}
-        onClick={() => document.getElementById(`file-${id}`)?.click()}
+        onClick={() => { if (!isUploading) document.getElementById(`file-${id}`)?.click(); }}
         >
-          <span style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>Click to upload file</span>
-          <input
-            type="file"
-            id={`file-${id}`}
-            accept="image/*,.heic,.heif,.pdf,.doc,.docx"
-            onChange={handleFileChange}
-            style={{ display: 'none' }}
-          />
+          {isUploading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <Loader2 className={styles.spin} size={24} color="var(--primary)" />
+              <span style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>Uploading...</span>
+            </div>
+          ) : (
+            <>
+              <span style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>Click to upload file</span>
+              <input
+                type="file"
+                id={`file-${id}`}
+                accept="image/*,.heic,.heif,.pdf,.doc,.docx"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+                disabled={isUploading}
+              />
+            </>
+          )}
         </div>
       )}
     </div>
