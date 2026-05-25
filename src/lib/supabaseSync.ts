@@ -171,8 +171,13 @@ export async function pullFromSupabase() {
     window.dispatchEvent(new Event('uka-sync-complete'));
     window.dispatchEvent(new Event('uka-workspace-sync-complete'));
     return true;
-  } catch (err) {
+  } catch (err: any) {
     console.error('Failed to pull from Supabase:', err);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('uka-sync-failed', {
+        detail: err?.message || String(err)
+      }));
+    }
     return false;
   }
 }

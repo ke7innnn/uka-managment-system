@@ -4,6 +4,7 @@ import { useState } from 'react';
 import useStaffGuard from '@/hooks/useStaffGuard';
 import StaffSidebar from '@/components/StaffSidebar';
 import WorkspaceChatWidget from '@/components/WorkspaceChatWidget';
+import SupabaseConnectionWarning from '@/components/SupabaseConnectionWarning';
 import { Menu } from 'lucide-react';
 import styles from '@/app/dashboard/layout.module.css';
 
@@ -52,7 +53,10 @@ export default function StaffDashboardLayout({ children }: { children: React.Rea
         <StaffSidebar />
       </div>
 
-      <main className={styles.main}>{children}</main>
+      <main className={styles.main}>
+        <SupabaseConnectionWarning />
+        {children}
+      </main>
 
       <WorkspaceChatWidget />
     </div>

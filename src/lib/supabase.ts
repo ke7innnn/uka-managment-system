@@ -17,8 +17,32 @@ export function getSupabaseClient(): SupabaseClient | null {
 export const supabase = new Proxy({} as SupabaseClient, {
   get(_target, prop) {
     const client = getSupabaseClient();
-    if (!client) return () => Promise.resolve({ data: null, error: { message: 'Supabase not initialized' } });
-    return (client as any)[prop];
+    if (client) {
+      return (client as any)[prop];
+    }
+
+    // Fallback Mock Chainer to prevent Javascript TypeErrors when Supabase is uninitialized
+    const createMockChainer = () => {
+      const chainer: any = new Proxy(() => {}, {
+        get(_t, childProp) {
+          if (childProp === 'then') {
+            return (onfulfilled: any) => Promise.resolve({ data: [], error: { message: 'Supabase not initialized' } }).then(onfulfilled);
+          }
+          return chainer;
+        },
+        apply() {
+          return chainer;
+        }
+      });
+      return chainer;
+    };
+
+    if (typeof prop === 'string' && ['from', 'auth', 'storage'].includes(prop)) {
+      return createMockChainer();
+    }
+
+    return () => Promise.resolve({ data: null, error: { message: 'Supabase not initialized' } });
   },
 });
+
 

@@ -5,6 +5,7 @@ import { useAuthGuard } from '@/hooks/useAuthGuard';
 import Sidebar from '@/components/Sidebar';
 import AdminAssistantChat from '@/components/AdminAssistantChat';
 import WorkspaceChatWidget from '@/components/WorkspaceChatWidget';
+import SupabaseConnectionWarning from '@/components/SupabaseConnectionWarning';
 import { Menu } from 'lucide-react';
 import styles from './layout.module.css';
 
@@ -51,7 +52,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Sidebar />
       </div>
 
-      <main className={styles.main}>{children}</main>
+      <main className={styles.main}>
+        <SupabaseConnectionWarning />
+        {children}
+      </main>
 
       <AdminAssistantChat />
       <WorkspaceChatWidget />
