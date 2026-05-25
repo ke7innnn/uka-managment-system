@@ -122,35 +122,93 @@ export default function AdminAssistantChat() {
 
   if (!isOpen) {
     return (
-      <button 
-        onClick={() => setIsOpen(true)}
-        style={{
-          position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999,
-          width: '105px', height: '105px', borderRadius: '50%',
-          background: 'linear-gradient(135deg, var(--primary), #818cf8)',
-          boxShadow: '0 8px 32px rgba(99,102,241,0.4)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'white', border: 'none', cursor: 'pointer',
-          transition: 'transform 0.2s',
-        }}
-        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-      >
-        <Bot size={48} strokeWidth={2.5} />
-      </button>
+      <>
+        <button 
+          onClick={() => setIsOpen(true)}
+          className="floating-assistant-btn"
+        >
+          <Bot className="floating-assistant-icon" size={48} strokeWidth={2.25} />
+        </button>
+
+        <style jsx global>{`
+          .floating-assistant-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent, #c8a96e), #818cf8);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+          }
+          .floating-assistant-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.5);
+          }
+          .floating-assistant-btn:active {
+            transform: scale(0.95);
+          }
+          .floating-assistant-icon {
+            color: white !important;
+            width: 38px !important;
+            height: 38px !important;
+          }
+          @media (max-width: 768px) {
+            .floating-assistant-btn {
+              width: 58px;
+              height: 58px;
+              bottom: 1.25rem;
+              right: 1.25rem;
+              box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+            }
+            .floating-assistant-icon {
+              width: 26px !important;
+              height: 26px !important;
+            }
+          }
+        `}</style>
+      </>
     );
   }
 
   return (
-    <div style={{
-      position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999,
-      width: '100%', maxWidth: '380px', height: '600px', maxHeight: '80vh',
-      background: 'var(--bg-raised)', backdropFilter: 'blur(30px)',
-      border: '1px solid var(--border)',
-      borderRadius: '20px', display: 'flex', flexDirection: 'column',
-      boxShadow: '0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px var(--border) inset', 
-      overflow: 'hidden', animation: 'fadeIn 0.2s ease-out'
-    }}>
+    <div 
+      className="assistant-chat-window animate-fade-in"
+      style={{
+        position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999,
+        background: 'var(--bg-raised)', backdropFilter: 'blur(30px)',
+        border: '1px solid var(--border)',
+        borderRadius: '20px', display: 'flex', flexDirection: 'column',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px var(--border) inset', 
+        overflow: 'hidden'
+      }}
+    >
+      <style jsx global>{`
+        .assistant-chat-window {
+          width: 380px;
+          height: 600px;
+          max-height: 80vh;
+        }
+        @media (max-width: 768px) {
+          .assistant-chat-window {
+            bottom: 1rem !important;
+            right: 1rem !important;
+            left: 1rem !important;
+            width: calc(100vw - 2rem) !important;
+            max-width: 100% !important;
+            height: 520px !important;
+            max-height: 85vh !important;
+          }
+        }
+      `}</style>
       {/* Header */}
       <div style={{
         padding: '1.25rem', background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)',

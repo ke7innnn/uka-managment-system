@@ -46,11 +46,11 @@ export default function ProjectsPage() {
             const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
             return (
               <Link key={client.id} href={`/dashboard/clients/${client.id}?tab=phases`} className={`glass-panel ${styles.projectCard}`}>
-                <div className={styles.cardTop}>
-                  <div className={styles.cardAvatar}>{client.name.charAt(0).toUpperCase()}</div>
-                  <div className={styles.cardInfo}>
-                    <h2 className={styles.cardProjectName}>{client.projectName || 'Unnamed Project'}</h2>
-                    <p className={styles.cardClientName}>
+                <div className={styles.cardTopHeader}>
+                  <div className={styles.projAvatarCircle}>{client.name.charAt(0).toUpperCase()}</div>
+                  <div className={styles.projCardInfo}>
+                    <h2 className={styles.projNameText}>{client.projectName || 'Unnamed Project'}</h2>
+                    <p className={styles.projClientNameText}>
                       {client.name}
                       {client.clientId && (
                         <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600, marginLeft: '0.4rem', borderLeft: '1px solid var(--border)', paddingLeft: '0.4rem' }}>
@@ -60,7 +60,7 @@ export default function ProjectsPage() {
                     </p>
                   </div>
                   <span
-                    className={styles.cardBadge}
+                    className={styles.projStatusBadge}
                     style={{
                       background: `${STATUS_COLORS[client.projectStatus]}22`,
                       color: STATUS_COLORS[client.projectStatus],
@@ -97,7 +97,7 @@ export default function ProjectsPage() {
                   <p className={styles.noPhases}>No phases added</p>
                 )}
 
-                <div className={styles.cardFooter}>
+                <div className={styles.projCardFooter}>
                   <span className={styles.docCount} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><FileText size={13} strokeWidth={1.5} />{client.documents.length} doc{client.documents.length !== 1 ? 's' : ''}</span>
                   <span className={styles.viewLink}>View Details →</span>
                 </div>

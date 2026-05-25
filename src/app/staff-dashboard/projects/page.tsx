@@ -23,11 +23,11 @@ export default function StaffProjectsPage() {
       <div className={styles.projectGrid}>
         {clients.map((client) => (
           <div key={client.id} className={`glass-panel ${styles.projectCard}`}>
-            <div className={styles.cardTop}>
-              <div className={styles.cardAvatar}>{client.name.charAt(0).toUpperCase()}</div>
-              <div className={styles.cardInfo}>
-                <h2 className={styles.cardProjectName}>{client.projectName || 'General Project'}</h2>
-                <p className={styles.cardClientName}>
+            <div className={styles.cardTopHeader}>
+              <div className={styles.projAvatarCircle}>{client.name.charAt(0).toUpperCase()}</div>
+              <div className={styles.projCardInfo}>
+                <h2 className={styles.projNameText}>{client.projectName || 'General Project'}</h2>
+                <p className={styles.projClientNameText}>
                   {client.name}
                   {client.clientId && (
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600, marginLeft: '0.4rem', borderLeft: '1px solid var(--border)', paddingLeft: '0.4rem' }}>
