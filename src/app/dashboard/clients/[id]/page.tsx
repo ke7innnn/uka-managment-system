@@ -489,7 +489,25 @@ export default function ClientDetailPage() {
             {client.name.charAt(0).toUpperCase()}
           </div>
           <div className={styles.heroInfo}>
-            <h1 className={styles.heroName}>{client.name}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <h1 className={styles.heroName}>{client.name}</h1>
+              {client.clientId && (
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '4px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    color: 'var(--text-secondary)',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {client.clientId}
+                </span>
+              )}
+            </div>
             {client.company && <p className={styles.heroCompany}>{client.company}</p>}
             <div className={styles.heroMeta}>
               {client.place && <span>📍 {client.place}</span>}
@@ -563,6 +581,7 @@ export default function ClientDetailPage() {
         <div className={styles.tabContent}>
           <div className={styles.infoGrid}>
             <InfoItem label="Full Name" value={client.name} />
+            {client.clientId && <InfoItem label="Client ID" value={client.clientId} />}
             <InfoItem label="Company" value={client.company} />
             <InfoItem label="Email" value={client.email} />
             <InfoItem label="Phone" value={client.phone} />

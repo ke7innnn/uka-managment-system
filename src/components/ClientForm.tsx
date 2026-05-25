@@ -7,6 +7,7 @@ import styles from './ClientForm.module.css';
 
 type FormData = {
   name: string;
+  clientId: string;
   company: string;
   email: string;
   phone: string;
@@ -28,6 +29,7 @@ export default function ClientForm({ client, mode }: Props) {
   const router = useRouter();
   const [form, setForm] = useState<FormData>({
     name: client?.name || '',
+    clientId: client?.clientId || '',
     company: client?.company || '',
     email: client?.email || '',
     phone: client?.phone || '',
@@ -56,6 +58,7 @@ export default function ClientForm({ client, mode }: Props) {
     if (mode === 'new') {
       addClient({
         name: form.name.trim(),
+        clientId: form.clientId.trim() || undefined,
         company: form.company.trim() || undefined,
         email: form.email.trim() || undefined,
         phone: form.phone.trim() || undefined,
@@ -73,6 +76,7 @@ export default function ClientForm({ client, mode }: Props) {
     } else {
       updateClient(client!.id, {
         name: form.name.trim(),
+        clientId: form.clientId.trim() || undefined,
         company: form.company.trim() || undefined,
         email: form.email.trim() || undefined,
         phone: form.phone.trim() || undefined,
@@ -95,6 +99,7 @@ export default function ClientForm({ client, mode }: Props) {
       <Section title="Personal Information">
         <div className={styles.grid}>
           <Field label="Full Name *" id="name" value={form.name} onChange={(v) => set('name', v)} placeholder="e.g. Rahul Sharma" />
+          <Field label="Client ID" id="clientId" value={form.clientId} onChange={(v) => set('clientId', v)} placeholder="e.g. UKA-101" />
           <Field label="Company / Brand" id="company" value={form.company} onChange={(v) => set('company', v)} placeholder="e.g. Ktech Studios" />
           <Field label="Email" id="email" type="email" value={form.email} onChange={(v) => set('email', v)} placeholder="rahul@example.com" />
           <Field label="Phone" id="phone" type="tel" value={form.phone} onChange={(v) => set('phone', v)} placeholder="+91 98765 43210" />

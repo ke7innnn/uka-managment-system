@@ -104,7 +104,14 @@ export default function ClientsPage() {
                     <td>
                       <div className={styles.nameCell}>
                         <div className={styles.avatar}>{client.name.charAt(0).toUpperCase()}</div>
-                        <span className={styles.clientName}>{client.name}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span className={styles.clientName}>{client.name}</span>
+                          {client.clientId && (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                              ID: {client.clientId}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td>{client.company || <span className={styles.na}>—</span>}</td>

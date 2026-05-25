@@ -33,6 +33,7 @@ export interface Document {
 
 export interface Client {
   id: string;
+  clientId?: string;      // Custom user-facing Client ID (e.g. UKA-101)
   name: string;
   company?: string;
   email?: string;

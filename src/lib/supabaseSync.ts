@@ -28,6 +28,7 @@ export async function pullFromSupabase() {
 
     const supabaseClients: Client[] = (clientsData || []).map((c: any) => ({
       id: c.id,
+      clientId: c.client_id || '',
       name: c.name,
       company: c.company || '',
       email: c.email || '',
@@ -141,6 +142,7 @@ export async function pushClientsToSupabase(clients: Client[]) {
 
   const clientRows = clients.map(c => ({
     id: c.id,
+    client_id: c.clientId || null,
     name: c.name,
     company: c.company,
     email: c.email,

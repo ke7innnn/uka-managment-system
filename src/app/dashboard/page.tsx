@@ -192,7 +192,14 @@ export default function DashboardHome() {
                       {client.name.charAt(0).toUpperCase()}
                     </div>
                     <div className={styles.clientInfo}>
-                      <span className={styles.clientName}>{client.name}</span>
+                      <span className={styles.clientName}>
+                        {client.name}
+                        {client.clientId && (
+                          <span style={{ fontSize: '0.65rem', color: 'var(--accent-light)', fontWeight: 600, marginLeft: '0.5rem', background: 'rgba(255, 255, 255, 0.08)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                            {client.clientId}
+                          </span>
+                        )}
+                      </span>
                       <span className={styles.clientMeta}>{client.company || client.place || 'Direct'}</span>
                     </div>
                     <div className={styles.clientRight}>

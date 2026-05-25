@@ -50,7 +50,14 @@ export default function ProjectsPage() {
                   <div className={styles.cardAvatar}>{client.name.charAt(0).toUpperCase()}</div>
                   <div className={styles.cardInfo}>
                     <h2 className={styles.cardProjectName}>{client.projectName || 'Unnamed Project'}</h2>
-                    <p className={styles.cardClientName}>{client.name}</p>
+                    <p className={styles.cardClientName}>
+                      {client.name}
+                      {client.clientId && (
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600, marginLeft: '0.4rem', borderLeft: '1px solid var(--border)', paddingLeft: '0.4rem' }}>
+                          ID: {client.clientId}
+                        </span>
+                      )}
+                    </p>
                   </div>
                   <span
                     className={styles.cardBadge}
