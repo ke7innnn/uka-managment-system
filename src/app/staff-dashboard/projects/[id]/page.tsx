@@ -860,27 +860,27 @@ export default function ClientDetailPage() {
 
           {/* Checklist Items Grouped */}
           {(() => {
-            // Group items based on 64 items exactly
+            // Group items based on 71 items
             const groups = [
               {
-                title: "General Land & Personal Documents (1-31)",
+                title: "General Land & Personal Documents (1-38)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
                   const num = parseInt(item.id, 10);
-                  return num <= 31;
+                  return num <= 38;
                 })
               },
               {
-                title: "₹500 Stamp Paper Affidavits (32)",
+                title: "₹500 Stamp Paper Affidavits (39)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
                   const num = parseInt(item.id, 10);
-                  return num === 32;
+                  return num === 39;
                 })
               },
               {
-                title: "CC/RDP Approvals & NOCs (33-64)",
+                title: "CC/RDP Approvals & NOCs (40-71)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
                   const num = parseInt(item.id, 10);
-                  return num >= 33;
+                  return num >= 40;
                 })
               }
             ];

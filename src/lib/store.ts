@@ -163,15 +163,18 @@ export function getClients(): Client[] {
         (!p.name.includes("1a") && !p.name.includes("1b") && !p.name.includes("2c") && !p.name.includes("3d") && !p.name.includes("3e") && !p.name.includes("3f"))
       );
 
+      let clientMigrated = false;
+      let newPhases = client.phases || [];
+
       if (hasOldPhases) {
-        migrated = true;
+        clientMigrated = true;
         
         const oldStage1 = client.phases?.find(p => p.name.includes("File Preparation"));
         const oldStage2 = client.phases?.find(p => p.name.includes("Paper Procurement"));
         const oldStage3 = client.phases?.find(p => p.name.includes("Legal / Tree NOC"));
         const oldStage4 = client.phases?.find(p => p.name.includes("Obtaining Permission"));
 
-        const newPhases = DEFAULT_PHASES_TEMPLATE.map((stage, idx) => {
+        newPhases = DEFAULT_PHASES_TEMPLATE.map((stage, idx) => {
           let matchingOld = oldStage1;
           if (stage.name.includes("2c")) matchingOld = oldStage2;
           else if (stage.name.includes("3d") || stage.name.includes("3e")) matchingOld = oldStage3;
@@ -211,12 +214,12 @@ export function getClients(): Client[] {
             timeBound
           };
         });
-
-        return {
-          ...client,
-          phases: newPhases,
-          syncStatus: 'pending' as const
-        };
+      } else {
+        newPhases = client.phases.map(p => ({
+          ...p,
+          status: p.status || (p.completed ? 'completed' : 'not-started'),
+          tasks: p.tasks || []
+        }));
       }
 
       // Migrate progressChecklist IDs from old numbering to new sequential 1-71
@@ -294,18 +297,26 @@ export function getClients(): Client[] {
         "64":  "71",
       };
 
+      const originalChecklist = client.progressChecklist || [];
+      const migratedChecklist = originalChecklist.map(id => CHECKLIST_ID_MAP[id] ?? id);
+      const uniqueMigratedChecklist = [...new Set(migratedChecklist)];
+
+      const checklistChanged = originalChecklist.length !== uniqueMigratedChecklist.length ||
+        originalChecklist.some((val, idx) => val !== uniqueMigratedChecklist[idx]);
+
+      if (checklistChanged) {
+        clientMigrated = true;
+      }
+
+      if (clientMigrated) {
+        migrated = true;
+      }
+
       return {
         ...client,
-        phases: client.phases.map(p => ({
-          ...p,
-          status: p.status || (p.completed ? 'completed' : 'not-started'),
-          tasks: p.tasks || []
-        })),
-        progressChecklist: client.progressChecklist
-          ? [...new Set(
-              client.progressChecklist.map(id => CHECKLIST_ID_MAP[id] ?? id)
-            )]
-          : client.progressChecklist
+        phases: newPhases,
+        progressChecklist: uniqueMigratedChecklist,
+        syncStatus: clientMigrated ? ('pending' as const) : client.syncStatus
       };
     });
 
