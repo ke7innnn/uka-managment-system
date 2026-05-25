@@ -872,6 +872,8 @@ export const DOCUMENT_FOLDERS = [
     { id: "1c", code: "1.C", name: "Pikpahani Extracts" },
     { id: "1d", code: "1.D", name: "8A Extract" },
     { id: "1e", code: "1.E", name: "Advocate Reports" },
+    { id: "1g", code: "1.G", name: "TiLR" },
+    { id: "1h", code: "1.H", name: "Gut Book" },
     { id: "1f", code: "1.F", name: "Others" }
   ]},
   { id: '2', name: "VVCMC Bonds & Forms", code: "VBF", subfolders: [
