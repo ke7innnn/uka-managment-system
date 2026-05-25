@@ -1,5 +1,5 @@
 // ─── Types ────────────────────────────────────────────────────────────────────
-import { pushClientsToSupabase, pushStaffToSupabase } from './supabaseSync';
+import { pushClientsToSupabase, pushStaffToSupabase, pushAlertsToSupabase } from './supabaseSync';
 import { stripLargeBase64 } from './supabase';
 
 export interface PhaseTask {
@@ -905,6 +905,10 @@ export function addAlert(alert: Omit<PerformanceAlert, 'id' | 'createdAt' | 'rea
   };
   alerts.push(newAlert);
   saveAlerts(alerts);
+  
+  // Real-time push to Supabase
+  pushAlertsToSupabase([newAlert]).catch(console.error);
+  
   return newAlert;
 }
 
@@ -915,6 +919,12 @@ export function markAlertRead(alertId: string, userId: string): void {
       : a
   );
   saveAlerts(alerts);
+  
+  // Sync the updated read state to Supabase
+  const updatedAlert = alerts.find(a => a.id === alertId);
+  if (updatedAlert) {
+    pushAlertsToSupabase([updatedAlert]).catch(console.error);
+  }
 }
 
 export function getAlertsForUser(staffName: string): PerformanceAlert[] {

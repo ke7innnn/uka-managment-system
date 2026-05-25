@@ -99,3 +99,19 @@ ALTER TABLE documents DISABLE ROW LEVEL SECURITY;
 ALTER TABLE staff DISABLE ROW LEVEL SECURITY;
 ALTER TABLE staff_tasks DISABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance_logs DISABLE ROW LEVEL SECURITY;
+
+-- 7. Performance Alerts Table
+CREATE TABLE IF NOT EXISTS performance_alerts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  client_id UUID,
+  client_name TEXT NOT NULL,
+  stage_name TEXT NOT NULL,
+  severity TEXT NOT NULL,
+  template_key TEXT NOT NULL,
+  message TEXT NOT NULL,
+  assigned_to TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  read_by JSONB DEFAULT '[]'::jsonb
+);
+
+ALTER TABLE performance_alerts DISABLE ROW LEVEL SECURITY;

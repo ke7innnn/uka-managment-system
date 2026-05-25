@@ -195,11 +195,14 @@
 
 .cardAvatarWrap {
   position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
 }
 
 .cardAvatar {
-  width: 48px;
-  height: 48px;
+  width: 48px !important;
+  height: 48px !important;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -207,6 +210,8 @@
   font-size: 1.25rem;
   font-weight: 800;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  flex-shrink: 0;
+  object-fit: cover !important;
 }
 
 .statusDot {
@@ -221,6 +226,7 @@
 
 .cardInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .cardName {

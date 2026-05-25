@@ -26,6 +26,11 @@ export async function pullFromSupabase() {
     // We don't throw on workspaceErr because the table might not exist yet for some users
     if (workspaceErr) console.warn('Workspace table might not exist yet:', workspaceErr);
 
+    const { data: alertsData, error: alertsErr } = await supabase
+      .from('performance_alerts')
+      .select('*');
+    if (alertsErr) console.warn('Performance alerts table might not exist yet:', alertsErr);
+
     const supabaseClients: Client[] = (clientsData || []).map((c: any) => ({
       id: c.id,
       clientId: c.client_id || '',
@@ -194,6 +199,44 @@ export async function pullFromSupabase() {
       const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
       const recentMessages = supabaseMessages.filter(m => new Date(m.createdAt).getTime() > threeDaysAgo);
       localStorage.setItem('uka_workspace_messages', JSON.stringify(recentMessages));
+    }
+
+    // --- Performance Alerts Merge & Sync ---
+    if (!alertsErr) {
+      const localAlertsRaw = localStorage.getItem('uka_performance_alerts');
+      const localAlerts: any[] = localAlertsRaw ? JSON.parse(localAlertsRaw) : [];
+      
+      const dbAlerts = (alertsData || []).map((a: any) => ({
+        id: a.id,
+        clientId: a.client_id || '',
+        clientName: a.client_name,
+        stageName: a.stage_name,
+        severity: a.severity,
+        templateKey: a.template_key,
+        message: a.message,
+        assignedTo: a.assigned_to,
+        createdAt: a.created_at,
+        readBy: typeof a.read_by === 'string' ? JSON.parse(a.read_by) : (a.read_by || [])
+      }));
+
+      const mergedAlertsMap = new Map<string, any>();
+      dbAlerts.forEach(a => mergedAlertsMap.set(a.id, a));
+      localAlerts.forEach(a => {
+        const existing = mergedAlertsMap.get(a.id);
+        if (existing) {
+          const mergedRead = Array.from(new Set([...(existing.readBy || []), ...(a.readBy || [])]));
+          mergedAlertsMap.set(a.id, { ...existing, readBy: mergedRead });
+        } else {
+          mergedAlertsMap.set(a.id, a);
+        }
+      });
+
+      const mergedAlerts = Array.from(mergedAlertsMap.values());
+      localStorage.setItem('uka_performance_alerts', JSON.stringify(mergedAlerts));
+
+      if (mergedAlerts.length > 0) {
+        pushAlertsToSupabase(mergedAlerts).catch(console.error);
+      }
     }
 
     window.dispatchEvent(new Event('uka-sync-complete'));
@@ -388,4 +431,27 @@ export async function pushWorkspaceToSupabase(messages: any[]) {
 
   const { error } = await supabase.from('workspace_messages').upsert(rows);
   if (error) { console.error('pushWorkspaceToSupabase error:', error.message); }
+}
+
+export async function pushAlertsToSupabase(alerts: any[]) {
+  if (!alerts || alerts.length === 0) return;
+  const rows = alerts.map(a => ({
+    id: a.id,
+    client_id: a.clientId || null,
+    client_name: a.clientName,
+    stage_name: a.stageName,
+    severity: a.severity,
+    template_key: a.templateKey,
+    message: a.message,
+    assigned_to: a.assignedTo,
+    created_at: a.createdAt,
+    read_by: JSON.stringify(a.readBy || [])
+  }));
+
+  try {
+    const { error } = await supabase.from('performance_alerts').upsert(rows);
+    if (error) console.error('pushAlertsToSupabase error:', error.message);
+  } catch (err) {
+    console.error('Failed to push alerts to Supabase:', err);
+  }
 }
