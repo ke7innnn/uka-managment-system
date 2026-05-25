@@ -663,6 +663,49 @@ export default function ClientDetailPage() {
               <p className={styles.notesText}>{client.notes}</p>
             </div>
           )}
+          {client.kyc && (
+            <div className={styles.notesBox} style={{ marginTop: '2rem' }}>
+              <h3 className={styles.notesTitle}>KYC Details</h3>
+              <div className={styles.infoGrid} style={{ marginTop: '1rem' }}>
+                {client.clientPassword && <InfoItem label="Client Password" value={client.clientPassword} />}
+                <InfoItem label="Proposed Development" value={client.kyc.proposedDevelopment} />
+                <InfoItem label="Land S.No / Plot No" value={`${client.kyc.landBearingSno || '—'} / ${client.kyc.landBearingPlotNo || '—'}`} />
+                <InfoItem label="Village / Taluka / Dist" value={`${client.kyc.landBearingVillage || '—'}, ${client.kyc.landBearingTal || '—'}, ${client.kyc.landBearingDist || '—'}`} />
+                <InfoItem label="Scheme Type" value={client.kyc.scheme} />
+                <InfoItem label="Permission Type" value={client.kyc.permissionType} />
+                <InfoItem label="Owner Type" value={client.kyc.ownerType} />
+                <InfoItem label="Applicant Name" value={client.kyc.applicantName} />
+                <InfoItem label="Company Reg. Type" value={client.kyc.companyOwnerType} />
+                <InfoItem label="Company PAN Card" value={client.kyc.companyPanCard} />
+                <InfoItem label="GST Certificate" value={client.kyc.gstNoCertificate} />
+                <InfoItem label="Member Aadhar Card" value={client.kyc.memberAadharCard} />
+                <InfoItem label="Member PAN Card" value={client.kyc.memberPanCard} />
+                <InfoItem label="Member Mobile No." value={client.kyc.memberMobileNo} />
+                <InfoItem label="DSC Authorized Person" value={client.kyc.authorisedPersonEmail} />
+                <InfoItem label="DSC Required (Pen Drive)" value={client.kyc.requiredDigitalSignature} />
+                <InfoItem label="Office Address" value={client.kyc.officeAdd} />
+                <InfoItem label="Site Address" value={client.kyc.siteAdd} />
+                <InfoItem label="Site Secondary Address" value={client.kyc.siteAddSecondary} />
+                <InfoItem label="Project RERA Name" value={client.kyc.projectNameSecondary} />
+                <InfoItem label="Geo-Coordinates" value={client.kyc.geoCoordinates} />
+                <InfoItem label="Project Email ID" value={client.kyc.emailIdSecondary} />
+                <InfoItem label="Whether Open Plot" value={client.kyc.whetherOpenPlot} />
+                <InfoItem label="Site Engineer" value={client.kyc.siteEng} />
+                <InfoItem label="Site Supervisor" value={client.kyc.siteSupervisor} />
+                <InfoItem label="Regulations" value={client.kyc.regulations} />
+                <InfoItem label="Road" value={client.kyc.road} />
+                <InfoItem label="Side" value={client.kyc.side} />
+                <InfoItem label="S.No / H.No" value={`${client.kyc.sNo || '—'} / ${client.kyc.hNo || '—'}`} />
+                <InfoItem label="Village / Taluka" value={`${client.kyc.village || '—'}, ${client.kyc.tal || '—'}`} />
+                <InfoItem label="Use / Bldgs / Floor" value={`${client.kyc.use || '—'} / ${client.kyc.noOfBldgs || '—'} / ${client.kyc.floor || '—'}`} />
+                <InfoItem label="Subject / P-Line" value={`${client.kyc.subSecondary || '—'} / ${client.kyc.pLine || '—'}`} />
+                <InfoItem label="Architect" value={client.kyc.architect} />
+                <InfoItem label="Structural Engineer" value={client.kyc.structuralEngName} />
+                <InfoItem label="Digital Signature Available" value={client.kyc.isDigitalSignature} />
+                <InfoItem label="Contact / Other" value={`${client.kyc.contactNo || '—'} / ${client.kyc.anyOther || '—'}`} />
+              </div>
+            </div>
+          )}
           {client.tags && client.tags.length > 0 && (
             <div className={styles.tagsRow}>
               {client.tags.map((tag) => (

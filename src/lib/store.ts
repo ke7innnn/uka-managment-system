@@ -31,9 +31,61 @@ export interface Document {
   subfolder?: string;    // NEW: subfolder ID or name
 }
 
+export interface KycData {
+  proposedDevelopment?: string; // RESIDENTIAL CUM SHOPLINE / COMMERCIAL / RESIDENTIAL / INDUSTRIAL
+  landBearingSno?: string;
+  landBearingPlotNo?: string;
+  landBearingVillage?: string;
+  landBearingTal?: string;
+  landBearingDist?: string;
+  scheme?: string; // REGULAR PERMISSION / EWS LIG SCHEME / SRA / CLUSTER SCHEME
+  permissionType?: string; // CC / RDP / OC / EC / FIRE
+  ownerType?: string; // MULTIPLE OWNER / PARTNERSHIP / PROPRIETOR / LLP / INDIVIDUAL
+  applicantName?: string;
+  companyOwnerType?: string; // FOR COMPANY: MULTIPLE OWNER / PARTNERSHIP / PROPRIETOR / LLP / INDIVIDUAL
+  companyPanCard?: string;
+  gstNoCertificate?: string;
+  memberAadharCard?: string;
+  memberPanCard?: string;
+  memberMobileNo?: string;
+  authorisedPersonEmail?: string;
+  requiredDigitalSignature?: string; // YES / NO
+  officeAdd?: string;
+  siteAdd?: string;
+  northPhoto?: string;
+  southPhoto?: string;
+  eastPhoto?: string;
+  westPhoto?: string;
+  road?: string;
+  side?: string;
+  sNo?: string;
+  hNo?: string;
+  village?: string;
+  tal?: string;
+  siteAddSecondary?: string;
+  projectNameSecondary?: string;
+  geoCoordinates?: string;
+  emailIdSecondary?: string;
+  whetherOpenPlot?: string;
+  siteEng?: string;
+  regulations?: string;
+  siteSupervisor?: string;
+  anyOther?: string;
+  contactNo?: string;
+  use?: string;
+  noOfBldgs?: string;
+  floor?: string;
+  subSecondary?: string;
+  pLine?: string;
+  architect?: string;
+  structuralEngName?: string;
+  isDigitalSignature?: string;
+}
+
 export interface Client {
   id: string;
   clientId?: string;      // Custom user-facing Client ID (e.g. UKA-101)
+  clientPassword?: string;
   name: string;
   company?: string;
   email?: string;
@@ -51,6 +103,7 @@ export interface Client {
   progressChecklist?: string[];
   syncStatus?: 'pending' | 'synced';
   ocChecklist?: string[];
+  kyc?: KycData;
 }
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────

@@ -42,6 +42,8 @@ export async function pullFromSupabase() {
       tags: c.tags || [],
       progressChecklist: c.progress_checklist || [],
       ocChecklist: c.oc_checklist || [],
+      clientPassword: c.client_password || '',
+      kyc: c.kyc || {},
       syncStatus: 'synced',
       phases: (c.phases || []).map((p: any) => ({
         id: p.id, name: p.name, completed: p.completed, order: p.order,
@@ -158,7 +160,9 @@ export async function pushClientsToSupabase(clients: Client[]) {
     created_at: c.createdAt,
     tags: c.tags,
     progress_checklist: c.progressChecklist || [],
-    oc_checklist: c.ocChecklist || []
+    oc_checklist: c.ocChecklist || [],
+    client_password: c.clientPassword || null,
+    kyc: c.kyc || {}
   }));
 
   const phaseRows: any[] = [];

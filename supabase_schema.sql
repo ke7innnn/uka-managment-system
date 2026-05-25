@@ -19,7 +19,9 @@ CREATE TABLE clients (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   tags JSONB DEFAULT '[]'::jsonb,
   progress_checklist JSONB DEFAULT '[]'::jsonb,
-  oc_checklist JSONB DEFAULT '[]'::jsonb
+  oc_checklist JSONB DEFAULT '[]'::jsonb,
+  client_password TEXT,
+  kyc JSONB DEFAULT '{}'::jsonb
 );
 
 -- 2. Phases Table
