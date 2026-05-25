@@ -688,7 +688,7 @@ export default function ClientDetailPage() {
                 <InfoItem label="Site Engineer" value={client.kyc.siteEng} />
                 <InfoItem label="Site Supervisor" value={client.kyc.siteSupervisor} />
                 <InfoItem label="Regulations" value={client.kyc.regulations} />
-                <InfoItem                 <InfoItem label="Architect" value={client.kyc.architect} />
+                <InfoItem label="Architect" value={client.kyc.architect} />
                 <InfoItem label="Structural Engineer" value={client.kyc.structuralEngName} />
                 <InfoItem label="Digital Signature Available" value={client.kyc.isDigitalSignature} />
                 <InfoItem label="Client Aadhaar No." value={client.kyc.clientAadharNo} />
