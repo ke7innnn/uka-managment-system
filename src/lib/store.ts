@@ -54,11 +54,17 @@ export interface KycData {
   officeAdd?: string;
   siteAdd?: string;
   northPhoto?: string;
+  northDetails?: string;
   southPhoto?: string;
+  southDetails?: string;
   eastPhoto?: string;
+  eastDetails?: string;
   westPhoto?: string;
+  westDetails?: string;
   road?: string;
+  roadDetails?: string;
   side?: string;
+  sideDetails?: string;
   sNo?: string;
   hNo?: string;
   village?: string;
@@ -738,4 +744,55 @@ export const OC_CHECKLIST_ITEMS = [
   { id: "18", label: "HANDOVER RECEIPT OF BUILT-UP AMENITY / INCLUSIVE HOUSING TENEMENTS", type: "optional" },
   { id: "19", label: "CERTIFICATE FROM ARCHITECT REGARDING NO. OF PARKINGS REQUIRED FOR THE PROPOSED BUILDING AND AVAILABLE AS PER BUILT PLAN", type: "optional" },
   { id: "20", label: "CONSENT TO OPERATE FROM MPCB (POLLUTION CONTROL BOARD NOC)", type: "optional" }
+];
+
+export const DOCUMENT_FOLDERS = [
+  { id: '1', name: "Revenue", code: "REV", subfolders: [
+    { id: "1a", code: "1.A", name: "7/12 Extract / Property Card" },
+    { id: "1b", code: "1.B", name: "6/12 Extracts" },
+    { id: "1c", code: "1.C", name: "Pikpahani Extracts" },
+    { id: "1d", code: "1.D", name: "8A Extract" },
+    { id: "1e", code: "1.E", name: "Advocate Reports" },
+    { id: "1f", code: "1.F", name: "Others" }
+  ]},
+  { id: '2', name: "VVCMC Bonds & Forms", code: "VBF", subfolders: [
+    { id: "2a", code: "2.1", name: "REGARDING APPOINTMENT OF SITE ENGINEER. (500 STAMP)" },
+    { id: "2b", code: "2.2", name: "ADJOINING FLAT AFFIDAVIT. (500 STAMP) - IF REQUIRED" },
+    { id: "2c", code: "2.3", name: "AFFIDAVIT 1. (500 STAMP)" },
+    { id: "2d", code: "2.4", name: "BALANCE PAPER AFFIDAVIT. (500 STAMP)" },
+    { id: "2e", code: "2.5", name: "DECLARATION. (500 STAMP)" },
+    { id: "2f", code: "2.6", name: "INDEMNITY BOND. (500 STAMP)" },
+    { id: "2g", code: "2.7", name: "OP AFFIDAVIT. (500 STAMP)" },
+    { id: "2h", code: "2.8", name: "SELF DECLARATION. (500 STAMP) - IF REQUIRED" },
+    { id: "2i", code: "2.9", name: "SEWAGE DISPOSAL. (500 STAMP)" },
+    { id: "2j", code: "2.10", name: "TENENT BAND PATR. (500 STAMP)" },
+    { id: "2k", code: "2.11", name: "UNDERTAKING 100 STAMP PAPER. (500 STAMP)" },
+    { id: "2l", code: "2.12", name: "PRATIDNYA-PATRA. 7/12. (500 STAMP)" },
+    { id: "2m", code: "2.13", name: "TREE PRATIDNYA-PATRA. (500 STAMP)" },
+    { id: "2n", code: "2.14", name: "BAND-PATRA. (500 STAMP)" },
+    { id: "2o", code: "2.15", name: "GREEN ZONE AFFIDAVIT. (500 STAMP) - IF REQUIRED" },
+    { id: "2p", code: "2.16", name: "EWS AFFIDAVIT. (500 STAMP) - IF REQUIRED" }
+  ]},
+  { id: '3', name: "Technical Papers", code: "TEC", subfolders: [
+    { id: "3a", code: "3.1", name: "Architect Appointment" },
+    { id: "3b", code: "3.2", name: "Architect Acceptance" },
+    { id: "3c", code: "3.3", name: "Architect Supervision" },
+    { id: "3d", code: "3.4", name: "Architect License" },
+    { id: "3e", code: "3.5", name: "Structural Appointment" },
+    { id: "3f", code: "3.6", name: "Structural Acceptance" },
+    { id: "3g", code: "3.7", name: "Structural Supervision" },
+    { id: "3h", code: "3.8", name: "Structural License" }
+  ]},
+  { id: '4', name: "VVCMC NOC's", code: "NOC", subfolders: [
+    { id: "4a", code: "4.A", name: "D.P Remark" },
+    { id: "4b", code: "4.B", name: "Tree Noc" },
+    { id: "4c", code: "4.C", name: "Fire Noc" },
+    { id: "4d", code: "4.D", name: "E.C Noc" },
+    { id: "4e", code: "4.E", name: "Railway Noc" },
+    { id: "4f", code: "4.F", name: "High Noc" },
+    { id: "4g", code: "4.G", name: "Others" }
+  ]},
+  { id: '5', name: "VVCMC Previous Approvals", code: "VPA", subfolders: [] },
+  { id: '6', name: "Courts Cases / Complaints / Notices", code: "CCN", subfolders: [] },
+  { id: '7', name: "Others", code: "OTH", subfolders: [] }
 ];

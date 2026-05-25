@@ -2,30 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getClients, Client, Document as Doc, viewDocumentSafe } from '@/lib/store';
+import { getClients, Client, Document as Doc, viewDocumentSafe, DOCUMENT_FOLDERS as FOLDERS } from '@/lib/store';
 import { ImageIcon, FileText, FileSpreadsheet, Video, Paperclip, User, Eye, Download } from 'lucide-react';
 import styles from './page.module.css';
-
-const FOLDERS = [
-  { id: '1', name: "Revenue", code: "REV", subfolders: [
-    { id: "1a", code: "1.A", name: "7/12 Extract / Property Card" },
-    { id: "1b", code: "1.B", name: "6/12 Extracts" },
-    { id: "1c", code: "1.C", name: "Pikpahani Extracts" },
-    { id: "1d", code: "1.D", name: "8A Extract" },
-    { id: "1e", code: "1.E", name: "Advocate Reports" },
-    { id: "1f", code: "1.F", name: "Others" }
-  ]},
-  { id: '2', name: "VVCMC Bonds & Forms", code: "VBF", subfolders: [] },
-  { id: '3', name: "Technical Papers", code: "TEC", subfolders: [
-    { id: "3a", code: "3.A", name: "Architect Papers" },
-    { id: "3b", code: "3.B", name: "Structural Engineer Papers" },
-    { id: "3c", code: "3.C", name: "Site Supervisor Papers" }
-  ]},
-  { id: '4', name: "VVMC NOC's", code: "NOC", subfolders: [] },
-  { id: '5', name: "VVCMC Previous Approvals", code: "VPA", subfolders: [] },
-  { id: '6', name: "Courts Cases / Complaints / Notices", code: "CCN", subfolders: [] },
-  { id: '7', name: "Others", code: "OTH", subfolders: [] }
-];
 
 const getFolderAndSubfolderName = (folderId?: string, subfolderId?: string) => {
   if (!folderId) return null;

@@ -3,33 +3,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS } from '@/lib/store';
+import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
 import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare } from 'lucide-react';
 import styles from './page.module.css';
-
-const FOLDERS = [
-  { id: '1', name: "Revenue", code: "REV", subfolders: [
-    { id: "1a", code: "1.A", name: "7/12 Extract / Property Card" },
-    { id: "1b", code: "1.B", name: "6/12 Extracts" },
-    { id: "1c", code: "1.C", name: "Pikpahani Extracts" },
-    { id: "1d", code: "1.D", name: "8A Extract" },
-    { id: "1e", code: "1.E", name: "Advocate Reports" },
-    { id: "1f", code: "1.F", name: "Others" }
-  ]},
-  { id: '2', name: "VVCMC Bonds & Forms", code: "VBF", subfolders: [] },
-  { id: '3', name: "Technical Papers", code: "TEC", subfolders: [
-    { id: "3a", code: "3.A", name: "Architect Papers" },
-    { id: "3b", code: "3.B", name: "Structural Engineer Papers" },
-    { id: "3c", code: "3.C", name: "Site Supervisor Papers" },
-    { id: "3d", code: "3.D", name: "Others" }
-  ]},
-  { id: '4', name: "VVMC NOC's", code: "NOC", subfolders: [] },
-  { id: '5', name: "VVCMC Previous Approvals", code: "VPA", subfolders: [] },
-  { id: '6', name: "Courts Cases / Complaints / Notices", code: "CCN", subfolders: [] },
-  { id: '7', name: "Others", code: "OTH", subfolders: [] }
-];
 
 const STATUS_COLORS: Record<Client['projectStatus'], string> = {
   active: '#10b981',
@@ -721,32 +699,56 @@ export default function ClientDetailPage() {
               </div>
 
               {/* Site Photos Gallery */}
-              {(client.kyc.northPhoto || client.kyc.southPhoto || client.kyc.eastPhoto || client.kyc.westPhoto || client.kyc.road || client.kyc.side || client.kyc.digitalSignaturePhoto) && (
+              {(client.kyc.northPhoto || client.kyc.northDetails || client.kyc.southPhoto || client.kyc.southDetails || client.kyc.eastPhoto || client.kyc.eastDetails || client.kyc.westPhoto || client.kyc.westDetails || client.kyc.road || client.kyc.roadDetails || client.kyc.side || client.kyc.sideDetails || client.kyc.digitalSignaturePhoto) && (
                 <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
                   <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1rem' }}>Site Photos & Digital Signature</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                     {client.kyc.northPhoto && (
                       <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>North Side</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>North Side Photo</span>
                         <img src={client.kyc.northPhoto} alt="North Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.northPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.northDetails && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>North Direction Details</span>
+                        <img src={client.kyc.northDetails} alt="North Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.northDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
                       </div>
                     )}
                     {client.kyc.southPhoto && (
                       <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>South Side</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>South Side Photo</span>
                         <img src={client.kyc.southPhoto} alt="South Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.southPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.southDetails && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>South Direction Details</span>
+                        <img src={client.kyc.southDetails} alt="South Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.southDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
                       </div>
                     )}
                     {client.kyc.eastPhoto && (
                       <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>East Side</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>East Side Photo</span>
                         <img src={client.kyc.eastPhoto} alt="East Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.eastPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.eastDetails && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>East Direction Details</span>
+                        <img src={client.kyc.eastDetails} alt="East Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.eastDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
                       </div>
                     )}
                     {client.kyc.westPhoto && (
                       <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>West Side</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>West Side Photo</span>
                         <img src={client.kyc.westPhoto} alt="West Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.westPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.westDetails && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>West Direction Details</span>
+                        <img src={client.kyc.westDetails} alt="West Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.westDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
                       </div>
                     )}
                     {client.kyc.road && (
@@ -755,10 +757,22 @@ export default function ClientDetailPage() {
                         <img src={client.kyc.road} alt="Road Photo" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.road || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
                       </div>
                     )}
+                    {client.kyc.roadDetails && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Road Details</span>
+                        <img src={client.kyc.roadDetails} alt="Road Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.roadDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
                     {client.kyc.side && (
                       <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Side Photo</span>
                         <img src={client.kyc.side} alt="Side Photo" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.side || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    {client.kyc.sideDetails && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Side Details</span>
+                        <img src={client.kyc.sideDetails} alt="Side Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.sideDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
                       </div>
                     )}
                     {client.kyc.digitalSignaturePhoto && (

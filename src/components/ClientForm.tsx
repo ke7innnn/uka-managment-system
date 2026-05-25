@@ -43,11 +43,17 @@ type FormData = {
   officeAdd: string;
   siteAdd: string;
   northPhoto: string;
+  northDetails: string;
   southPhoto: string;
+  southDetails: string;
   eastPhoto: string;
+  eastDetails: string;
   westPhoto: string;
+  westDetails: string;
   road: string;
+  roadDetails: string;
   side: string;
+  sideDetails: string;
   sNo: string;
   hNo: string;
   village: string;
@@ -118,11 +124,17 @@ export default function ClientForm({ client, mode }: Props) {
     officeAdd: client?.kyc?.officeAdd || '',
     siteAdd: client?.kyc?.siteAdd || '',
     northPhoto: client?.kyc?.northPhoto || '',
+    northDetails: client?.kyc?.northDetails || '',
     southPhoto: client?.kyc?.southPhoto || '',
+    southDetails: client?.kyc?.southDetails || '',
     eastPhoto: client?.kyc?.eastPhoto || '',
+    eastDetails: client?.kyc?.eastDetails || '',
     westPhoto: client?.kyc?.westPhoto || '',
+    westDetails: client?.kyc?.westDetails || '',
     road: client?.kyc?.road || '',
+    roadDetails: client?.kyc?.roadDetails || '',
     side: client?.kyc?.side || '',
+    sideDetails: client?.kyc?.sideDetails || '',
     sNo: client?.kyc?.sNo || '',
     hNo: client?.kyc?.hNo || '',
     village: client?.kyc?.village || '',
@@ -195,11 +207,17 @@ export default function ClientForm({ client, mode }: Props) {
       officeAdd: form.officeAdd,
       siteAdd: form.siteAdd,
       northPhoto: form.northPhoto,
+      northDetails: form.northDetails,
       southPhoto: form.southPhoto,
+      southDetails: form.southDetails,
       eastPhoto: form.eastPhoto,
+      eastDetails: form.eastDetails,
       westPhoto: form.westPhoto,
+      westDetails: form.westDetails,
       road: form.road,
+      roadDetails: form.roadDetails,
       side: form.side,
+      sideDetails: form.sideDetails,
       sNo: form.sNo,
       hNo: form.hNo,
       village: form.village,
@@ -448,12 +466,49 @@ export default function ClientForm({ client, mode }: Props) {
           <Field label="Site Address" id="siteAdd" value={form.siteAdd} onChange={(v) => set('siteAdd', v)} placeholder="Site Address" />
 
           {/* Site Direction Photos */}
-          <ImageField label="Site Photo - North Side" id="northPhoto" value={form.northPhoto} onChange={(v) => set('northPhoto', v)} />
-          <ImageField label="Site Photo - South Side" id="southPhoto" value={form.southPhoto} onChange={(v) => set('southPhoto', v)} />
-          <ImageField label="Site Photo - East Side" id="eastPhoto" value={form.eastPhoto} onChange={(v) => set('eastPhoto', v)} />
-          <ImageField label="Site Photo - West Side" id="westPhoto" value={form.westPhoto} onChange={(v) => set('westPhoto', v)} />
-          <ImageField label="Road Photo" id="road" value={form.road} onChange={(v) => set('road', v)} />
-          <ImageField label="Side Photo" id="side" value={form.side} onChange={(v) => set('side', v)} />
+          <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', marginTop: '1rem', marginBottom: '1rem' }}>
+            <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '1rem', background: 'rgba(255, 255, 255, 0.01)' }}>
+              <ImageField label="Site Photo - North Side" id="northPhoto" value={form.northPhoto} onChange={(v) => set('northPhoto', v)} />
+              <div style={{ marginTop: '0.75rem' }}>
+                <ImageField label="North Direction Details" id="northDetails" value={form.northDetails} onChange={(v) => set('northDetails', v)} />
+              </div>
+            </div>
+
+            <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '1rem', background: 'rgba(255, 255, 255, 0.01)' }}>
+              <ImageField label="Site Photo - South Side" id="southPhoto" value={form.southPhoto} onChange={(v) => set('southPhoto', v)} />
+              <div style={{ marginTop: '0.75rem' }}>
+                <ImageField label="South Direction Details" id="southDetails" value={form.southDetails} onChange={(v) => set('southDetails', v)} />
+              </div>
+            </div>
+
+            <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '1rem', background: 'rgba(255, 255, 255, 0.01)' }}>
+              <ImageField label="Site Photo - East Side" id="eastPhoto" value={form.eastPhoto} onChange={(v) => set('eastPhoto', v)} />
+              <div style={{ marginTop: '0.75rem' }}>
+                <ImageField label="East Direction Details" id="eastDetails" value={form.eastDetails} onChange={(v) => set('eastDetails', v)} />
+              </div>
+            </div>
+
+            <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '1rem', background: 'rgba(255, 255, 255, 0.01)' }}>
+              <ImageField label="Site Photo - West Side" id="westPhoto" value={form.westPhoto} onChange={(v) => set('westPhoto', v)} />
+              <div style={{ marginTop: '0.75rem' }}>
+                <ImageField label="West Direction Details" id="westDetails" value={form.westDetails} onChange={(v) => set('westDetails', v)} />
+              </div>
+            </div>
+
+            <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '1rem', background: 'rgba(255, 255, 255, 0.01)' }}>
+              <ImageField label="Road Photo" id="road" value={form.road} onChange={(v) => set('road', v)} />
+              <div style={{ marginTop: '0.75rem' }}>
+                <ImageField label="Road Details" id="roadDetails" value={form.roadDetails} onChange={(v) => set('roadDetails', v)} />
+              </div>
+            </div>
+
+            <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '1rem', background: 'rgba(255, 255, 255, 0.01)' }}>
+              <ImageField label="Side Photo" id="side" value={form.side} onChange={(v) => set('side', v)} />
+              <div style={{ marginTop: '0.75rem' }}>
+                <ImageField label="Side Details" id="sideDetails" value={form.sideDetails} onChange={(v) => set('sideDetails', v)} />
+              </div>
+            </div>
+          </div>
 
           {/* Secondary Details */}
           <Field label="S.No." id="sNo" value={form.sNo} onChange={(v) => set('sNo', v)} placeholder="Survey Number" />
