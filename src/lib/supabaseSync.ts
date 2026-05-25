@@ -254,13 +254,49 @@ export async function pullFromSupabase() {
   }
 }
 
+// Helper to prevent overwriting Supabase fields with local stripped placeholders.
+// It merges the real base64 string from the remote database back into the local object before upserting.
+function restoreStrippedBase64(localData: any, remoteData: any): any {
+  if (localData === '[BASE64_STRIPPED]') {
+    return remoteData; // Restore the real string from Supabase
+  }
+  if (Array.isArray(localData)) {
+    return localData.map((item, idx) => 
+      restoreStrippedBase64(item, Array.isArray(remoteData) ? remoteData[idx] : undefined)
+    );
+  }
+  if (localData && typeof localData === 'object') {
+    const restored: any = {};
+    for (const key in localData) {
+      if (Object.prototype.hasOwnProperty.call(localData, key)) {
+        restored[key] = restoreStrippedBase64(localData[key], remoteData ? remoteData[key] : undefined);
+      }
+    }
+    return restored;
+  }
+  return localData;
+}
+
 // ─── SYNC UP (LocalStorage -> Supabase) ────────────────────────────────────
 export async function pushClientsToSupabase(clients: Client[]) {
   if (!clients || clients.length === 0) return;
 
-  const clientRows = clients.map(c => ({
-    id: c.id,
-    client_id: c.clientId || null,
+  // 1. Fetch the real KYC data from Supabase to prevent overwriting with [BASE64_STRIPPED]
+  const clientIds = clients.map(c => c.id);
+  const { data: existingClients } = await supabase
+    .from('clients')
+    .select('id, kyc')
+    .in('id', clientIds);
+    
+  const existingMap = new Map(existingClients?.map(c => [c.id, c.kyc]) || []);
+
+  const clientRows = clients.map(c => {
+    const remoteKyc = existingMap.get(c.id);
+    const safeKyc = restoreStrippedBase64(c.kyc, remoteKyc);
+
+    return {
+      id: c.id,
+      client_id: c.clientId || null,
     name: c.name,
     company: c.company,
     email: c.email,
@@ -275,8 +311,9 @@ export async function pushClientsToSupabase(clients: Client[]) {
     progress_checklist: c.progressChecklist || [],
     oc_checklist: c.ocChecklist || [],
     client_password: c.clientPassword || null,
-    kyc: c.kyc || {}
-  }));
+    kyc: safeKyc || {}
+  });
+  });
 
   const phaseRows: any[] = [];
   const docRows: any[] = [];
