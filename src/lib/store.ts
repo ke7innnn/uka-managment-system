@@ -224,89 +224,95 @@ export function getClients(): Client[] {
 
       // Migrate progressChecklist IDs from old numbering to new sequential 1-71
       // Old ID → New ID mapping (covers sub-letter IDs and shifted numeric IDs)
-      const CHECKLIST_ID_MAP: Record<string, string> = {
-        "5":   "5",  // was already correct in very early versions
-        "5a":  "5",
-        "5b":  "6",
-        "6":   "7",
-        "7":   "8",
-        "8":   "9",
-        "9":   "10",
-        "10":  "11",
-        "11":  "12",
-        "12":  "13",
-        "13":  "14",
-        "14":  "15",
-        "15":  "15", // old single item 15 maps to new 15 (Society Registration)
-        "15a": "16",
-        "15b": "17",
-        "15c": "18",
-        "15d": "19",
-        "15e": "20",
-        "15f": "21",
-        "16":  "22",
-        "17":  "23",
-        "18":  "24",
-        "19":  "25",
-        "20":  "26",
-        "21":  "27", // old single item 21 (DEV. AGREEMENT & POWER) maps to DEV. AGREEMENT
-        "21a": "27",
-        "21b": "28",
-        "22":  "29",
-        "23":  "30",
-        "24":  "31",
-        "25":  "32",
-        "26":  "33",
-        "27":  "34",
-        "28":  "35",
-        "29":  "36",
-        "30":  "37",
-        "31":  "38",
-        "32":  "39",
-        "33":  "40",
-        "34":  "41",
-        "35":  "42",
-        "36":  "43",
-        "37":  "44",
-        "38":  "45",
-        "39":  "46",
-        "40":  "47",
-        "41":  "48",
-        "42":  "49",
-        "43":  "50",
-        "44":  "51",
-        "45":  "52",
-        "46":  "53",
-        "47":  "54",
-        "48":  "55",
-        "49":  "56",
-        "50":  "57",
-        "51":  "58",
-        "52":  "59",
-        "53":  "60",
-        "54":  "61",
-        "55":  "62",
-        "56":  "63",
-        "57":  "64",
-        "58":  "65",
-        "59":  "66",
-        "60":  "67",
-        "61":  "68",
-        "62":  "69",
-        "63":  "70",
-        "64":  "71",
+      const CHECKLIST_ID_MAP: Record<string, string[]> = {
+        "5":   ["5", "6"],  // Old 5 was both "ADVOCATE TITLE SEARCH REPORT" and "NO CLAIMS..."
+        "5a":  ["5"],
+        "5b":  ["6"],
+        "6":   ["7"],
+        "7":   ["8"],
+        "8":   ["9"],
+        "9":   ["10"],
+        "10":  ["11"],
+        "11":  ["12"],
+        "12":  ["13"],
+        "13":  ["14"],
+        "14":  ["15"],
+        "15":  ["16", "17", "18", "19", "20", "21"], // Old unsplit 15 maps to all 6 new individual consent items!
+        "15a": ["16"],
+        "15b": ["17"],
+        "15c": ["18"],
+        "15d": ["19"],
+        "15e": ["20"],
+        "15f": ["21"],
+        "16":  ["22"],
+        "17":  ["23"],
+        "18":  ["24"],
+        "19":  ["25"],
+        "20":  ["26"],
+        "21":  ["27", "28"], // Old unsplit 21 maps to both DEV. AGREEMENT and POWER
+        "21a": ["27"],
+        "21b": ["28"],
+        "22":  ["29"],
+        "23":  ["30"],
+        "24":  ["31"],
+        "25":  ["32"],
+        "26":  ["33"],
+        "27":  ["34"],
+        "28":  ["35"],
+        "29":  ["36"],
+        "30":  ["37"],
+        "31":  ["38"],
+        "32":  ["39"],
+        "33":  ["40"],
+        "34":  ["41"],
+        "35":  ["42"],
+        "36":  ["43"],
+        "37":  ["44"],
+        "38":  ["45"],
+        "39":  ["46"],
+        "40":  ["47"],
+        "41":  ["48"],
+        "42":  ["49"],
+        "43":  ["50"],
+        "44":  ["51"],
+        "45":  ["52"],
+        "46":  ["53"],
+        "47":  ["54"],
+        "48":  ["55"],
+        "49":  ["56"],
+        "50":  ["57"],
+        "51":  ["58"],
+        "52":  ["59"],
+        "53":  ["60"],
+        "54":  ["61"],
+        "55":  ["62"],
+        "56":  ["63"],
+        "57":  ["64"],
+        "58":  ["65"],
+        "59":  ["66"],
+        "60":  ["67"],
+        "61":  ["68"],
+        "62":  ["69"],
+        "63":  ["70"],
+        "64":  ["71"],
       };
 
       const originalChecklist = client.progressChecklist || [];
-      const migratedChecklist = originalChecklist.map(id => CHECKLIST_ID_MAP[id] ?? id);
-      const uniqueMigratedChecklist = [...new Set(migratedChecklist)];
+      const isChecklistMigrated = originalChecklist.includes("MIGRATED_V2");
+      let uniqueMigratedChecklist = originalChecklist;
 
-      const checklistChanged = originalChecklist.length !== uniqueMigratedChecklist.length ||
-        originalChecklist.some((val, idx) => val !== uniqueMigratedChecklist[idx]);
-
-      if (checklistChanged) {
+      if (!isChecklistMigrated) {
+        const migratedChecklist = originalChecklist.flatMap(id => CHECKLIST_ID_MAP[id] ?? [id]);
+        uniqueMigratedChecklist = [...new Set([...migratedChecklist, "MIGRATED_V2"])];
         clientMigrated = true;
       }
+
+      // Filter to keep only valid checklist IDs (1-71 and 'MIGRATED_V2')
+      const VALID_IDS = new Set([
+        ...PROGRESS_CHECKLIST_ITEMS.map(item => item.id),
+        "MIGRATED_V2"
+      ]);
+      uniqueMigratedChecklist = uniqueMigratedChecklist.filter(id => VALID_IDS.has(id));
 
       if (clientMigrated) {
         migrated = true;
