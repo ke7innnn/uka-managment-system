@@ -138,7 +138,11 @@ export function getClients(): Client[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    const clients: Client[] = raw ? JSON.parse(raw) : [];
+    const parsedClients: Client[] = raw ? JSON.parse(raw) : [];
+    
+    const deduplicatedMap = new Map<string, Client>();
+    parsedClients.forEach(c => deduplicatedMap.set(c.id, c));
+    const clients = Array.from(deduplicatedMap.values());
     
     let migrated = false;
     const migratedClients = clients.map(client => {

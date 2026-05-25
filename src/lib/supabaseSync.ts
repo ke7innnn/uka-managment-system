@@ -101,8 +101,16 @@ export async function pullFromSupabase() {
       !supabaseStaffIds.has(s.id) && !supabaseStaffNames.has(s.name.toLowerCase())
     );
 
-    const mergedClients = [...supabaseClients, ...pendingLocalClients];
-    const mergedStaff = [...supabaseStaff, ...pendingLocalStaff];
+    const mergedClientsMap = new Map<string, Client>();
+    supabaseClients.forEach(c => mergedClientsMap.set(c.id, c));
+    pendingLocalClients.forEach(c => mergedClientsMap.set(c.id, c)); // pending local takes precedence
+
+    const mergedStaffMap = new Map<string, StaffMember>();
+    supabaseStaff.forEach(s => mergedStaffMap.set(s.id, s));
+    pendingLocalStaff.forEach(s => mergedStaffMap.set(s.id, s));
+
+    const mergedClients = Array.from(mergedClientsMap.values());
+    const mergedStaff = Array.from(mergedStaffMap.values());
 
     localStorage.setItem('uka_clients', JSON.stringify(mergedClients));
     localStorage.setItem('uka_staff', JSON.stringify(mergedStaff));
