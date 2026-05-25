@@ -101,42 +101,44 @@ export default function DocumentsPage() {
             const folderInfo = getFolderAndSubfolderName(doc.folder, doc.subfolder);
             return (
               <div key={doc.id} className={`glass-panel ${styles.docRow}`}>
-                <div className={styles.docIcon}>{fileIcon(doc.type)}</div>
-                <div className={styles.docMain}>
-                  <p className={styles.docName}>{doc.name}</p>
-                  
-                  {/* Folder and Project Metadata Tags */}
-                  {(doc.projectName || folderInfo) && (
-                    <div className={styles.docTags}>
-                      {doc.projectName && (
-                        <span className={styles.docProjectTag}>
-                          💼 Project: {doc.projectName}
-                        </span>
-                      )}
-                      {folderInfo && (
-                        <span className={styles.docFolderTag}>
-                          📁 {folderInfo.folderName} 
-                          {folderInfo.subfolderName && ` / ${folderInfo.subfolderName}`}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                <div className={styles.docTopInfo}>
+                  <div className={styles.docIcon}>{fileIcon(doc.type)}</div>
+                  <div className={styles.docMain}>
+                    <p className={styles.docName}>{doc.name}</p>
+                    
+                    {/* Folder and Project Metadata Tags */}
+                    {(doc.projectName || folderInfo) && (
+                      <div className={styles.docTags}>
+                        {doc.projectName && (
+                          <span className={styles.docProjectTag}>
+                            💼 Project: {doc.projectName}
+                          </span>
+                        )}
+                        {folderInfo && (
+                          <span className={styles.docFolderTag}>
+                            📁 {folderInfo.folderName} 
+                            {folderInfo.subfolderName && ` / ${folderInfo.subfolderName}`}
+                          </span>
+                        )}
+                      </div>
+                    )}
 
-                  <div className={styles.docMeta}>
-                    <Link href={`/dashboard/clients/${doc.clientId}`} className={styles.docClient} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <User size={12} strokeWidth={1.5} /> {doc.clientName}
-                    </Link>
-                    <span>·</span>
-                    <span>{formatSize(doc.size)}</span>
-                    <span>·</span>
-                    <span>{new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    <div className={styles.docMeta}>
+                      <Link href={`/dashboard/clients/${doc.clientId}`} className={styles.docClient} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <User size={12} strokeWidth={1.5} /> {doc.clientName}
+                      </Link>
+                      <span>·</span>
+                      <span>{formatSize(doc.size)}</span>
+                      <span>·</span>
+                      <span>{new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => viewDocumentSafe(doc.url)} className={styles.downloadBtn} title="View file" style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text-secondary)', border: '1px solid var(--border)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <div className={styles.actionsContainer}>
+                  <button onClick={() => viewDocumentSafe(doc.url)} className={`${styles.downloadBtn} ${styles.actionBtnSecondary}`} title="View file">
                     <Eye size={14} strokeWidth={1.75} /> View
                   </button>
-                  <a href={doc.url} download={doc.name} className={styles.downloadBtn} title="Download file" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <a href={doc.url} download={doc.name} className={styles.downloadBtn} title="Download file">
                     <Download size={14} strokeWidth={1.75} /> Download
                   </a>
                 </div>

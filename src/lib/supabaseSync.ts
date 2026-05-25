@@ -89,14 +89,16 @@ export async function pullFromSupabase() {
     const localClients: Client[] = localClientsRaw ? JSON.parse(localClientsRaw) : [];
     const localStaff: StaffMember[] = localStaffRaw ? JSON.parse(localStaffRaw) : [];
 
-    // Tombstone check for deleted clients and staff
+    // Tombstone check for deleted clients
     const deletedRaw = localStorage.getItem('uka_deleted_client_ids');
     const deletedIds = new Set<string>(deletedRaw ? JSON.parse(deletedRaw) : []);
 
+    // Tombstone check for deleted staff members
     const deletedStaffRaw = localStorage.getItem('uka_deleted_staff_ids');
     const deletedStaffIds = new Set<string>(deletedStaffRaw ? JSON.parse(deletedStaffRaw) : []);
 
     const activeSupabaseClients = supabaseClients.filter(c => !deletedIds.has(c.id));
+    // Filter out tombstoned staff from Supabase data — they must never come back
     const activeSupabaseStaff = supabaseStaff.filter(s => !deletedStaffIds.has(s.id));
 
     const supabaseClientIds = new Set(activeSupabaseClients.map(c => c.id));
@@ -106,7 +108,7 @@ export async function pullFromSupabase() {
 
     // Clients pending push: local clients that have explicitly been marked as 'pending' syncStatus (and not deleted)
     const pendingLocalClients = localClients.filter(c => c.syncStatus === 'pending' && !deletedIds.has(c.id));
-    // Staff pending push: not in Supabase by ID AND not already there by name (prevents clones) and not deleted
+    // Staff pending push: not in Supabase by ID AND not already there by name (prevents clones), and not tombstoned
     const pendingLocalStaff = localStaff.filter(s =>
       !supabaseStaffIds.has(s.id) && !supabaseStaffNames.has(s.name.toLowerCase()) && !deletedStaffIds.has(s.id)
     );
@@ -149,7 +151,7 @@ export async function pullFromSupabase() {
       });
     }
 
-    // Retry deletes in the background sequentially for any failed tombstoned staff members
+    // Retry deletes for any failed tombstoned staff members
     if (deletedStaffIds.size > 0) {
       deletedStaffIds.forEach(async (id) => {
         try {

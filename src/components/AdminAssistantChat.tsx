@@ -163,15 +163,15 @@ export default function AdminAssistantChat() {
           }
           @media (max-width: 768px) {
             .floating-assistant-btn {
-              width: 58px;
-              height: 58px;
+              width: 44px;
+              height: 44px;
               bottom: 1.25rem;
               right: 1.25rem;
               box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
             }
             .floating-assistant-icon {
-              width: 26px !important;
-              height: 26px !important;
+              width: 20px !important;
+              height: 20px !important;
             }
           }
         `}</style>

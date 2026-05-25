@@ -217,7 +217,32 @@
 
 /* ── Global Mobile Sweep ── */
 @media (max-width: 768px) {
-  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .header { flex-direction: column; align-items: flex-start; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .title { font-size: 1.6rem; }
+  .grid3 { gap: 1rem; margin-bottom: 1.5rem; }
+  .card { padding: 1.25rem; }
+  .metricValue { font-size: 2.2rem; }
+  
+  .analyticsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .chartCard, .listCard {
+    padding: 1.15rem;
+    border-radius: 12px;
+  }
+  
+  .chartContainer {
+    min-height: 280px;
+  }
+  
+  .splitLists {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  
   .controls { flex-wrap: wrap; }
   .controls select, .controls button { flex: 1 1 100%; }
   .statsGrid { grid-template-columns: 1fr; }
