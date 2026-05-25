@@ -716,94 +716,49 @@ export default function ClientDetailPage() {
                   <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1rem' }}>Client Documents & Site Photos</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                     {client.kyc.clientAadharPhoto && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Client Aadhaar Photo</span>
-                        <img src={client.kyc.clientAadharPhoto} alt="Client Aadhaar" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.clientAadharPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.clientAadharPhoto} label="Client Aadhaar Photo" />
                     )}
                     {client.kyc.clientPanPhoto && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Client PAN Photo</span>
-                        <img src={client.kyc.clientPanPhoto} alt="Client PAN" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.clientPanPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.clientPanPhoto} label="Client PAN Photo" />
                     )}
                     {client.kyc.northPhoto && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>North Side Photo</span>
-                        <img src={client.kyc.northPhoto} alt="North Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.northPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.northPhoto} label="North Side Photo" />
                     )}
                     {client.kyc.northDetails && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>North Direction Details</span>
-                        <img src={client.kyc.northDetails} alt="North Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.northDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.northDetails} label="North Direction Details" />
                     )}
                     {client.kyc.southPhoto && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>South Side Photo</span>
-                        <img src={client.kyc.southPhoto} alt="South Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.southPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.southPhoto} label="South Side Photo" />
                     )}
                     {client.kyc.southDetails && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>South Direction Details</span>
-                        <img src={client.kyc.southDetails} alt="South Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.southDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.southDetails} label="South Direction Details" />
                     )}
                     {client.kyc.eastPhoto && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>East Side Photo</span>
-                        <img src={client.kyc.eastPhoto} alt="East Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.eastPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.eastPhoto} label="East Side Photo" />
                     )}
                     {client.kyc.eastDetails && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>East Direction Details</span>
-                        <img src={client.kyc.eastDetails} alt="East Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.eastDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.eastDetails} label="East Direction Details" />
                     )}
                     {client.kyc.westPhoto && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>West Side Photo</span>
-                        <img src={client.kyc.westPhoto} alt="West Side" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.westPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.westPhoto} label="West Side Photo" />
                     )}
                     {client.kyc.westDetails && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>West Direction Details</span>
-                        <img src={client.kyc.westDetails} alt="West Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.westDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.westDetails} label="West Direction Details" />
                     )}
                     {client.kyc.road && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Road Photo</span>
-                        <img src={client.kyc.road} alt="Road Photo" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.road || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.road} label="Road Photo" />
                     )}
                     {client.kyc.roadDetails && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Road Details</span>
-                        <img src={client.kyc.roadDetails} alt="Road Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.roadDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.roadDetails} label="Road Details" />
                     )}
                     {client.kyc.side && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Side Photo</span>
-                        <img src={client.kyc.side} alt="Side Photo" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.side || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.side} label="Side Photo" />
                     )}
                     {client.kyc.sideDetails && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Side Details</span>
-                        <img src={client.kyc.sideDetails} alt="Side Details" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.sideDetails || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.sideDetails} label="Side Details" />
                     )}
                     {client.kyc.digitalSignaturePhoto && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Digital Signature Photo</span>
-                        <img src={client.kyc.digitalSignaturePhoto} alt="Digital Signature" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${client.kyc?.digitalSignaturePhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '110px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                      </div>
+                      <FilePreviewCard src={client.kyc.digitalSignaturePhoto} label="Digital Signature Photo" />
                     )}
                   </div>
                 </div>
@@ -828,16 +783,10 @@ export default function ClientDetailPage() {
                         {(owner.aadharPhoto || owner.panPhoto) && (
                           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem' }}>
                             {owner.aadharPhoto && (
-                              <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '6px', background: 'rgba(255, 255, 255, 0.02)', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '4px', width: '130px' }}>
-                                <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Aadhaar Photo</span>
-                                <img src={owner.aadharPhoto} alt="Aadhaar Photo" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${owner.aadharPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '70px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                              </div>
+                              <FilePreviewCard src={owner.aadharPhoto} label="Aadhaar Photo" height={70} />
                             )}
                             {owner.panPhoto && (
-                              <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '6px', background: 'rgba(255, 255, 255, 0.02)', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '4px', width: '130px' }}>
-                                <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-secondary)' }}>PAN Photo</span>
-                                <img src={owner.panPhoto} alt="PAN Photo" onClick={() => { try { const w = window.open(); w?.document.write(`<img src="${owner.panPhoto || ''}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`); } catch {} }} style={{ width: '100%', height: '70px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
-                              </div>
+                              <FilePreviewCard src={owner.panPhoto} label="PAN Photo" height={70} />
                             )}
                           </div>
                         )}
@@ -1668,6 +1617,73 @@ function InfoItem({ label, value }: { label: string; value?: string }) {
     <div className={styles.infoItem}>
       <span className={styles.infoLabel}>{label}</span>
       <span className={styles.infoValue}>{value || <span style={{ opacity: 0.4 }}>—</span>}</span>
+    </div>
+  );
+}
+
+function FilePreviewCard({ src, label, height = 110 }: { src: string; label: string; height?: number }) {
+  const isPdf = src.startsWith('data:application/pdf') || src.toLowerCase().includes('/pdf');
+  const isDocx = src.startsWith('data:application/vnd') || src.toLowerCase().includes('wordprocessingml') || src.toLowerCase().includes('/msword');
+  const isHeic = src.startsWith('data:image/heic') || src.startsWith('data:image/heif') || src.toLowerCase().includes('heic') || src.toLowerCase().includes('heif');
+
+  const handleDownload = () => {
+    const a = document.createElement('a');
+    a.href = src;
+    const ext = isPdf ? 'pdf' : isDocx ? 'docx' : isHeic ? 'heic' : 'jpg';
+    a.download = `${label.replace(/\s+/g, '_')}.${ext}`;
+    a.click();
+  };
+
+  const handleView = () => {
+    if (isPdf) {
+      const w = window.open('', '_blank');
+      if (w) {
+        w.document.write(`<html><body style="margin:0;background:#000"><embed src="${src}" type="application/pdf" width="100%" height="100%"/></body></html>`);
+        w.document.close();
+      }
+    } else if (isDocx) {
+      handleDownload();
+    } else {
+      const w = window.open('', '_blank');
+      if (w) {
+        w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${src}" style="max-width:100%;max-height:100vh;object-fit:contain"/></body></html>`);
+        w.document.close();
+      }
+    }
+  };
+
+  return (
+    <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', background: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textAlign: 'center' }}>{label}</span>
+      {isPdf ? (
+        <div style={{ width: '100%', height: `${height}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.08)', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer' }} onClick={handleView}>
+          <FileText size={36} color="#ef4444" />
+          <span style={{ fontSize: '0.7rem', color: '#ef4444', fontWeight: 600, marginTop: '4px' }}>PDF Document</span>
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>Click to view</span>
+        </div>
+      ) : isDocx ? (
+        <div style={{ width: '100%', height: `${height}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(59,130,246,0.08)', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.2)', cursor: 'pointer' }} onClick={handleDownload}>
+          <FileText size={36} color="#3b82f6" />
+          <span style={{ fontSize: '0.7rem', color: '#3b82f6', fontWeight: 600, marginTop: '4px' }}>Word Document</span>
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>Click to download</span>
+        </div>
+      ) : isHeic ? (
+        <div style={{ width: '100%', height: `${height}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(16,185,129,0.08)', borderRadius: '6px', border: '1px solid rgba(16,185,129,0.2)', cursor: 'pointer' }} onClick={handleDownload}>
+          <Image size={36} color="#10b981" />
+          <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600, marginTop: '4px' }}>HEIC/HEIF Image</span>
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>Click to download</span>
+        </div>
+      ) : (
+        <img src={src} alt={label} onClick={handleView} style={{ width: '100%', height: `${height}px`, borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+      )}
+      <div style={{ display: 'flex', gap: '4px', width: '100%' }}>
+        <button onClick={handleView} style={{ flex: 1, padding: '4px 6px', background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+          <Eye size={10} /> View
+        </button>
+        <button onClick={handleDownload} style={{ flex: 1, padding: '4px 6px', background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '4px', fontSize: '0.65rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+          <Download size={10} /> Download
+        </button>
+      </div>
     </div>
   );
 }

@@ -867,7 +867,7 @@ function ImageField({
           <input
             type="file"
             id={`file-${id}`}
-            accept="image/*,.heic,.heif,.pdf"
+            accept="image/*,.heic,.heif,.pdf,.doc,.docx"
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
