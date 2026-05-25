@@ -147,6 +147,9 @@ export default function ClientDetailPage() {
       .then(
         ({ data, error }) => {
           if (!error && data) {
+            // Always prefer local checklist state — Supabase data may be stale
+            // if the user just toggled a checkbox (async push hasn't completed yet)
+            const localClient = getClientById(params.id);
             const fullClient: Client = {
               id: data.id,
               clientId: data.client_id || '',
@@ -161,8 +164,9 @@ export default function ClientDetailPage() {
               projectStatus: data.project_status || 'pending',
               createdAt: data.created_at,
               tags: data.tags || [],
-              progressChecklist: data.progress_checklist || [],
-              ocChecklist: data.oc_checklist || [],
+              // Use local state for checklists to avoid overwriting a fresh toggle
+              progressChecklist: localClient?.progressChecklist ?? data.progress_checklist ?? [],
+              ocChecklist: localClient?.ocChecklist ?? data.oc_checklist ?? [],
               clientPassword: data.client_password || '',
               kyc: data.kyc || {},
               syncStatus: 'synced',
