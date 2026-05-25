@@ -735,24 +735,27 @@ export default function ClientDetailPage() {
 
           {/* Checklist Items Grouped */}
           {(() => {
-            // Group items
+            // Group items based on 64 items exactly
             const groups = [
               {
-                title: "General Land & Personal Documents",
+                title: "General Land & Personal Documents (1-31)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
-                  const num = parseInt(item.id.split('_')[0], 10);
-                  return !item.id.includes('_') && num <= 31;
+                  const num = parseInt(item.id, 10);
+                  return num <= 31;
                 })
               },
               {
-                title: "₹500 Stamp Paper Affidavits",
-                items: PROGRESS_CHECKLIST_ITEMS.filter(item => item.id.includes('_'))
+                title: "₹500 Stamp Paper Affidavits (32)",
+                items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
+                  const num = parseInt(item.id, 10);
+                  return num === 32;
+                })
               },
               {
-                title: "CC/RDP Approvals & NOCs",
+                title: "CC/RDP Approvals & NOCs (33-64)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
-                  const num = parseInt(item.id.split('_')[0], 10);
-                  return !item.id.includes('_') && num >= 33;
+                  const num = parseInt(item.id, 10);
+                  return num >= 33;
                 })
               }
             ];
@@ -760,7 +763,7 @@ export default function ClientDetailPage() {
             return groups.map((grp, grpIdx) => {
               // Apply search & filter
               const filteredItems = grp.items.filter(item => {
-                const matchesSearch = item.label.toLowerCase().includes(progressSearch.toLowerCase()) || item.id.includes(progressSearch);
+                const matchesSearch = item.label.toLowerCase().includes(progressSearch.toLowerCase()) || item.id === progressSearch;
                 const isChecked = (client.progressChecklist || []).includes(item.id);
                 if (progressFilter === 'completed') return matchesSearch && isChecked;
                 if (progressFilter === 'pending') return matchesSearch && !isChecked;
@@ -788,13 +791,43 @@ export default function ClientDetailPage() {
                           key={item.id}
                           onClick={() => handleToggleChecklist(item.id)}
                           className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1rem',
+                            padding: '0.85rem 1.25rem',
+                            background: isChecked ? 'rgba(37, 211, 102, 0.04)' : 'rgba(255, 255, 255, 0.01)',
+                            border: '1px solid var(--border)',
+                            borderColor: isChecked ? 'rgba(37, 211, 102, 0.2)' : 'var(--border)',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
                         >
-                          <div className={styles.customCheckbox}>
-                            {isChecked && <Check size={12} strokeWidth={3} />}
+                          <div style={{
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '4px',
+                            border: '2px solid',
+                            borderColor: isChecked ? '#25d366' : 'var(--text-tertiary)',
+                            background: isChecked ? '#25d366' : 'transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#fff',
+                            flexShrink: 0
+                          }}>
+                            {isChecked && <Check size={14} strokeWidth={3} />}
                           </div>
-                          <div className={styles.checkLabel}>
-                            <span style={{ fontWeight: 700, color: isChecked ? 'rgba(37, 211, 102, 0.7)' : 'var(--text-tertiary)', marginRight: '0.4rem', fontSize: '0.75rem' }}>
-                              #{item.id.replace('_', '.')}
+
+                          <div style={{
+                            fontSize: '0.9rem',
+                            color: isChecked ? 'var(--text-main)' : 'var(--text-secondary)',
+                            fontWeight: 500,
+                            lineHeight: 1.4
+                          }}>
+                            <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
+                              {item.id}.
                             </span>
                             {item.label}
                           </div>
