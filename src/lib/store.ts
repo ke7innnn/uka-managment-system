@@ -508,24 +508,26 @@ export function deleteClient(id: string): void {
   }
 
   // Delete from Supabase in background sequentially to respect foreign key constraints
-  import('./supabase').then(({ supabase }) => {
-    supabase.from('phases').delete().eq('client_id', id)
-      .then(() => supabase.from('documents').delete().eq('client_id', id))
-      .then(() => supabase.from('clients').delete().eq('id', id))
-      .then((clientRes) => {
-        if (clientRes.error) {
-          console.error('Delete clients error:', clientRes.error.message);
-        } else {
-          // Successfully deleted from Supabase, remove from tombstone
-          const deletedRaw = localStorage.getItem('uka_deleted_client_ids');
-          if (deletedRaw) {
-            const deleted: string[] = JSON.parse(deletedRaw);
-            const updated = deleted.filter(deletedId => deletedId !== id);
-            localStorage.setItem('uka_deleted_client_ids', JSON.stringify(updated));
-          }
+  import('./supabase').then(async ({ supabase }) => {
+    try {
+      await supabase.from('phases').delete().eq('client_id', id);
+      await supabase.from('documents').delete().eq('client_id', id);
+      const clientRes = await supabase.from('clients').delete().eq('id', id);
+
+      if (clientRes.error) {
+        console.error('Delete clients error:', clientRes.error.message);
+      } else {
+        // Successfully deleted from Supabase, remove from tombstone
+        const deletedRaw = localStorage.getItem('uka_deleted_client_ids');
+        if (deletedRaw) {
+          const deleted: string[] = JSON.parse(deletedRaw);
+          const updated = deleted.filter(deletedId => deletedId !== id);
+          localStorage.setItem('uka_deleted_client_ids', JSON.stringify(updated));
         }
-      })
-      .catch(console.error);
+      }
+    } catch (err) {
+      console.error('Delete client sequential error:', err);
+    }
   }).catch(console.error);
 }
 

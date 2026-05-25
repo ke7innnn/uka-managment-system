@@ -125,21 +125,23 @@ export async function pullFromSupabase() {
 
     // Retry deletes in the background sequentially for any failed tombstoned clients
     if (deletedIds.size > 0) {
-      deletedIds.forEach(id => {
-        supabase.from('phases').delete().eq('client_id', id)
-          .then(() => supabase.from('documents').delete().eq('client_id', id))
-          .then(() => supabase.from('clients').delete().eq('id', id))
-          .then((clientRes) => {
-            if (!clientRes.error) {
-              const currentDeletedRaw = localStorage.getItem('uka_deleted_client_ids');
-              if (currentDeletedRaw) {
-                const currentDeleted: string[] = JSON.parse(currentDeletedRaw);
-                const updated = currentDeleted.filter(deletedId => deletedId !== id);
-                localStorage.setItem('uka_deleted_client_ids', JSON.stringify(updated));
-              }
+      deletedIds.forEach(async (id) => {
+        try {
+          await supabase.from('phases').delete().eq('client_id', id);
+          await supabase.from('documents').delete().eq('client_id', id);
+          const clientRes = await supabase.from('clients').delete().eq('id', id);
+
+          if (!clientRes.error) {
+            const currentDeletedRaw = localStorage.getItem('uka_deleted_client_ids');
+            if (currentDeletedRaw) {
+              const currentDeleted: string[] = JSON.parse(currentDeletedRaw);
+              const updated = currentDeleted.filter(deletedId => deletedId !== id);
+              localStorage.setItem('uka_deleted_client_ids', JSON.stringify(updated));
             }
-          })
-          .catch(console.error);
+          }
+        } catch (err) {
+          console.error('Retry delete client sequential error:', err);
+        }
       });
     }
 
