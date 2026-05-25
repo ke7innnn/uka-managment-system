@@ -139,6 +139,52 @@ export default function ClientDetailPage() {
     setClient(c);
     setStaffList(getStaff());
     setCurrentStaffId(isStaffAuthenticated());
+
+    // Fetch full un-stripped details (with raw Base64 images) dynamically from Supabase in the background
+    supabase
+      .from('clients')
+      .select('*, phases(*), documents(*)')
+      .eq('id', params.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!error && data) {
+          const fullClient: Client = {
+            id: data.id,
+            clientId: data.client_id || '',
+            name: data.name,
+            company: data.company || '',
+            email: data.email || '',
+            phone: data.phone || '',
+            place: data.place || '',
+            address: data.address || '',
+            notes: data.notes || '',
+            projectName: data.project_name || '',
+            projectStatus: data.project_status || 'pending',
+            createdAt: data.created_at,
+            tags: data.tags || [],
+            progressChecklist: data.progress_checklist || [],
+            ocChecklist: data.oc_checklist || [],
+            clientPassword: data.client_password || '',
+            kyc: data.kyc || {},
+            syncStatus: 'synced',
+            phases: (data.phases || []).map((p: any) => ({
+              id: p.id, name: p.name, completed: p.completed, order: p.order,
+              status: p.status || (p.completed ? 'completed' : 'not-started'),
+              timeBound: p.time_bound || undefined,
+              startedAt: p.started_at || undefined,
+              tasks: typeof p.tasks === 'string' ? JSON.parse(p.tasks) : (p.tasks || [])
+            })),
+            documents: (data.documents || []).map((d: any) => ({
+              id: d.id, name: d.name, url: d.url, uploadedAt: d.uploaded_at,
+              type: d.type || 'unknown', size: d.size || 0, uploadedBy: d.uploaded_by || '',
+              folder: d.folder || undefined, subfolder: d.subfolder || undefined
+            }))
+          };
+          setClient(fullClient);
+        }
+      })
+      .catch(console.error);
+
     // Process any due reminders on each reload
     processReminders(getClients());
   };

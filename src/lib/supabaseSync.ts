@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, stripLargeBase64 } from './supabase';
 import { Client, StaffMember, WorkspaceMessage } from './store';
 
 // ─── SYNC DOWN (Supabase -> LocalStorage) ──────────────────────────────────
@@ -118,8 +118,8 @@ export async function pullFromSupabase() {
     const mergedClients = Array.from(mergedClientsMap.values());
     const mergedStaff = Array.from(mergedStaffMap.values());
 
-    localStorage.setItem('uka_clients', JSON.stringify(mergedClients));
-    localStorage.setItem('uka_staff', JSON.stringify(mergedStaff));
+    localStorage.setItem('uka_clients', JSON.stringify(stripLargeBase64(mergedClients)));
+    localStorage.setItem('uka_staff', JSON.stringify(stripLargeBase64(mergedStaff)));
     // Mark that we have synced at least once — getStaff() uses this to skip re-seeding
     localStorage.setItem('uka_supabase_synced', 'true');
 

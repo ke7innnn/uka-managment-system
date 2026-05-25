@@ -1,5 +1,6 @@
 // ─── Types ────────────────────────────────────────────────────────────────────
 import { pushClientsToSupabase, pushStaffToSupabase } from './supabaseSync';
+import { stripLargeBase64 } from './supabase';
 
 export interface PhaseTask {
   id: string;
@@ -340,9 +341,10 @@ export function getClients(): Client[] {
 
 export function saveClients(clients: Client[]): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
-  // Background sync to Supabase (non-blocking)
+  // Background sync to Supabase (non-blocking with full un-stripped details)
   pushClientsToSupabase(clients).catch(console.error);
+  // Save lightweight cleaned representation locally to avoid 5MB quota limits
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(stripLargeBase64(clients)));
 }
 
 export function getClientById(id: string): Client | undefined {
@@ -657,9 +659,10 @@ export function logoutStaff(): void {
 
 export function saveStaff(staff: StaffMember[]): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
-  // Background sync to Supabase (non-blocking)
+  // Background sync to Supabase (non-blocking with full un-stripped details)
   pushStaffToSupabase(staff).catch(console.error);
+  // Save lightweight cleaned representation locally to avoid 5MB quota limits
+  localStorage.setItem(STAFF_KEY, JSON.stringify(stripLargeBase64(staff)));
 }
 
 export function getStaffById(id: string): StaffMember | undefined {

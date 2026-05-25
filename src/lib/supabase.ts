@@ -45,4 +45,32 @@ export const supabase = new Proxy({} as SupabaseClient, {
   },
 });
 
+/**
+ * Recursively strips large Base64 data strings (larger than 50KB) from any object/array
+ * and replaces them with a small placeholder, keeping localStorage light.
+ */
+export function stripLargeBase64(obj: any): any {
+  if (!obj) return obj;
+  if (typeof obj === 'string') {
+    if (obj.startsWith('data:') && obj.length > 50 * 1024) {
+      return '[BASE64_STRIPPED]';
+    }
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => stripLargeBase64(item));
+  }
+  if (typeof obj === 'object') {
+    const cleaned: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        cleaned[key] = stripLargeBase64(obj[key]);
+      }
+    }
+    return cleaned;
+  }
+  return obj;
+}
+
+
 
