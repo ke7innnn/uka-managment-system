@@ -192,3 +192,33 @@
 .logo       { display: flex; align-items: center; gap: 0.65rem; padding: 0 0.5rem; margin-bottom: 2rem; }
 .logoBox    { width: 34px; height: 34px; background: var(--grad-accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; color: #fff; flex-shrink: 0; box-shadow: 0 4px 12px var(--accent-glow); }
 .logoText   { font-size: 0.85rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+
+/* ─── Mobile Close Drawer Button ─── */
+.closeMobileDrawer {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .closeMobileDrawer {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--bg-hover) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-secondary);
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.15s ease;
+  }
+  
+  .closeMobileDrawer:active {
+    background: var(--bg-active) !important;
+    color: var(--text);
+  }
+}

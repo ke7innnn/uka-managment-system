@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { logoutStaff, getStaff, isStaffAuthenticated, getStaffById, StaffMember, getUnreadWorkspaceCount, getUnreadAlertsCount } from '@/lib/store';
 import styles from '@/components/Sidebar.module.css';
-import { CheckCircle2, FolderKanban, Bell, AlertTriangle, User, LogOut, MessageSquare, Sun, Moon } from 'lucide-react';
+import { CheckCircle2, FolderKanban, Bell, AlertTriangle, User, LogOut, MessageSquare, Sun, Moon, X } from 'lucide-react';
 
 const NAV = [
   { href: '/staff-dashboard',                        label: 'My Tasks & Attendance', Icon: CheckCircle2  },
@@ -103,6 +103,13 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
 
   return (
     <div className={styles.sidebar}>
+      {/* Mobile Close Button */}
+      {onClose && (
+        <button className={styles.closeMobileDrawer} onClick={onClose} aria-label="Close menu">
+          <X size={18} strokeWidth={2.5} />
+        </button>
+      )}
+
       {/* Brand */}
       <div className={styles.logo}>
         <img

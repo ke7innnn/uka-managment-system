@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { logout, getUnreadWorkspaceCount, getUnreadAlertsCount } from '@/lib/store';
 import styles from './Sidebar.module.css';
-import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, LogOut, CalendarCheck, MessageSquare, Inbox, Bell, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, LogOut, CalendarCheck, MessageSquare, Inbox, Bell, Sun, Moon, X } from 'lucide-react';
 
 const NAV = [
   { href: '/dashboard',                        label: 'Dashboard',          Icon: LayoutDashboard },
@@ -71,6 +71,13 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
   return (
     <aside className={styles.sidebar}>
+      {/* Mobile Close Button */}
+      {onClose && (
+        <button className={styles.closeMobileDrawer} onClick={onClose} aria-label="Close menu">
+          <X size={18} strokeWidth={2.5} />
+        </button>
+      )}
+
       {/* Brand */}
       <div className={styles.brand}>
         <img
