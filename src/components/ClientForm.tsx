@@ -87,9 +87,10 @@ type FormData = {
 interface Props {
   client?: Client;
   mode: 'new' | 'edit';
+  successRedirect?: string;
 }
 
-export default function ClientForm({ client, mode }: Props) {
+export default function ClientForm({ client, mode, successRedirect }: Props) {
   const router = useRouter();
   const [form, setForm] = useState<FormData>({
     name: client?.name || '',
@@ -279,7 +280,7 @@ export default function ClientForm({ client, mode }: Props) {
         documents: [],
         kyc: kycData,
       });
-      router.push('/dashboard/clients');
+      router.push(successRedirect ?? '/dashboard/clients');
     } else {
       updateClient(client!.id, {
         name: form.name.trim(),
@@ -297,7 +298,7 @@ export default function ClientForm({ client, mode }: Props) {
         priority: form.priority,
         kyc: kycData,
       });
-      router.push(`/dashboard/clients/${client!.id}`);
+      router.push(successRedirect ?? `/dashboard/clients/${client!.id}`);
     }
   };
 
