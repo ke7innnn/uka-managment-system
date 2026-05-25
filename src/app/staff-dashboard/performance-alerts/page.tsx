@@ -15,6 +15,7 @@ const TEMPLATE_LABELS: Record<string, string> = {
   'day-1-light':    '💬 Day 1 Reminder',
   'day-2-moderate': '📌 Day 2 Follow-up',
   'day-3-warning':  '⚠️ Day 3 Warning',
+  'deadline-24h':   '⏰ 24h Before Deadline',
   'reminder-1':     '⚠️ Reminder 1 (Mild)',
   'reminder-2':     '⚠️ Reminder 2 (Second Warning)',
   'reminder-3':     '🚨 Reminder 3 (Salary Threat)',

@@ -1,14 +1,17 @@
 /**
- * Reminder Engine — 6 Escalating Templates
- * Fires when a stage is started, then every 24h until the stage is complete.
+ * Reminder Engine — Full Timeline
  *
  * Template Order:
- *  1. stage-start       — Immediate on stage start (info)
- *  2. day-1-light       — +24h (info)
- *  3. day-2-moderate    — +48h (warning)
- *  4. day-3-warning     — +72h (urgent)
- *  5. deadline-breach   — After deadline date (urgent)
- *  6. repeat-harsh      — Every 24h after deadline (critical)
+ *  Before deadline (while stage is in-progress):
+ *    day-1-light       — +24h from stage start (info)
+ *    day-2-moderate    — +48h from stage start (warning)
+ *    day-3-warning     — +72h from stage start (warning)
+ *    deadline-24h      — 24 hours before deadline (warning, friendly tone)
+ *
+ *  After deadline (stage still not completed):
+ *    reminder-1        — Day 1 overdue (warning)
+ *    reminder-2        — Day 2 overdue (urgent)
+ *    reminder-3+       — Day 3+ overdue (critical, escalating salary threats)
  */
 
 import { Client, Phase, addAlert, addWorkspaceMessage, getAlerts, saveAlerts } from './store';
@@ -20,6 +23,7 @@ export interface ReminderSchedule {
   lastFiredAt?: string; // ISO of last reminder sent
   nextFireAt: string; // ISO of when next reminder should fire
   templateIndex: number; // 0-5 (maps to template order)
+  deadline24hFired?: boolean; // whether we already sent the 24h-before-deadline reminder
 }
 
 const REMINDERS_KEY = 'uka_reminder_schedules';
@@ -79,7 +83,8 @@ export function initStageReminders(client: Client, phase: Phase): void {
     startedAt: phase.startedAt || now.toISOString(),
     lastFiredAt: now.toISOString(),
     nextFireAt: next.toISOString(),
-    templateIndex: 1 // next is day-1-light
+    templateIndex: 1, // next is day-1-light
+    deadline24hFired: false,
   });
   saveSchedules(schedules);
 }
@@ -98,6 +103,8 @@ export function updateStageReminderSchedule(client: Client, phase: Phase): void 
   if (existingIdx !== -1) {
     // If a schedule already exists, force check immediately to process newly added deadline
     schedules[existingIdx].nextFireAt = now.toISOString();
+    // Reset the 24h flag if the deadline changed significantly
+    schedules[existingIdx].deadline24hFired = false;
   } else {
     // If schedule doesn't exist, initialize it
     const isOverdue = phase.timeBound ? now > new Date(phase.timeBound + 'T23:59:59') : false;
@@ -108,7 +115,8 @@ export function updateStageReminderSchedule(client: Client, phase: Phase): void 
       startedAt: phase.startedAt || now.toISOString(),
       lastFiredAt: now.toISOString(),
       nextFireAt: nextFireAt.toISOString(),
-      templateIndex: 1
+      templateIndex: 1,
+      deadline24hFired: false,
     });
   }
   saveSchedules(schedules);
@@ -124,14 +132,13 @@ export function processReminders(clients: Client[]): void {
   let changed = false;
 
   schedules.forEach(schedule => {
-    if (new Date(schedule.nextFireAt) > now) return; // not due yet
-
     const client = clients.find(c => c.id === schedule.clientId);
     if (!client) return;
     const phase = client.phases.find(p => p.id === schedule.stageId);
     if (!phase) return;
+
+    // If stage is completed, remove schedule
     if (phase.status === 'completed') {
-      // Remove schedule — stage is done
       schedule.templateIndex = 999; // mark for removal
       changed = true;
       return;
@@ -145,68 +152,131 @@ export function processReminders(clients: Client[]): void {
 
     const deadlinePassed = phase.timeBound ? now > new Date(phase.timeBound + 'T23:59:59') : false;
 
-    // If not overdue yet, we do not send any alerts! (Silences warnings before deadline is reached)
-    if (!deadlinePassed) return;
+    // ── 24h-before-deadline reminder ──────────────────────────────────────────
+    // Fire once when we're within 24h of the deadline but it hasn't passed yet
+    if (phase.timeBound && !deadlinePassed && !schedule.deadline24hFired) {
+      const deadlineDate = new Date(phase.timeBound + 'T23:59:59');
+      const msUntilDeadline = deadlineDate.getTime() - now.getTime();
+      const hoursUntilDeadline = msUntilDeadline / (1000 * 60 * 60);
 
-    // Calculate stage duration in days to space reminders proportionally
-    const startDate = phase.startedAt ? new Date(phase.startedAt) : new Date(schedule.startedAt);
-    const deadlineDate = new Date(phase.timeBound + 'T23:59:59');
-    const durationInMs = deadlineDate.getTime() - startDate.getTime();
-    const durationInDays = Math.max(1, Math.round(durationInMs / (1000 * 60 * 60 * 24)));
-    
-    // Proportional interval: divide stage duration by 6 templates (minimum 1 day)
-    const interval = Math.max(1, Math.floor(durationInDays / 6));
-    
-    // Calculate days overdue
-    const msOverdue = now.getTime() - deadlineDate.getTime();
-    const daysOverdue = Math.floor(msOverdue / (1000 * 60 * 60 * 24)) + 1;
-
-    // Escalate milestone index every proportional 'interval' days overdue (cap at 6)
-    // Between milestones, the same warning level will simply repeat daily.
-    const reminderIndex = Math.min(6, Math.floor((daysOverdue - 1) / interval) + 1);
-
-    const templateKey = `reminder-${reminderIndex}`;
-    let severity: 'info' | 'warning' | 'urgent' | 'critical';
-    
-    if (reminderIndex === 1 || reminderIndex === 2) {
-      severity = 'warning';
-    } else if (reminderIndex === 3 || reminderIndex === 4) {
-      severity = 'urgent';
-    } else {
-      severity = 'critical';
+      if (hoursUntilDeadline <= 24) {
+        const msg = buildMessage('deadline-24h', client.name, phase.name, pendingTasks.length, pendingTasks.slice(0, 5), assignedTo, phase.timeBound);
+        addAlert({
+          clientId: client.id,
+          clientName: client.name,
+          stageName: phase.name,
+          assignedTo,
+          pendingTasks,
+          timeBound: phase.timeBound,
+          severity: 'warning',
+          templateKey: 'deadline-24h',
+          message: msg,
+        });
+        addWorkspaceMessage(
+          'system',
+          '🤖 System',
+          'Automated',
+          `⏰ DEADLINE APPROACHING: "${phase.name}" for ${client.name} is due in less than 24 hours. Assigned to: ${assignedTo}. Please finish up!`
+        );
+        schedule.deadline24hFired = true;
+        changed = true;
+      }
     }
 
-    const msg = buildMessage(templateKey, client.name, phase.name, pendingTasks.length, pendingTasks.slice(0, 5), assignedTo, phase.timeBound);
+    // ── Pre-deadline day reminders (day-1, day-2, day-3, and beyond) ────────
+    // These fire on schedule every 24h while the stage is in-progress, before deadline
+    if (!deadlinePassed && new Date(schedule.nextFireAt) <= now) {
+      const templateMap: Record<number, string> = {
+        1: 'day-1-light',
+        2: 'day-2-moderate',
+        3: 'day-3-warning',
+      };
+      
+      // If we've passed day 3, just use a generic 'daily-update' template
+      const templateKey = templateMap[schedule.templateIndex] || 'daily-update';
 
-    addAlert({
-      clientId: client.id,
-      clientName: client.name,
-      stageName: phase.name,
-      assignedTo,
-      pendingTasks,
-      timeBound: phase.timeBound,
-      severity,
-      templateKey,
-      message: msg
-    });
+      const severity: 'info' | 'warning' | 'urgent' =
+        schedule.templateIndex === 1 ? 'info' :
+        schedule.templateIndex === 2 ? 'warning' : 'warning';
 
-    // Post workspace message for warnings and above
-    const emoji = severity === 'critical' ? '🚨' : severity === 'urgent' ? '🔴' : '⚠️';
-    
-    // Extract the specific core reminder warning to post in the shared chat channel
-    const alertBody = msg.split('\n\n')[1] || msg;
-    addWorkspaceMessage(
-      'system',
-      '🤖 System',
-      'Automated',
-      `${emoji} REMINDER ${reminderIndex} OVERDUE:\n${alertBody}`
-    );
+      const msg = buildMessage(templateKey, client.name, phase.name, pendingTasks.length, pendingTasks.slice(0, 5), assignedTo, phase.timeBound);
+      addAlert({
+        clientId: client.id,
+        clientName: client.name,
+        stageName: phase.name,
+        assignedTo,
+        pendingTasks,
+        timeBound: phase.timeBound,
+        severity,
+        templateKey,
+        message: msg,
+      });
 
-    // Schedule next check in 24h
-    schedule.lastFiredAt = now.toISOString();
-    schedule.nextFireAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
-    schedule.templateIndex = Math.min(schedule.templateIndex + 1, 5);
-    changed = true;
+      schedule.lastFiredAt = now.toISOString();
+      // Keep incrementing index so we know how many days have passed, and schedule next check in 24h
+      schedule.templateIndex += 1;
+      schedule.nextFireAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+      changed = true;
+      return;
+    }
+
+    // ── Post-deadline escalating reminders ───────────────────────────────────
+    if (deadlinePassed && new Date(schedule.nextFireAt) <= now) {
+      // Calculate stage duration in days to space reminders proportionally
+      const startDate = phase.startedAt ? new Date(phase.startedAt) : new Date(schedule.startedAt);
+      const deadlineDate = new Date(phase.timeBound + 'T23:59:59');
+      const durationInMs = deadlineDate.getTime() - startDate.getTime();
+      const durationInDays = Math.max(1, Math.round(durationInMs / (1000 * 60 * 60 * 24)));
+
+      // Proportional interval: divide stage duration by 6 templates (minimum 1 day)
+      const interval = Math.max(1, Math.floor(durationInDays / 6));
+
+      // Calculate days overdue
+      const msOverdue = now.getTime() - deadlineDate.getTime();
+      const daysOverdue = Math.floor(msOverdue / (1000 * 60 * 60 * 24)) + 1;
+
+      // Escalate milestone index every proportional 'interval' days overdue (cap at 6)
+      const reminderIndex = Math.min(6, Math.floor((daysOverdue - 1) / interval) + 1);
+
+      const templateKey = `reminder-${reminderIndex}`;
+      let severity: 'info' | 'warning' | 'urgent' | 'critical';
+      if (reminderIndex === 1 || reminderIndex === 2) {
+        severity = 'warning';
+      } else if (reminderIndex === 3 || reminderIndex === 4) {
+        severity = 'urgent';
+      } else {
+        severity = 'critical';
+      }
+
+      const msg = buildMessage(templateKey, client.name, phase.name, pendingTasks.length, pendingTasks.slice(0, 5), assignedTo, phase.timeBound);
+      addAlert({
+        clientId: client.id,
+        clientName: client.name,
+        stageName: phase.name,
+        assignedTo,
+        pendingTasks,
+        timeBound: phase.timeBound,
+        severity,
+        templateKey,
+        message: msg,
+      });
+
+      // Post workspace message for warnings and above
+      const emoji = severity === 'critical' ? '🚨' : severity === 'urgent' ? '🔴' : '⚠️';
+      const alertBody = msg.split('\n\n')[1] || msg;
+      addWorkspaceMessage(
+        'system',
+        '🤖 System',
+        'Automated',
+        `${emoji} REMINDER ${reminderIndex} OVERDUE:\n${alertBody}`
+      );
+
+      // Schedule next check in 24h
+      schedule.lastFiredAt = now.toISOString();
+      schedule.nextFireAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+      schedule.templateIndex = Math.min(schedule.templateIndex + 1, 5);
+      changed = true;
+    }
   });
 
   if (changed) {
@@ -257,7 +327,13 @@ function buildMessage(
     case 'day-3-warning':
       return `⚠️ Attention Required — Day 3\n\n${stageName} for ${clientName} has ${pendingCount} incomplete task(s) after 3 days. The admin team has been notified.\n\n${taskList}\n\n${deadlineStr}\n\nIf you are facing any difficulties, please communicate immediately on the workspace chat. Delays at this stage affect the entire project pipeline.`;
 
-    // ── NEW 6 POST-DEADLINE ESCALATING REMINDERS ──
+    case 'daily-update':
+      return `💬 Daily Reminder\n\nHi ${assignedTo.split(' ')[0]}, just a friendly check-in. "${stageName}" for ${clientName} is still in progress with ${pendingCount} pending task(s).\n\n${taskList}\n\n${deadlineStr}\n\nKeep pushing forward, you're doing great! Let us know if you need any help.`;
+
+    case 'deadline-24h':
+      return `⏰ Heads Up — Less than 24 Hours Left!\n\nHey ${assignedTo}, just a friendly heads up — the deadline for "${stageName}" (client: ${clientName}) is coming up in less than 24 hours.\n\n${taskList}\n\n${deadlineStr}\n\nYou still have time — please make sure all pending tasks are wrapped up before the deadline. Reach out on workspace chat if you need help!`;
+
+    // ── POST-DEADLINE ESCALATING REMINDERS ──
     case 'reminder-1':
       return `⚠️ REMINDER 1 (MILD)\n\nDEAR ${assignedTo.toUpperCase()},\nTHE DEADLINE WHICH YOU HAVE COMMITTED TO YOUR BOSS HAS CROSSED. PLEASE EXPEDITE THE WORK AND COMPLETE THE DEADLINE WITHIN THE NEXT 24 HOURS.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
 
