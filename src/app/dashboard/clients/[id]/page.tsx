@@ -87,25 +87,6 @@ export default function ClientDetailPage() {
     updateClient(client.id, { ocChecklist: updated });
     reload();
   };
-  const [progressSearch, setProgressSearch] = useState('');
-  const [progressFilter, setProgressFilter] = useState<'all' | 'completed' | 'pending'>('all');
-  const [showSendSuccess, setShowSendSuccess] = useState(false);
-
-  const handleSendProgress = () => {
-    setShowSendSuccess(true);
-    setTimeout(() => setShowSendSuccess(false), 4000);
-  };
-
-  const handleToggleChecklist = (itemId: string) => {
-    if (!client) return;
-    const current = client.progressChecklist || [];
-    const updated = current.includes(itemId)
-      ? current.filter(id => id !== itemId)
-      : [...current, itemId];
-    
-    updateClient(client.id, { progressChecklist: updated });
-    reload();
-  };
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [openStages, setOpenStages] = useState<Record<string, boolean>>({});
   const [editingTimeBound, setEditingTimeBound] = useState<string | null>(null);
