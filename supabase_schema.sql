@@ -17,7 +17,8 @@ CREATE TABLE clients (
   project_name TEXT,
   project_status TEXT NOT NULL DEFAULT 'pending',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  tags JSONB DEFAULT '[]'::jsonb
+  tags JSONB DEFAULT '[]'::jsonb,
+  progress_checklist JSONB DEFAULT '[]'::jsonb
 );
 
 -- 2. Phases Table

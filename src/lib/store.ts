@@ -48,6 +48,7 @@ export interface Client {
   projectName?: string;
   projectStatus: 'active' | 'completed' | 'on-hold' | 'pending';
   priority?: 'low' | 'medium' | 'high';
+  progressChecklist?: string[];
 }
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
@@ -581,3 +582,89 @@ export function getUnreadAlertsCount(staffNameOrAdmin: string): number {
   const userId = staffNameOrAdmin;
   return getAlertsForUser(staffNameOrAdmin).filter(a => !a.readBy.includes(userId)).length;
 }
+
+export const PROGRESS_CHECKLIST_ITEMS = [
+  { id: "1", label: "7/12 EXTRACT / PROPERTY CARD" },
+  { id: "2", label: "ALL 6/12 MUTATIONS AS PER 7/12 & PIKPANI EXTRACT" },
+  { id: "3", label: "PIKPANI (1952 TILL DATE)" },
+  { id: "4", label: "8A EXTRACT" },
+  { id: "5", label: "ADVOCATE TITLE SEARCH REPORT FROM 1952 TILL DATE WITH RECEIPT (NO CLAIMS ON LAND TITLE & POSSESSION AFTER ISSUING PAPER NOTICE)" },
+  { id: "6", label: "SALE PERMISSION IF APPLICABLE" },
+  { id: "7", label: "NA ORDER / LAND CONVERSION WITH RECEIPT" },
+  { id: "8", label: "GAON NAKASHA" },
+  { id: "9", label: "GAVTHAN CERTIFICATION (IF APPLICABLE)" },
+  { id: "10", label: "PHYSICAL & LEVEL SURVEY WITH 100MT SURROUNDING" },
+  { id: "11", label: "GOOGLE LOCATION & SITE PHOTOS" },
+  { id: "12", label: "COPY OF LATEST RR RATE" },
+  { id: "13", label: "GUTBOOK, TILR MAP WITH RECEIPT / CTS SKETCH WITH RECEIPT" },
+  { id: "14", label: "SOCIETY REGISTRATION CERTIFICATE" },
+  { id: "15", label: "INDIVIDUAL CONSENTS / MOU OF ALL MEMBERS (INDIVIDUAL / COMBINED) NOTARIZED WITH GHARPATTI, ASSESSMENT, SHARE CERTIFICATE, LIGHT BILL, PAN CARDS, AADHAR CARDS" },
+  { id: "16", label: "LIST OF ALL MEMBERS WITH FLATS NUMBERS & AREAS STAMPED & SIGNED BY CHAIRMAN, SECRETARY" },
+  { id: "17", label: "SECTION 79 A REDEVELOPMENT RESOLUTION OF SOC" },
+  { id: "18", label: "SECTION 79 A SUB REGISTER NOC" },
+  { id: "19", label: "SOCIETY RESOLUTION FOR CHAIRMAN, SECRETARY APPOINTMENT" },
+  { id: "20", label: "DILAPIDATED NOTICE FROM VVCMC (C1 NOTICE)" },
+  { id: "21", label: "DEV. AGREEMENT & POWER (REGISTERED)" },
+  { id: "22", label: "PARTNERSHIP DEED / SIGNING AUTHORIZATION OF FIRM (REGISTERED) / PVT. LTD. FIRM" },
+  { id: "23", label: "FIRM PAN CARD" },
+  { id: "24", label: "NO DUES LETTER FROM VVCMC WARD OFFICE FOR REDEVELOPMENT PROPOSAL" },
+  { id: "25", label: "OLD APPROVAL" },
+  { id: "26", label: "AS BUILT FLOOR & ROOM SIZE SURVEY" },
+  { id: "27", label: "RESOLUTION FOR JOINT SOCIETY" },
+  { id: "28", label: "ALL AFFIDAVIT: SIGN/PHOTO IS REMAINING" },
+  { id: "29", label: "SOCIETY RESOLUTION FOR CHAIRMAN, SECRETARY AUTHORIZATION TO SIGN THE D.A/P.O.A" },
+  { id: "30", label: "ALL XEROX PAPER TRUE COPY" },
+  { id: "31", label: "APPOINTMENT LETTER OF ARCHITECT IN FAVOUR OF UMESH KEKRE & ASSOCIATES" },
+  
+  // 500 ₹ Stamp Papers
+  { id: "32_1", label: "500 ₹ STAMP PAPER: REGARDING APPOINTMENT OF SITE ENGINEER" },
+  { id: "32_2", label: "500 ₹ STAMP PAPER: ADJOINING FLAT AFFIDAVIT (IF REQUIRED)" },
+  { id: "32_3", label: "500 ₹ STAMP PAPER: AFFIDAVIT 1" },
+  { id: "32_4", label: "500 ₹ STAMP PAPER: BALANCE PAPER AFFIDAVIT" },
+  { id: "32_5", label: "500 ₹ STAMP PAPER: DECLARATION" },
+  { id: "32_6", label: "500 ₹ STAMP PAPER: INDEMNITY BOND" },
+  { id: "32_7", label: "500 ₹ STAMP PAPER: OP AFFIDAVIT" },
+  { id: "32_8", label: "500 ₹ STAMP PAPER: SELF DECLARATION (IF REQUIRED)" },
+  { id: "32_9", label: "500 ₹ STAMP PAPER: SEWAGE DISPOSAL" },
+  { id: "32_10", label: "500 ₹ STAMP PAPER: TENANT BAND PATR" },
+  { id: "32_11", label: "500 ₹ STAMP PAPER: UNDERTAKING 100 STAMP PAPER" },
+  { id: "32_12", label: "500 ₹ STAMP PAPER: PRATIDNYA-PATRA 7/12" },
+  { id: "32_13", label: "500 ₹ STAMP PAPER: TREE PRATIDNYA-PATRA" },
+  { id: "32_14", label: "500 ₹ STAMP PAPER: BAND-PATRA" },
+  { id: "32_15", label: "500 ₹ STAMP PAPER: GREEN ZONE AFFIDAVIT (IF REQUIRED)" },
+  { id: "32_16", label: "500 ₹ STAMP PAPER: EWS AFFIDAVIT (IF REQUIRED)" },
+  
+  // List of Documents (CC/RDP)
+  { id: "33", label: "ZONE REMARK" },
+  { id: "34", label: "CLIENT PHOTOS" },
+  { id: "35", label: "CLIENT KYC" },
+  { id: "36", label: "CLIENT ID / PASSWORD" },
+  { id: "37", label: "CLIENT DIGITAL SIGNATURE (DSC)" },
+  { id: "38", label: "OTP BASED CLIENT MOBILE NUMBER" },
+  { id: "39", label: "PERMISSION TYPE (CC / RDP / OC)" },
+  { id: "40", label: "SCHEME (REDEVELOPMENT / EWS)" },
+  { id: "41", label: "APPENDIX - A1" },
+  { id: "42", label: "APPENDIX - B" },
+  { id: "43", label: "RAILWAY NOC (IF REQUIRED)" },
+  { id: "44", label: "ARCHITECT APPOINTMENT / ENGINEER APPOINTMENT" },
+  { id: "45", label: "STRUCTURAL APPOINTMENT" },
+  { id: "46", label: "STRUCTURAL STABILITY" },
+  { id: "47", label: "RECEIPT" },
+  { id: "48", label: "EE REPORT" },
+  { id: "49", label: "DP" },
+  { id: "50", label: "PROVISIONAL TREE NOC" },
+  { id: "51", label: "PROVISIONAL FIRE NOC" },
+  { id: "52", label: "LEVEL SURVEY" },
+  { id: "53", label: "PHYSICAL SURVEY" },
+  { id: "54", label: "REPORT & DRAWING" },
+  { id: "55", label: "BLUE BOARD" },
+  { id: "56", label: "HARDSHIP REPORT" },
+  { id: "57", label: "LAYOUT" },
+  { id: "58", label: "ANY SPECIFIC NOC IF APPLICABLE" },
+  { id: "59", label: "WORK STATUS REPORT" },
+  { id: "60", label: "MOEF CLEARANCE" },
+  { id: "61", label: "COPY OF LATEST RR RATE (CC/RDP)" },
+  { id: "62", label: "RIGHT OF WAY REGISTERED AGREEMENT" },
+  { id: "63", label: "EC DRAWING WITH NOC" },
+  { id: "64", label: "TDR UTILISATION FORM" }
+];

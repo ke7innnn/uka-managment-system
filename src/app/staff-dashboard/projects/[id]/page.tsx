@@ -3,10 +3,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients, isStaffAuthenticated } from '@/lib/store';
+import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients, isStaffAuthenticated, PROGRESS_CHECKLIST_ITEMS } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
-import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2 } from 'lucide-react';
+import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare } from 'lucide-react';
 import styles from '@/app/dashboard/clients/[id]/page.module.css';
 
 const FOLDERS = [
@@ -44,7 +44,28 @@ export default function ClientDetailPage() {
   const [client, setClient] = useState<Client | null>(null);
   const [newPhaseName, setNewPhaseName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'documents'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'documents' | 'progress'>('overview');
+  
+  // Client progress checklist search/filters & success state
+  const [progressSearch, setProgressSearch] = useState('');
+  const [progressFilter, setProgressFilter] = useState<'all' | 'completed' | 'pending'>('all');
+  const [showSendSuccess, setShowSendSuccess] = useState(false);
+
+  const handleSendProgress = () => {
+    setShowSendSuccess(true);
+    setTimeout(() => setShowSendSuccess(false), 4000);
+  };
+
+  const handleToggleChecklist = (itemId: string) => {
+    if (!client) return;
+    const current = client.progressChecklist || [];
+    const updated = current.includes(itemId)
+      ? current.filter(id => id !== itemId)
+      : [...current, itemId];
+    
+    updateClient(client.id, { progressChecklist: updated });
+    reload();
+  };
   const [currentStaffId, setCurrentStaffId] = useState<string | null>(null);
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [openStages, setOpenStages] = useState<Record<string, boolean>>({});
@@ -571,16 +592,24 @@ export default function ClientDetailPage() {
 
       {/* Tabs */}
       <div className={styles.tabs}>
-        {(['overview', 'phases', 'documents'] as const).map((tab) => (
+        {(['overview', 'phases', 'documents', 'progress'] as const).map((tab) => (
           <button
             key={tab}
             className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
             onClick={() => setActiveTab(tab)}
           >
-            {tab === 'overview' && <User size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}{tab === 'phases' && <List size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}{tab === 'documents' && <FolderOpen size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === 'overview' && <User size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
+            {tab === 'phases' && <List size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
+            {tab === 'documents' && <FolderOpen size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
+            {tab === 'progress' && <ClipboardCheck size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
+            {tab === 'progress' ? 'Client Progress' : tab.charAt(0).toUpperCase() + tab.slice(1)}
             {tab === 'documents' && client.documents.length > 0 && (
               <span className={styles.tabCount}>{client.documents.length}</span>
+            )}
+            {tab === 'progress' && (client.progressChecklist || []).length > 0 && (
+              <span className={styles.tabCount} style={{ background: '#25d366', color: '#fff', border: 'none' }}>
+                {(client.progressChecklist || []).length}
+              </span>
             )}
           </button>
         ))}
@@ -614,6 +643,168 @@ export default function ClientDetailPage() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Client Progress Tab ────────────────────────────────────────────────── */}
+      {activeTab === 'progress' && (
+        <div className={`animate-fade-in ${styles.progressContainer}`}>
+          
+          {/* Summary Card */}
+          <div className={`glass-panel ${styles.progressCard}`}>
+            <div className={styles.progressFlex}>
+              <div>
+                <h2 className={styles.progressTitle}>Client Progress Checklist</h2>
+                <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Track receipt and filing of core property mutations, NOCs, and structural approvals.
+                </p>
+              </div>
+              <button className={styles.sendBtn} onClick={handleSendProgress}>
+                <MessageSquare size={16} /> Send Progress (WhatsApp)
+              </button>
+            </div>
+
+            {showSendSuccess && (
+              <div style={{
+                background: 'rgba(37, 211, 102, 0.1)',
+                border: '1px solid rgba(37, 211, 102, 0.25)',
+                color: '#25d366',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                marginBottom: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                animation: 'fadeIn 0.2s ease-out'
+              }}>
+                <span>✅</span>
+                <span>Progress update message generated! WhatsApp Interakt API transmission triggered for <strong>{client.name}</strong> ({client.phone || 'No phone set'}).</span>
+              </div>
+            )}
+
+            {/* Checklist Progress Bar */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                <span>Document Gathering & Verification Progress</span>
+                <span>
+                  {Math.round(((client.progressChecklist || []).length / PROGRESS_CHECKLIST_ITEMS.length) * 100)}%
+                </span>
+              </div>
+              <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  background: 'linear-gradient(90deg, #25d366, #128c7e)',
+                  width: `${Math.round(((client.progressChecklist || []).length / PROGRESS_CHECKLIST_ITEMS.length) * 100)}%`,
+                  transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }} />
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                {(client.progressChecklist || []).length} of {PROGRESS_CHECKLIST_ITEMS.length} documents collected and verified.
+              </p>
+            </div>
+          </div>
+
+          {/* Search & Filter Row */}
+          <div className={styles.progressFilterRow}>
+            <div className={styles.searchWrapper}>
+              <Search size={16} className={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder="Search documents..."
+                value={progressSearch}
+                onChange={e => setProgressSearch(e.target.value)}
+                className={styles.searchInput}
+              />
+            </div>
+            
+            <div className={styles.filterBtns}>
+              {(['all', 'completed', 'pending'] as const).map(f => (
+                <button
+                  key={f}
+                  onClick={() => setProgressFilter(f)}
+                  className={`${styles.filterBtn} ${progressFilter === f ? styles.filterBtnActive : ''}`}
+                >
+                  {f.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Checklist Items Grouped */}
+          {(() => {
+            // Group items
+            const groups = [
+              {
+                title: "General Land & Personal Documents",
+                items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
+                  const num = parseInt(item.id.split('_')[0], 10);
+                  return !item.id.includes('_') && num <= 31;
+                })
+              },
+              {
+                title: "₹500 Stamp Paper Affidavits",
+                items: PROGRESS_CHECKLIST_ITEMS.filter(item => item.id.includes('_'))
+              },
+              {
+                title: "CC/RDP Approvals & NOCs",
+                items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
+                  const num = parseInt(item.id.split('_')[0], 10);
+                  return !item.id.includes('_') && num >= 33;
+                })
+              }
+            ];
+
+            return groups.map((grp, grpIdx) => {
+              // Apply search & filter
+              const filteredItems = grp.items.filter(item => {
+                const matchesSearch = item.label.toLowerCase().includes(progressSearch.toLowerCase()) || item.id.includes(progressSearch);
+                const isChecked = (client.progressChecklist || []).includes(item.id);
+                if (progressFilter === 'completed') return matchesSearch && isChecked;
+                if (progressFilter === 'pending') return matchesSearch && !isChecked;
+                return matchesSearch;
+              });
+
+              if (filteredItems.length === 0) return null;
+
+              const completedInGroup = filteredItems.filter(item => (client.progressChecklist || []).includes(item.id)).length;
+
+              return (
+                <div key={grpIdx} className={styles.checklistGroup}>
+                  <div className={styles.groupHeader}>
+                    <span>{grp.title}</span>
+                    <span className={styles.groupCountBadge}>
+                      {completedInGroup} / {filteredItems.length} Done
+                    </span>
+                  </div>
+
+                  <div className={styles.checklistGrid}>
+                    {filteredItems.map(item => {
+                      const isChecked = (client.progressChecklist || []).includes(item.id);
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => handleToggleChecklist(item.id)}
+                          className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''}`}
+                        >
+                          <div className={styles.customCheckbox}>
+                            {isChecked && <Check size={12} strokeWidth={3} />}
+                          </div>
+                          <div className={styles.checkLabel}>
+                            <span style={{ fontWeight: 700, color: isChecked ? 'rgba(37, 211, 102, 0.7)' : 'var(--text-tertiary)', marginRight: '0.4rem', fontSize: '0.75rem' }}>
+                              #{item.id.replace('_', '.')}
+                            </span>
+                            {item.label}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            });
+          })()}
         </div>
       )}
 

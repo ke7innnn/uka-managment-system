@@ -40,6 +40,7 @@ export async function pullFromSupabase() {
       projectStatus: c.project_status || 'pending',
       createdAt: c.created_at,
       tags: c.tags || [],
+      progressChecklist: c.progress_checklist || [],
       phases: (c.phases || []).map((p: any) => ({
         id: p.id, name: p.name, completed: p.completed, order: p.order,
         status: p.status || (p.completed ? 'completed' : 'not-started'),
@@ -153,7 +154,8 @@ export async function pushClientsToSupabase(clients: Client[]) {
     project_name: c.projectName,
     project_status: c.projectStatus,
     created_at: c.createdAt,
-    tags: c.tags
+    tags: c.tags,
+    progress_checklist: c.progressChecklist || []
   }));
 
   const phaseRows: any[] = [];
