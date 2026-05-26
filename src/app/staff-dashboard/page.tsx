@@ -106,7 +106,15 @@ export default function StaffDashboardHome() {
   };
 
   // ── Task Actions ──
-
+  const toggleGeneralTask = (taskId: string) => {
+    if (!member) return;
+    const updated = member.tasks.map(t => {
+      if (t.id === taskId) return { ...t, completed: !t.completed };
+      return t;
+    });
+    updateStaffMember(member.id, { tasks: updated });
+    reload();
+  };
 
   // ── Attendance Actions ──
   const handleClockIn = () => {
@@ -195,6 +203,11 @@ export default function StaffDashboardHome() {
     totalAssignedTasksCount += stage.assignedTasks.length;
     completedAssignedTasksCount += stage.assignedTasks.filter(t => t.completed).length;
   });
+
+  if (member && member.tasks) {
+    totalAssignedTasksCount += member.tasks.length;
+    completedAssignedTasksCount += member.tasks.filter(t => t.completed).length;
+  }
   
   const overallPct = totalAssignedTasksCount > 0 
     ? Math.round((completedAssignedTasksCount / totalAssignedTasksCount) * 100) 
@@ -372,6 +385,60 @@ export default function StaffDashboardHome() {
               </div>
             )}
           </div>
+
+          {member && member.tasks && member.tasks.length > 0 && (
+            <div>
+              <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>My General Tasks</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {member.tasks.map(task => (
+                  <div 
+                    key={task.id} 
+                    className="glass-panel" 
+                    style={{ 
+                      padding: '1rem', 
+                      background: 'rgba(255, 255, 255, 0.02)', 
+                      border: '1px solid var(--border)', 
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '1rem',
+                      opacity: task.completed ? 0.6 : 1,
+                      transition: 'opacity 0.2s'
+                    }}
+                  >
+                    <div 
+                      onClick={() => toggleGeneralTask(task.id)}
+                      style={{ 
+                        width: '24px', 
+                        height: '24px', 
+                        borderRadius: '6px', 
+                        border: task.completed ? 'none' : '2px solid var(--border)',
+                        background: task.completed ? 'var(--primary)' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        flexShrink: 0
+                      }}
+                    >
+                      {task.completed && <Check size={14} color="#fff" strokeWidth={3} />}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', textDecoration: task.completed ? 'line-through' : 'none' }}>
+                        {task.title || (task as any).text}
+                      </p>
+                      {task.deadline && (
+                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          <Clock size={12} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'text-bottom' }} />
+                          Due: {task.deadline}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Attendance Hub */}
