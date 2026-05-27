@@ -512,10 +512,6 @@ export default function ClientDetailPage() {
   const deleteDocument = async (docId: string) => {
     const doc = client.documents.find(d => d.id === docId);
     if (!doc) return;
-    if (doc.uploadedBy !== currentStaffId) {
-      alert("You can only delete documents that you have uploaded.");
-      return;
-    }
     if (confirm(`Are you sure you want to delete "${doc.name}"? This cannot be undone.`)) {
       // 1. Delete from local JSON state to update UI immediately
       const updated = client.documents.filter((d) => d.id !== docId);
@@ -536,6 +532,7 @@ export default function ClientDetailPage() {
       }
     }
   };
+
 
   // ── Rename actions ─────────────────────────────────────────────────────────
   const startRename = (doc: Doc) => {

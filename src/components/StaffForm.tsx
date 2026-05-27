@@ -15,6 +15,7 @@ type FormData = {
   workDeadline: string;
   notes: string;
   profilePicture: string;
+  newPassword: string;
 };
 
 interface Props {
@@ -34,6 +35,7 @@ export default function StaffForm({ member, mode }: Props) {
     workDeadline:     member?.workDeadline ? member.workDeadline.split('T')[0] : '',
     notes:            member?.notes || '',
     profilePicture:   member?.profilePicture || '',
+    newPassword:      '',
   });
   const [error, setError] = useState('');
 
@@ -69,6 +71,8 @@ export default function StaffForm({ member, mode }: Props) {
         role: form.role.trim(),
         email: form.email.trim() || undefined,
         phone: form.phone.trim() || undefined,
+        // Only update password if admin explicitly typed a new one
+        ...(form.newPassword.trim() ? { password: form.newPassword.trim() } : {}),
         department: form.department.trim() || undefined,
         totalTasksTarget: target,
         workDeadline: form.workDeadline || undefined,
@@ -170,6 +174,29 @@ export default function StaffForm({ member, mode }: Props) {
           />
         </div>
       </Section>
+
+      {mode === 'edit' && (
+        <Section title="Security / Login">
+          <div className={styles.grid}>
+            <div className={styles.fieldGroup} style={{ gridColumn: '1 / -1' }}>
+              <label className={styles.label} style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                Current ID (Phone Number): <strong style={{ color: 'var(--text-main)' }}>{member?.phone || '—'}</strong>
+              </label>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem', marginTop: '0.25rem' }}>
+                The staff login ID (phone number) cannot be changed here. To change the login <strong>password</strong>, enter a new one below. Leave blank to keep the existing password.
+              </p>
+            </div>
+            <Field
+              id="newPassword"
+              label="New Login Password"
+              value={form.newPassword}
+              onChange={v => set('newPassword', v)}
+              placeholder="Enter new password (leave blank to keep current)"
+              type="text"
+            />
+          </div>
+        </Section>
+      )}
 
       <div className={styles.actions}>
         <button type="button" className={styles.cancelBtn} onClick={() => router.back()}>Cancel</button>

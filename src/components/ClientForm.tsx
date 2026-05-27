@@ -712,7 +712,8 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
           <Field label="Use Type" id="use" value={form.use} onChange={(v) => set('use', v)} placeholder="e.g. Residential" />
           <Field label="No. of Buildings" id="noOfBldgs" value={form.noOfBldgs} onChange={(v) => set('noOfBldgs', v)} placeholder="Total buildings" />
           <Field label="Floor Count" id="floor" value={form.floor} onChange={(v) => set('floor', v)} placeholder="Number of floors" />
-          <Field label="Subject (Secondary)" id="subSecondary" value={form.subSecondary} onChange={(v) => set('subSecondary', v)} placeholder="Secondary Subject" />
+
+
           <Field label="P-Line" id="pLine" value={form.pLine} onChange={(v) => set('pLine', v)} placeholder="P-Line details" />
           <Field label="Architect Name" id="architect" value={form.architect} onChange={(v) => set('architect', v)} placeholder="Architect" />
           <Field label="Structural Engineer Name" id="structuralEngName" value={form.structuralEngName} onChange={(v) => set('structuralEngName', v)} placeholder="Structural Engineer" />
