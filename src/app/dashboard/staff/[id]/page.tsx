@@ -219,6 +219,7 @@ export default function StaffDetailPage() {
             <InfoBox label="Department"  value={member.department} />
             <InfoBox label="Email"       value={member.email} />
             <InfoBox label="Phone"       value={member.phone} />
+            <InfoBox label="Login Password" value={member.password || member.phone} />
             <InfoBox label="Task Target" value={`${member.totalTasksTarget} tasks`} />
             <InfoBox label="Work Deadline" value={member.workDeadline ? new Date(member.workDeadline).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : undefined} />
             <InfoBox label="Joined"      value={new Date(member.joinedAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})} />
