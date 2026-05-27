@@ -5,19 +5,9 @@ import { supabase, stripLargeBase64 } from './supabase';
 /** Download a document properly — fetches as blob to avoid cross-origin 404s */
 export async function downloadDocumentSafe(url: string, filename: string) {
   try {
-    let blob: Blob;
-
-    if (url.includes('/public/uka-storage/')) {
-      const path = url.split('/public/uka-storage/')[1];
-      const { data, error } = await supabase.storage.from('uka-storage').download(path);
-      if (error) throw error;
-      if (!data) throw new Error('No data received');
-      blob = data;
-    } else {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      blob = await response.blob();
-    }
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const blob = await response.blob();
 
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
