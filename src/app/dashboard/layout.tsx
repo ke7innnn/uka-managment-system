@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import AdminAssistantChat from '@/components/AdminAssistantChat';
 import WorkspaceChatWidget from '@/components/WorkspaceChatWidget';
 import SupabaseConnectionWarning from '@/components/SupabaseConnectionWarning';
-import { Menu } from 'lucide-react';
+import { Menu, RefreshCw } from 'lucide-react';
 import styles from './layout.module.css';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +34,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           />
           <span className={styles.mobileBrandText}>UKA Admin</span>
         </div>
-        <div style={{ width: 36 }} /> {/* Visual spacer balancing menu button */}
+        <button
+          className={styles.refreshButton}
+          onClick={() => window.location.reload()}
+          aria-label="Refresh page"
+        >
+          <RefreshCw size={20} strokeWidth={2.25} />
+        </button>
       </header>
 
       {/* Dimmed backdrop overlay closing drawer when tapped */}

@@ -111,6 +111,27 @@
   color: var(--text);
 }
 
+.refreshButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.refreshButton:active {
+  background: var(--bg-hover);
+  color: var(--accent);
+  transform: rotate(180deg);
+}
+
+
 /* ── Sliding Sidebar Drawer ── */
 .mobileSidebarDrawer {
   display: none;

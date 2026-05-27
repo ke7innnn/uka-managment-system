@@ -5,7 +5,7 @@ import useStaffGuard from '@/hooks/useStaffGuard';
 import StaffSidebar from '@/components/StaffSidebar';
 import WorkspaceChatWidget from '@/components/WorkspaceChatWidget';
 import SupabaseConnectionWarning from '@/components/SupabaseConnectionWarning';
-import { Menu } from 'lucide-react';
+import { Menu, RefreshCw } from 'lucide-react';
 import styles from '@/app/dashboard/layout.module.css';
 
 export default function StaffDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -35,7 +35,13 @@ export default function StaffDashboardLayout({ children }: { children: React.Rea
           />
           <span className={styles.mobileBrandText}>UKA Staff</span>
         </div>
-        <div style={{ width: 36 }} /> {/* Visual spacer balancing menu button */}
+        <button
+          className={styles.refreshButton}
+          onClick={() => window.location.reload()}
+          aria-label="Refresh page"
+        >
+          <RefreshCw size={20} strokeWidth={2.25} />
+        </button>
       </header>
 
       {/* Dimmed backdrop overlay closing drawer when tapped */}
