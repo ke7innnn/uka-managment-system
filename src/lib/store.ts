@@ -836,6 +836,26 @@ export function viewDocumentSafe(dataUrl: string) {
   }
 }
 
+/** Download a document properly — fetches as blob to avoid cross-origin 404s */
+export async function downloadDocumentSafe(url: string, filename: string) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  } catch (e) {
+    console.error("Download failed, opening in new tab:", e);
+    window.open(url, '_blank');
+  }
+}
+
 export function totalHoursWorked(member: StaffMember): number {
   return member.attendance.reduce((sum, a) => sum + (a.hoursWorked || 0), 0);
 }

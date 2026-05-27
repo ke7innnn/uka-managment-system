@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getClients, Client, Document as Doc, viewDocumentSafe, DOCUMENT_FOLDERS as FOLDERS } from '@/lib/store';
+import { getClients, Client, Document as Doc, viewDocumentSafe, downloadDocumentSafe, DOCUMENT_FOLDERS as FOLDERS } from '@/lib/store';
 import { ImageIcon, FileText, FileSpreadsheet, Video, Paperclip, User, Eye, Download } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -138,9 +138,9 @@ export default function DocumentsPage() {
                   <button onClick={() => viewDocumentSafe(doc.url)} className={`${styles.downloadBtn} ${styles.actionBtnSecondary}`} title="View file">
                     <Eye size={14} strokeWidth={1.75} /> View
                   </button>
-                  <a href={doc.url} download={doc.name} className={styles.downloadBtn} title="Download file">
+                  <button onClick={() => downloadDocumentSafe(doc.url, doc.name)} className={styles.downloadBtn} title="Download file">
                     <Download size={14} strokeWidth={1.75} /> Download
-                  </a>
+                  </button>
                 </div>
               </div>
             );

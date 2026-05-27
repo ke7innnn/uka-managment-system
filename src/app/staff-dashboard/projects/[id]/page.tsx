@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, getStaff, StaffMember, getClients, isStaffAuthenticated, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, CC_RDP_FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
+import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, downloadDocumentSafe, getStaff, StaffMember, getClients, isStaffAuthenticated, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, CC_RDP_FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
 import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare } from 'lucide-react';
@@ -224,13 +224,14 @@ export default function ClientDetailPage() {
               projectStatus: data.project_status || 'pending',
               createdAt: data.created_at,
               tags: data.tags || [],
-              // Use local state for checklists to avoid overwriting a fresh toggle
+              // Use local state for checklists AND phases to avoid overwriting fresh toggles
+              // (the async push to Supabase may not have completed yet)
               progressChecklist: localClient?.progressChecklist ?? data.progress_checklist ?? [],
               ocChecklist: localClient?.ocChecklist ?? data.oc_checklist ?? [],
               clientPassword: data.client_password || '',
               kyc: data.kyc || {},
               syncStatus: 'synced',
-              phases: (data.phases || []).map((p: any) => ({
+              phases: localClient?.phases ?? (data.phases || []).map((p: any) => ({
                 id: p.id, name: p.name, completed: p.completed, order: p.order,
                 status: p.status || (p.completed ? 'completed' : 'not-started'),
                 timeBound: p.time_bound || undefined,
@@ -1588,9 +1589,9 @@ export default function ClientDetailPage() {
                         <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
                         <Pencil className={styles.fileChipDownload} size={14} onClick={() => startRename(doc)} />
                         <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
-                        <a href={doc.url} download={doc.name} onClick={(e) => e.stopPropagation()} title="Download">
+                        <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} title="Download" className={styles.iconBtn}>
                           <Download className={styles.fileChipDownload} size={14} />
-                        </a>
+                        </button>
                         <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} />
                       </div>
                     )}
@@ -1721,9 +1722,9 @@ export default function ClientDetailPage() {
                                         <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
                                           <Eye size={13} />
                                         </button>
-                                        <a href={doc.url} download={doc.name} className={styles.actionBtn} title="Download">
+                                        <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
                                           <Download size={13} />
-                                        </a>
+                                        </button>
                                         <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
                                           <Trash2 size={13} />
                                         </button>
@@ -1789,9 +1790,9 @@ export default function ClientDetailPage() {
                                 <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
                                   <Eye size={13} />
                                 </button>
-                                <a href={doc.url} download={doc.name} className={styles.actionBtn} title="Download">
+                                <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
                                   <Download size={13} />
-                                </a>
+                                </button>
                                 <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
                                   <Trash2 size={13} />
                                 </button>
@@ -1886,9 +1887,9 @@ export default function ClientDetailPage() {
                               <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
                                 <Eye size={13} />
                               </button>
-                              <a href={doc.url} download={doc.name} className={styles.actionBtn} title="Download">
+                              <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
                                 <Download size={13} />
-                              </a>
+                              </button>
                               <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteCcrdpDocument(doc.id)} title="Delete">
                                 <Trash2 size={13} />
                               </button>
