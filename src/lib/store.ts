@@ -1088,5 +1088,18 @@ export const DOCUMENT_FOLDERS = [
   ]},
   { id: '5', name: "VVCMC Previous Approvals", code: "VPA", subfolders: [] },
   { id: '6', name: "Courts Cases / Complaints / Notices", code: "CCN", subfolders: [] },
-  { id: '7', name: "Others", code: "OTH", subfolders: [] }
+  { id: '7', name: "Others", code: "OTH", subfolders: [] },
+  { id: '8', name: "Drawing and Report", code: "DRW", subfolders: [
+    { id: "8a", code: "8.1", name: "Drawing" },
+    { id: "8b", code: "8.2", name: "Report" },
+    { id: "8c", code: "8.3", name: "Marginal" },
+    { id: "8d", code: "8.4", name: "Engineering Drawing" }
+  ]}
+];
+
+export const CC_RDP_FOLDERS = [
+  { id: 'ccrdp-cc',  name: 'CC',  code: 'CC'  },
+  { id: 'ccrdp-rdp', name: 'RDP', code: 'RDP' },
+  { id: 'ccrdp-oc',  name: 'OC',  code: 'OC'  },
+  { id: 'ccrdp-pcc', name: 'PCC', code: 'PCC' },
 ];

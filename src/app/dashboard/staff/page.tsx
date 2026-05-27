@@ -318,6 +318,28 @@ export default function StaffPage() {
                       </span>
                     </div>
                   )}
+                  {/* Login credentials */}
+                  <div style={{
+                    marginTop: '0.75rem',
+                    padding: '0.5rem 0.75rem',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    fontSize: '0.75rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.25rem'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
+                      <span>Login ID (Phone):</span>
+                      <strong style={{ color: 'var(--text-main)' }}>{member.phone || '—'}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
+                      <span>Password:</span>
+                      <strong style={{ color: '#f59e0b' }}>{member.password || '—'}</strong>
+                    </div>
+                  </div>
+
                 </div>
 
                 {/* Actions */}
