@@ -124,6 +124,7 @@ function fireAlert(
   const baseKey = templateKey.startsWith('daily-update') ? 'daily-update' : templateKey;
   const msg = buildMessage(baseKey, client.name, phase.name, pendingTasks.length, pendingTasks.slice(0, 5), assignedTo, phase.timeBound);
 
+  // ONLY add to alerts (Inbox / Performance Alerts). Do not spam the workspace chat.
   addAlert({
     clientId: client.id,
     clientName: client.name,
@@ -135,32 +136,6 @@ function fireAlert(
     templateKey: baseKey, 
     message: msg,
   });
-
-  if (baseKey === 'stage-start') {
-    addWorkspaceMessage(
-      'system',
-      '🤖 System',
-      'Automated',
-      `🚀 Stage Started: "${phase.name}" for client ${client.name}.\n📋 ${pendingTasks.length} task(s) assigned to: ${assignedTo}.\n${phase.timeBound ? `⏰ Deadline: Before ${new Date(phase.timeBound + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}`
-    );
-  } else if (baseKey === 'deadline-24h') {
-    addWorkspaceMessage(
-      'system',
-      '🤖 System',
-      'Automated',
-      `⏰ DEADLINE APPROACHING: "${phase.name}" for ${client.name} is due in less than 24 hours. Assigned to: ${assignedTo}. Please finish up!`
-    );
-  } else if (baseKey.startsWith('reminder-')) {
-    const reminderIndex = baseKey.split('-')[1];
-    const emoji = severity === 'critical' ? '🚨' : severity === 'urgent' ? '🔴' : '⚠️';
-    const alertBody = msg.split('\n\n')[1] || msg;
-    addWorkspaceMessage(
-      'system',
-      '🤖 System',
-      'Automated',
-      `${emoji} REMINDER ${reminderIndex} OVERDUE:\n${alertBody}`
-    );
-  }
 }
 
 // ── Template Messages ──────────────────────────────────────────────────────────
@@ -174,11 +149,8 @@ function buildMessage(
   assignedTo: string,
   timeBound?: string
 ): string {
-  const deadlineStr = timeBound
-    ? `Deadline: Before ${new Date(timeBound + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}.`
-    : '';
   const taskList = sampleTasks.length > 0
-    ? `Tasks pending:\n${sampleTasks.map(t => `  • ${t}`).join('\n')}${pendingCount > sampleTasks.length ? `\n  ...and ${pendingCount - sampleTasks.length} more` : ''}`
+    ? `\nTasks: ${sampleTasks.join(', ')}${pendingCount > sampleTasks.length ? '...' : ''}`
     : '';
 
   // Extract first name for a direct, WhatsApp feel like @UZAID
@@ -186,43 +158,34 @@ function buildMessage(
 
   switch (templateKey) {
     case 'stage-start':
-      return `✅ ${stageName} has been started for client ${clientName}.\n\nAssigned to: ${assignedTo}.\n${deadlineStr}\n\n${taskList}\n\nPlease begin your assigned tasks immediately and update progress regularly.`;
-
     case 'day-1-light':
-      return `👋 Friendly Reminder — Day 1\n\n${stageName} for ${clientName} is underway. You have ${pendingCount} task(s) remaining.\n\n${taskList}\n\n${deadlineStr}\n\nKeep up the good progress!`;
-
     case 'day-2-moderate':
-      return `📌 Progress Update — Day 2\n\n${stageName} for ${clientName}: ${pendingCount} task(s) are still pending.\n\n${taskList}\n\n${deadlineStr}\n\nPlease ensure tasks are progressing and flag any blockers in the workspace chat.`;
-
     case 'day-3-warning':
-      return `⚠️ Attention Required — Day 3\n\n${stageName} for ${clientName} has ${pendingCount} incomplete task(s) after 3 days. The admin team has been notified.\n\n${taskList}\n\n${deadlineStr}\n\nIf you are facing any difficulties, please communicate immediately on the workspace chat. Delays at this stage affect the entire project pipeline.`;
-
     case 'daily-update':
-      return `💬 Daily Reminder\n\nHi ${assignedTo.split(' ')[0]}, just a friendly check-in. "${stageName}" for ${clientName} is still in progress with ${pendingCount} pending task(s).\n\n${taskList}\n\n${deadlineStr}\n\nKeep pushing forward, you're doing great! Let us know if you need any help.`;
-
     case 'deadline-24h':
-      return `⏰ Heads Up — Less than 24 Hours Left!\n\nHey ${assignedTo}, just a friendly heads up — the deadline for "${stageName}" (client: ${clientName}) is coming up in less than 24 hours.\n\n${taskList}\n\n${deadlineStr}\n\nYou still have time — please make sure all pending tasks are wrapped up before the deadline. Reach out on workspace chat if you need help!`;
+      // The user requested ALL pre-deadline messages to be extremely short.
+      return `Hey ${assignedTo}, ${stageName} is incomplete. Please complete before deadline.${taskList}`;
 
-    // ── POST-DEADLINE ESCALATING REMINDERS ──
+    // ── POST-DEADLINE ESCALATING REMINDERS (KEPT EXACTLY AS USER'S TEMPLATES) ──
     case 'reminder-1':
-      return `⚠️ REMINDER 1 (MILD)\n\nDEAR ${assignedTo.toUpperCase()},\nTHE DEADLINE WHICH YOU HAVE COMMITTED TO YOUR BOSS HAS CROSSED. PLEASE EXPEDITE THE WORK AND COMPLETE THE DEADLINE WITHIN THE NEXT 24 HOURS.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
+      return `⚠️ REMINDER 1 (MILD)\n\nDEAR ${assignedTo.toUpperCase()},\nTHE DEADLINE WHICH YOU HAVE COMMITTED TO YOUR BOSS HAS CROSSED. PLEASE EXPEDITE THE WORK AND COMPLETE THE DEADLINE WITHIN THE NEXT 24 HOURS.\n\nProject: ${clientName} — ${stageName}${taskList}`;
 
     case 'reminder-2':
-      return `⚠️ REMINDER 2\n\nDEAR ${assignedTo.toUpperCase()},\nTHIS IS THE SECOND REMINDER FOR THE PENDING WORK !!! THE SECOND DEADLINE GIVEN BY YOU HAS ALSO LAPSED.. CONNECT WITH BOSS IMMEDIATELY.. PUT YOUR CLARIFICATIONS FOR THE SAME!! YOUR DEADLINE SHALL BE ONLY EXTENDED TO THE NEXT 24 HOURS.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
+      return `⚠️ REMINDER 2\n\nDEAR ${assignedTo.toUpperCase()},\nTHIS IS THE SECOND REMINDER FOR THE PENDING WORK !!! THE SECOND DEADLINE GIVEN BY YOU HAS ALSO LAPSED.. CONNECT WITH BOSS IMMEDIATELY.. PUT YOUR CLARIFICATIONS FOR THE SAME!! YOUR DEADLINE SHALL BE ONLY EXTENDED TO THE NEXT 24 HOURS.\n\nProject: ${clientName} — ${stageName}${taskList}`;
 
     case 'reminder-3':
-      return `🚨 REMINDER 3\n\n@${primaryName} THIS IS EXTREME UNPROFESSIONAL BEHAVIOUR... SHALL BE REPORTED TO BOSS.. PUT UP YOUR CLARIFICATIONS REGARDING THE PROJECT IMMEDIATELY... THE THIRD DEADLINE WHEN CROSSED SHALL LEAD TO DEDUCTIONS IN SALARY OF YOU AND YOUR TEAM AS DECIDED BY BOSS... RESOLVE THE PROBLEM IN THE NEXT 24 HOURS AND PASS ON THE PROJECT FURTHER IMMEDIATELY.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
+      return `🚨 REMINDER 3\n\n@${primaryName} THIS IS EXTREME UNPROFESSIONAL BEHAVIOUR... SHALL BE REPORTED TO BOSS.. PUT UP YOUR CLARIFICATIONS REGARDING THE PROJECT IMMEDIATELY... THE THIRD DEADLINE WHEN CROSSED SHALL LEAD TO DEDUCTIONS IN SALARY OF YOU AND YOUR TEAM AS DECIDED BY BOSS... RESOLVE THE PROBLEM IN THE NEXT 24 HOURS AND PASS ON THE PROJECT FURTHER IMMEDIATELY.\n\nProject: ${clientName} — ${stageName}${taskList}`;
 
     case 'reminder-4':
-      return `🚨 REMINDER 4\n\n@${primaryName} AMOUNT OF ₹1,500 SHALL BE DEDUCTED TILL DATE FOR NON PERFORMANCE AND FAILURE TO FOLLOW DEADLINE AS INSTRUCTED BY BOSS FOR PROJECT: ${clientName.toUpperCase()}.\n\nStage: ${stageName}\n${taskList}`;
+      return `🚨 REMINDER 4\n\n@${primaryName} AMOUNT OF ₹1,500 SHALL BE DEDUCTED TILL DATE FOR NON PERFORMANCE AND FAILURE TO FOLLOW DEADLINE AS INSTRUCTED BY BOSS FOR PROJECT: ${clientName.toUpperCase()}.\n\nStage: ${stageName}${taskList}`;
 
     case 'reminder-5':
-      return `🚨 REMINDER 5\n\nDEAR TEAM, PLS HELP ${primaryName} TO RESOLVE HIS PROBLEM WITHIN THE DEADLINE... FAILING WHICH SIMILAR DEDUCTION SHALL BE APPLICABLE FROM YOUR SALARY TOO.. BOSS IS DISAPPOINTED.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
+      return `🚨 REMINDER 5\n\nDEAR TEAM, PLS HELP ${primaryName} TO RESOLVE HIS PROBLEM WITHIN THE DEADLINE... FAILING WHICH SIMILAR DEDUCTION SHALL BE APPLICABLE FROM YOUR SALARY TOO.. BOSS IS DISAPPOINTED.\n\nProject: ${clientName} — ${stageName}${taskList}`;
 
     case 'reminder-6':
-      return `🚨 REMINDER 6\n\nAMOUNT OF ₹3,000 TILL DATE SHALL BE DEDUCTED FROM THE SALARIES OF THE FOLLOWING STAFF FOR NOT RESOLVING THE PROBLEMS AND NOT PROVIDING CLARIFICATIONS FOR THE DELAY: ${assignedTo.toUpperCase()}.\n\nProject: ${clientName} — ${stageName}\n${taskList}`;
+      return `🚨 REMINDER 6\n\nAMOUNT OF ₹3,000 TILL DATE SHALL BE DEDUCTED FROM THE SALARIES OF THE FOLLOWING STAFF FOR NOT RESOLVING THE PROBLEMS AND NOT PROVIDING CLARIFICATIONS FOR THE DELAY: ${assignedTo.toUpperCase()}.\n\nProject: ${clientName} — ${stageName}${taskList}`;
 
     default:
-      return `Reminder: ${pendingCount} task(s) pending in ${stageName} for ${clientName}. Assigned to: ${assignedTo}.`;
+      return `Hey ${assignedTo}, ${stageName} is incomplete. Please complete before deadline.`;
   }
 }
