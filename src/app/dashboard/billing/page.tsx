@@ -9,7 +9,7 @@ export default function AdminBillingPage() {
   const [showBillTemplate, setShowBillTemplate] = useState(false);
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="billing-page-container" style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       <h1 style={{ fontSize: '1.75rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Billing & Invoicing</h1>
       
       {!showBillTemplate ? (

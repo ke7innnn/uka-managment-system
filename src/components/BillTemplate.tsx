@@ -146,27 +146,53 @@ export default function BillTemplate() {
     <div className="printable-bill-wrapper" style={{ fontFamily: "'Times New Roman', Georgia, serif", maxWidth: 900, margin: "0 auto", padding: "1rem", color: C.ink, background: "#fff", borderRadius: 8 }}>
       <style>{`
         @media print {
-          /* 1. HIDE ABSOLUTELY EVERYTHING ON THE PAGE BY DEFAULT */
-          body * {
-            visibility: hidden !important;
+          /* HIDE ALL LAYOUT NOISE */
+          header, aside, nav, footer, [class*="sidebar"], [class*="Sidebar"], [class*="menuButton"], [class*="mobileHeader"] {
+            display: none !important;
+          }
+          
+          /* HIDE FIXED CHATS AND WIDGETS */
+          div[style*="position: fixed"], 
+          div[style*="position:fixed"] {
+            display: none !important;
           }
 
-          /* 2. ONLY SHOW THE BILL AND ITS CHILDREN */
-          .printable-bill-wrapper, .printable-bill-wrapper * {
-            visibility: visible !important;
+          /* RESET MAIN CONTAINERS FOR PAGINATION */
+          body, html, main, [class*="wrapper"], [class*="main"], #__next {
+            display: block !important;
+            position: static !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            height: auto !important;
+            overflow: visible !important;
+            background: #fff !important;
           }
 
-          /* 3. POSITION THE BILL AT THE VERY TOP LEFT OF THE PAGE */
+          /* UN-PAD THE PARENT PAGE CONTAINER */
+          .billing-page-container {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+          }
+
+          /* HIDE PAGE TITLE AND BACK BUTTON */
+          .billing-page-container h1, 
+          .billing-page-container > div > button,
+          .billing-page-container > button {
+            display: none !important;
+          }
+
+          /* THE BILL ITSELF */
           .printable-bill-wrapper {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+            display: block !important;
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
-            background: #fff !important;
           }
+
           @page {
             size: A4 portrait;
             margin: 10mm;
