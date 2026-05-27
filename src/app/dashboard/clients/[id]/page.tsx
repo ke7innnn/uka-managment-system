@@ -261,12 +261,12 @@ export default function ClientDetailPage() {
               tags: data.tags || [],
               // Use local state for checklists AND phases to avoid overwriting fresh toggles
               // (the async push to Supabase may not have completed yet)
-              progressChecklist: localClient?.progressChecklist ?? data.progress_checklist ?? [],
-              ocChecklist: localClient?.ocChecklist ?? data.oc_checklist ?? [],
+              progressChecklist: (localClient?.syncStatus === 'pending' && localClient?.progressChecklist) ? localClient.progressChecklist : (data.progress_checklist || []),
+              ocChecklist: (localClient?.syncStatus === 'pending' && localClient?.ocChecklist) ? localClient.ocChecklist : (data.oc_checklist || []),
               clientPassword: data.client_password || '',
               kyc: data.kyc || {},
               syncStatus: 'synced',
-              phases: localClient?.phases ?? (data.phases || []).map((p: any) => ({
+              phases: (localClient?.syncStatus === 'pending' && localClient?.phases) ? localClient.phases : (data.phases || []).map((p: any) => ({
                 id: p.id, name: p.name, completed: p.completed, order: p.order,
                 status: p.status || (p.completed ? 'completed' : 'not-started'),
                 timeBound: p.time_bound || undefined,
@@ -448,9 +448,19 @@ export default function ClientDetailPage() {
   const toggleTask = (phaseId: string, taskId: string) => {
     const updated = client.phases.map((p) => {
       if (p.id === phaseId) {
+        const newTasks = p.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
+        const allCompleted = newTasks.length > 0 && newTasks.every(t => t.completed);
+        let newStatus = p.status;
+        if (allCompleted && p.status !== 'completed') {
+          newStatus = 'completed';
+          clearStageReminders(phaseId, client.id);
+        } else if (!allCompleted && p.status === 'completed') {
+          newStatus = 'in-progress';
+        }
         return {
           ...p,
-          tasks: p.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t)
+          status: newStatus,
+          tasks: newTasks
         };
       }
       return p;
@@ -1545,7 +1555,14 @@ export default function ClientDetailPage() {
                           )}
                         </div>
                         <div className={styles.stageMeta}>
-                          {phase.status === 'in-progress' && <span className={styles.statusBadgeActive}>In Progress</span>}
+                          {phase.status === 'in-progress' && (() => {
+                            const isOverdue = phase.timeBound && new Date(phase.timeBound + 'T00:00:00').setHours(0,0,0,0) < new Date().setHours(0,0,0,0);
+                            return isOverdue ? (
+                              <span className={styles.statusBadgeActive} style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}>Overdue</span>
+                            ) : (
+                              <span className={styles.statusBadgeActive}>In Progress</span>
+                            );
+                          })()}
                           {phase.status === 'not-started' && <span className={styles.statusBadgePending}>Not Started</span>}
                           <span className={styles.timeBoundContainer} onClick={e => e.stopPropagation()}>
                             {editingTimeBound === phase.id ? (

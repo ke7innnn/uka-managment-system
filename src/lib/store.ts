@@ -420,12 +420,18 @@ export function getClients(): Client[] {
   }
 }
 
+let clientPushTimeout: ReturnType<typeof setTimeout> | null = null;
+
 export function saveClients(clients: Client[]): void {
   if (typeof window === 'undefined') return;
-  // Background sync to Supabase (non-blocking with full un-stripped details)
-  pushClientsToSupabase(clients).catch(console.error);
-  // Save lightweight cleaned representation locally to avoid 5MB quota limits
+  // Save lightweight cleaned representation locally
   localStorage.setItem(STORAGE_KEY, JSON.stringify(stripLargeBase64(clients)));
+  
+  // Debounce background sync to Supabase (non-blocking with full un-stripped details)
+  if (clientPushTimeout) clearTimeout(clientPushTimeout);
+  clientPushTimeout = setTimeout(() => {
+    pushClientsToSupabase(getClients()).catch(console.error);
+  }, 1000);
 }
 
 export function getClientById(id: string): Client | undefined {
@@ -742,12 +748,17 @@ export function logoutStaff(): void {
   localStorage.removeItem('uka_staff_auth');
 }
 
+let staffPushTimeout: ReturnType<typeof setTimeout> | null = null;
+
 export function saveStaff(staff: StaffMember[]): void {
   if (typeof window === 'undefined') return;
-  // Background sync to Supabase (non-blocking with full un-stripped details)
-  pushStaffToSupabase(staff).catch(console.error);
   // Save lightweight cleaned representation locally to avoid 5MB quota limits
   localStorage.setItem(STAFF_KEY, JSON.stringify(stripLargeBase64(staff)));
+  
+  if (staffPushTimeout) clearTimeout(staffPushTimeout);
+  staffPushTimeout = setTimeout(() => {
+    pushStaffToSupabase(getStaff()).catch(console.error);
+  }, 1000);
 }
 
 export function getStaffById(id: string): StaffMember | undefined {
