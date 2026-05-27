@@ -10,6 +10,7 @@ import styles from './ClientForm.module.css';
 type FormData = {
   name: string;
   clientId: string;
+  clientUin: string;
   clientPassword: string;
   company: string;
   email: string;
@@ -95,6 +96,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
   const [form, setForm] = useState<FormData>({
     name: client?.name || '',
     clientId: client?.clientId || '',
+    clientUin: client?.clientUin || '',
     clientPassword: client?.clientPassword || '',
     company: client?.company || '',
     email: client?.email || '',
@@ -265,6 +267,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
       addClient({
         name: form.name.trim(),
         clientId: form.clientId.trim() || undefined,
+        clientUin: form.clientUin.trim() || undefined,
         clientPassword: form.clientPassword.trim() || undefined,
         company: form.company.trim() || undefined,
         email: form.email.trim() || undefined,
@@ -285,6 +288,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
       updateClient(client!.id, {
         name: form.name.trim(),
         clientId: form.clientId.trim() || undefined,
+        clientUin: form.clientUin.trim() || undefined,
         clientPassword: form.clientPassword.trim() || undefined,
         company: form.company.trim() || undefined,
         email: form.email.trim() || undefined,
@@ -310,6 +314,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
         <div className={styles.grid}>
           <Field label="Full Name *" id="name" value={form.name} onChange={(v) => set('name', v)} placeholder="e.g. Rahul Sharma" />
           <Field label="Client ID" id="clientId" value={form.clientId} onChange={(v) => set('clientId', v)} placeholder="e.g. UKA-101" />
+          <Field label="Client UIN" id="clientUin" value={form.clientUin} onChange={(v) => set('clientUin', v)} placeholder="e.g. UKA-UIN-XYZ" />
           <Field label="Client Password" id="clientPassword" value={form.clientPassword} onChange={(v) => set('clientPassword', v)} placeholder="e.g. securePass123" />
           <Field label="Company / Brand" id="company" value={form.company} onChange={(v) => set('company', v)} placeholder="e.g. Ktech Studios" />
           <Field label="Email" id="email" type="email" value={form.email} onChange={(v) => set('email', v)} placeholder="rahul@example.com" />

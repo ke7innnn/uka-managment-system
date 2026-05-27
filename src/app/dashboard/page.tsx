@@ -195,8 +195,13 @@ export default function DashboardHome() {
                       <span className={styles.clientName}>
                         {client.name}
                         {client.clientId && (
-                          <span style={{ fontSize: '0.65rem', color: 'var(--accent-light)', fontWeight: 600, marginLeft: '0.5rem', background: 'rgba(255, 255, 255, 0.08)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                            {client.clientId}
+                          <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 600, marginLeft: '0.5rem', background: 'rgba(255, 255, 255, 0.08)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                            ID: {client.clientId}
+                          </span>
+                        )}
+                        {client.clientUin && (
+                          <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontWeight: 700, marginLeft: '0.5rem', background: 'rgba(200, 169, 110, 0.08)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(200, 169, 110, 0.2)' }}>
+                            UIN: {client.clientUin}
                           </span>
                         )}
                       </span>

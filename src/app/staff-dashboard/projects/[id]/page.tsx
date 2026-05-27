@@ -735,7 +735,24 @@ export default function ClientDetailPage() {
                     letterSpacing: '0.05em',
                   }}
                 >
-                  {client.clientId}
+                  ID: {client.clientId}
+                </span>
+              )}
+              {client.clientUin && (
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '4px',
+                    backgroundColor: 'rgba(200, 169, 110, 0.1)',
+                    border: '1px solid rgba(200, 169, 110, 0.2)',
+                    color: 'var(--accent)',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  UIN: {client.clientUin}
                 </span>
               )}
             </div>

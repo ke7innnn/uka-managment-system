@@ -111,6 +111,11 @@ export default function ClientsPage() {
                               ID: {client.clientId}
                             </span>
                           )}
+                          {client.clientUin && (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>
+                              UIN: {client.clientUin}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </td>

@@ -116,6 +116,7 @@ export interface KycData {
 export interface Client {
   id: string;
   clientId?: string;      // Custom user-facing Client ID (e.g. UKA-101)
+  clientUin?: string;     // Unique Identification Number
   clientPassword?: string;
   name: string;
   company?: string;

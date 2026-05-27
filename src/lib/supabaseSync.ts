@@ -34,6 +34,7 @@ export async function pullFromSupabase() {
     const supabaseClients: Client[] = (clientsData || []).map((c: any) => ({
       id: c.id,
       clientId: c.client_id || '',
+      clientUin: c.kyc?.clientUin || '',
       name: c.name,
       company: c.company || '',
       email: c.email || '',
@@ -292,7 +293,11 @@ export async function pushClientsToSupabase(clients: Client[]) {
 
   const clientRows = clients.map(c => {
     const remoteKyc = existingMap.get(c.id);
-    const safeKyc = restoreStrippedBase64(c.kyc, remoteKyc);
+    const kycWithUin = {
+      ...(c.kyc || {}),
+      clientUin: c.clientUin || ''
+    };
+    const safeKyc = restoreStrippedBase64(kycWithUin, remoteKyc);
 
     return {
       id: c.id,

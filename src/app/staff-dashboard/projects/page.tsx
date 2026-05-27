@@ -47,6 +47,23 @@ export default function StaffProjectsPage() {
       <div className={styles.projectGrid}>
         {clients.map((client) => (
           <div key={client.id} className={`glass-panel ${styles.projectCard}`}>
+            {client.clientUin && (
+              <div style={{
+                fontSize: '0.65rem',
+                fontWeight: 800,
+                color: 'var(--accent)',
+                backgroundColor: 'rgba(200, 169, 110, 0.08)',
+                border: '1px solid rgba(200, 169, 110, 0.2)',
+                borderRadius: '4px',
+                padding: '3px 8px',
+                width: 'fit-content',
+                marginBottom: '0.75rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                UIN: {client.clientUin}
+              </div>
+            )}
             <div className={styles.cardTopHeader}>
               <div className={styles.projAvatarCircle}>{client.name.charAt(0).toUpperCase()}</div>
               <div className={styles.projCardInfo}>

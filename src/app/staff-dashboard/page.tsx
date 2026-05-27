@@ -15,6 +15,7 @@ interface AssignedStage {
   clientId: string;
   clientName: string;
   projectName?: string;
+  clientUin?: string;
   phaseId: string;
   phaseName: string;
   status: 'not-started' | 'in-progress';
@@ -55,6 +56,7 @@ export default function StaffDashboardHome() {
                   clientId: client.id,
                   clientName: client.name,
                   projectName: client.projectName,
+                  clientUin: client.clientUin,
                   phaseId: phase.id,
                   phaseName: phase.name,
                   status: phase.status,
@@ -301,6 +303,23 @@ export default function StaffDashboardHome() {
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                         <div>
+                          {stage.clientUin && (
+                            <div style={{
+                              fontSize: '0.65rem',
+                              fontWeight: 800,
+                              color: 'var(--accent)',
+                              backgroundColor: 'rgba(200, 169, 110, 0.08)',
+                              border: '1px solid rgba(200, 169, 110, 0.2)',
+                              borderRadius: '4px',
+                              padding: '2px 6px',
+                              width: 'fit-content',
+                              marginBottom: '6px',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em'
+                            }}>
+                              UIN: {stage.clientUin}
+                            </div>
+                          )}
                           <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
                             {stage.clientName}
                           </h4>
