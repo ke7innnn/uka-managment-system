@@ -166,9 +166,9 @@ export default function ClientDetailPage() {
 
   const renderHealthStatus = (docId: string) => {
     const status = documentHealth[docId];
-    if (status === 'loading') return <Loader2 size={12} className="animate-spin text-muted" style={{ marginLeft: 6, opacity: 0.5, display: 'inline-block', verticalAlign: 'middle' }} title="Checking file status..." />;
-    if (status === 'healthy') return <CheckCircle2 size={12} style={{ color: '#10b981', marginLeft: 6, display: 'inline-block', verticalAlign: 'middle' }} title="File is properly uploaded and available" />;
-    if (status === 'broken') return <AlertCircle size={12} style={{ color: '#ef4444', marginLeft: 6, display: 'inline-block', verticalAlign: 'middle' }} title="File is missing from server! You may need to re-upload." />;
+    if (status === 'loading') return <span title="Checking file status..."><Loader2 size={12} className="animate-spin text-muted" style={{ marginLeft: 6, opacity: 0.5, display: 'inline-block', verticalAlign: 'middle' }} /></span>;
+    if (status === 'healthy') return <span title="File is properly uploaded and available"><CheckCircle2 size={12} style={{ color: '#10b981', marginLeft: 6, display: 'inline-block', verticalAlign: 'middle' }} /></span>;
+    if (status === 'broken') return <span title="File is missing from server! You may need to re-upload."><AlertCircle size={12} style={{ color: '#ef4444', marginLeft: 6, display: 'inline-block', verticalAlign: 'middle' }} /></span>;
     return null;
   };
 
