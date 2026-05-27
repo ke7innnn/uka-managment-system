@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { pullFromSupabase } from '@/lib/supabaseSync';
+import { getClients } from '@/lib/store';
+import { processReminders } from '@/lib/reminders';
 
 /**
  * SupabaseSyncProvider
@@ -26,12 +28,17 @@ export default function SupabaseSyncProvider({ children }: { children: React.Rea
     pullFromSupabase().then((success) => {
       if (success) {
         window.dispatchEvent(new Event('storage'));
+        // Fire initial reminder check immediately upon loading fresh data
+        processReminders(getClients());
       }
     });
 
     // PWA App Badge Notification Sync
     let lastPendingCount = -1;
     const updateAppBadge = () => {
+      // Run the stateless reminder engine in the background
+      processReminders(getClients());
+
       if (typeof navigator !== 'undefined') {
         try {
           const staffId = localStorage.getItem('uka_staff_auth');
