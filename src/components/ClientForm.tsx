@@ -248,7 +248,6 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
       use: form.use,
       noOfBldgs: form.noOfBldgs,
       floor: form.floor,
-      subSecondary: form.subSecondary,
       pLine: form.pLine,
       architect: form.architect,
       structuralEngName: form.structuralEngName,
