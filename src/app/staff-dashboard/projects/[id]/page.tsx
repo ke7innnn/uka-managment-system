@@ -889,6 +889,31 @@ export default function ClientDetailPage() {
                   </div>
                 </div>
               )}
+              {/* Client References Section */}
+              {client.kyc.references && client.kyc.references.length > 0 && (
+                <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1rem' }}>Client References</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
+                    {client.kyc.references.map((ref: any, idx: number) => (
+                      <div key={ref.id || idx} style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '1rem', background: 'rgba(255, 255, 255, 0.01)' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#10b981', marginBottom: '0.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.25rem' }}>
+                          Reference #{idx + 1}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.8rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Name:</span>
+                            <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{ref.name || '—'}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Phone Number:</span>
+                            <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{ref.phone || '—'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {client.tags && client.tags.length > 0 && (

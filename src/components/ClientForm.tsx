@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Client, addClient, updateClient, OtherOwner } from '@/lib/store';
+import { Client, addClient, updateClient, OtherOwner, ClientReference } from '@/lib/store';
 import { FileText, Image as ImageIcon, Eye, Download, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './ClientForm.module.css';
@@ -171,6 +171,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
     clientPanPhoto: client?.kyc?.clientPanPhoto || '',
   });
   const [otherOwners, setOtherOwners] = useState<OtherOwner[]>(client?.kyc?.otherOwners || []);
+  const [references, setReferences] = useState<ClientReference[]>(client?.kyc?.references || []);
   const [error, setError] = useState('');
 
   const set = (field: keyof FormData, value: string) =>
@@ -260,6 +261,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
       clientPanNo: form.clientPanNo,
       clientPanPhoto: form.clientPanPhoto,
       otherOwners: otherOwners,
+      references: references,
     };
 
     if (mode === 'new') {
@@ -481,6 +483,101 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
             }}
           >
             + Add Other Owner
+          </button>
+        </div>
+      </Section>
+
+      <Section title="Client References (If Applicable)">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {references.map((ref, idx) => (
+            <div key={ref.id} style={{
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              padding: '1.5rem',
+              background: 'rgba(255, 255, 255, 0.01)',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#10b981' }}>Reference #{idx + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReferences((prev) => prev.filter((r) => r.id !== ref.id));
+                  }}
+                  style={{
+                    padding: '4px 10px',
+                    background: '#ef4444',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  Remove Reference
+                </button>
+              </div>
+              <div className={styles.grid}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label}>Reference Name</label>
+                  <input
+                    type="text"
+                    value={ref.name}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      setReferences((prev) => prev.map((r) => r.id === ref.id ? { ...r, name } : r));
+                    }}
+                    placeholder="Reference's Full Name"
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label}>Reference Number</label>
+                  <input
+                    type="tel"
+                    value={ref.phone}
+                    onChange={(e) => {
+                      const phone = e.target.value;
+                      setReferences((prev) => prev.map((r) => r.id === ref.id ? { ...r, phone } : r));
+                    }}
+                    placeholder="Reference's Contact Number"
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          <button
+            type="button"
+            onClick={() => {
+              setReferences((prev) => [
+                ...prev,
+                {
+                  id: crypto.randomUUID(),
+                  name: '',
+                  phone: ''
+                }
+              ]);
+            }}
+            style={{
+              padding: '10px 16px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px dashed var(--border)',
+              borderRadius: '6px',
+              color: 'var(--text-main)',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            + Add Extra Reference
           </button>
         </div>
       </Section>

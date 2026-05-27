@@ -43,6 +43,12 @@ export interface OtherOwner {
   panPhoto: string; // Base64
 }
 
+export interface ClientReference {
+  id: string;
+  name: string;
+  phone: string;
+}
+
 export interface KycData {
   proposedSub?: string;
   proposedDevelopment?: string; // RESIDENTIAL CUM SHOPLINE / COMMERCIAL / RESIDENTIAL / INDUSTRIAL
@@ -70,6 +76,7 @@ export interface KycData {
   clientPanNo?: string;
   clientPanPhoto?: string;
   otherOwners?: OtherOwner[];
+  references?: ClientReference[];
   northPhoto?: string;
   northDetails?: string;
   southPhoto?: string;
