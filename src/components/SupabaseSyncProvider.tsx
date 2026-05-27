@@ -15,6 +15,10 @@ import { processReminders } from '@/lib/reminders';
  * After the initial pull it listens for the 'uka-sync-complete' event
  * (fired by pullFromSupabase) and does nothing — writes are already
  * handled by the write-through cache in store.ts.
+ *
+ * REMINDERS: processReminders() is only called ONCE after the initial
+ * Supabase pull. The function itself is debounced to max once per 30 min
+ * and has a strict 24h gate per alert — so it is safe and won't spam.
  */
 export default function SupabaseSyncProvider({ children }: { children: React.ReactNode }) {
   const didSync = useRef(false);
@@ -28,17 +32,17 @@ export default function SupabaseSyncProvider({ children }: { children: React.Rea
     pullFromSupabase().then((success) => {
       if (success) {
         window.dispatchEvent(new Event('storage'));
-        // Fire initial reminder check immediately upon loading fresh data
+        // Fire reminder check ONCE after loading fresh data.
+        // The debounce inside processReminders prevents this from re-running
+        // more than once per 30 minutes across the whole session.
         processReminders(getClients());
       }
     });
 
-    // PWA App Badge Notification Sync
+    // PWA App Badge Notification Sync — ONLY manages the app icon badge count.
+    // Does NOT call processReminders (that would cause alert spam on every 30s tick).
     let lastPendingCount = -1;
     const updateAppBadge = () => {
-      // Run the stateless reminder engine in the background
-      processReminders(getClients());
-
       if (typeof navigator !== 'undefined') {
         try {
           const staffId = localStorage.getItem('uka_staff_auth');
@@ -89,12 +93,10 @@ export default function SupabaseSyncProvider({ children }: { children: React.Rea
     };
 
     updateAppBadge();
-    const interval = setInterval(updateAppBadge, 30000); // Check every 30s
-    window.addEventListener('storage', updateAppBadge);
+    const interval = setInterval(updateAppBadge, 30000); // Check badge every 30s (no reminder logic here)
     
     return () => {
       clearInterval(interval);
-      window.removeEventListener('storage', updateAppBadge);
     };
   }, []);
 

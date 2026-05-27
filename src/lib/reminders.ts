@@ -3,10 +3,22 @@
  *
  * This engine calculates required reminders on the fly by comparing 
  * phase startedAt / timeBound against the current time, and checks 
- * if the calculated alert template was already sent. 
+ * if the calculated alert template was already sent.
+ *
+ * IMPORTANT — Anti-spam rules:
+ *  1. ALL alerts (including stage-start) require at least 24 hours since the
+ *     last alert for the same client+stage before a new one can fire.
+ *  2. processReminders() is debounced at module level — no matter how many times
+ *     reload() or the sync interval calls it, the actual check only runs once
+ *     every 30 minutes. This prevents 1h/2h/4h spam from frequent page actions.
+ *  3. Reminders ONLY go to Inbox / Performance Alerts — NEVER to workspace chat.
  */
 
-import { Client, Phase, addAlert, addWorkspaceMessage, getAlerts } from './store';
+import { Client, Phase, addAlert, getAlerts } from './store';
+
+// Module-level debounce: track the last time we actually ran the logic.
+let _lastProcessedAt = 0;
+const PROCESS_DEBOUNCE_MS = 30 * 60 * 1000; // 30 minutes minimum between runs
 
 // We no longer use local storage schedules. Legacy functions are kept as empty stubs so they don't break imports.
 export function initStageReminders(client: Client, phase: Phase): void {}
@@ -19,6 +31,15 @@ export function clearStageReminders(stageId: string, clientId: string): void {}
  */
 export function processReminders(clients: Client[]): void {
   if (typeof window === 'undefined') return;
+
+  // ── MODULE-LEVEL DEBOUNCE ──────────────────────────────────────────────────
+  // No matter how many times reload() or setInterval calls this function,
+  // only actually run the check logic once every 30 minutes maximum.
+  const nowMs = Date.now();
+  if (nowMs - _lastProcessedAt < PROCESS_DEBOUNCE_MS) return;
+  _lastProcessedAt = nowMs;
+  // ──────────────────────────────────────────────────────────────────────────
+
   const now = new Date();
   const allAlerts = getAlerts();
 
@@ -39,10 +60,13 @@ export function processReminders(clients: Client[]): void {
         ? Math.max(...sentAlerts.map(a => new Date(a.createdAt).getTime()))
         : 0;
 
-      // Ensure at least 24 hours between ANY automated messages to avoid spamming
-      // (Unless it's the very first stage-start message)
+      // ── STRICT 24-HOUR GATE — applies to ALL templates including stage-start ──
+      // No alert of any kind fires unless at least 23.5 hours have passed since
+      // the last alert for this client+stage (or it is the very first ever alert).
       const hoursSinceLastAlert = (now.getTime() - lastAlertTime) / (1000 * 60 * 60);
-      const canSendAlert = hoursSinceLastAlert >= 23.5; // giving 30 mins buffer
+      const canSendAlert = lastAlertTime === 0 || hoursSinceLastAlert >= 23.5;
+
+      if (!canSendAlert) return; // Always wait 24h before ANY alert
 
       const startDate = phase.startedAt ? new Date(phase.startedAt) : null;
       const deadlineDate = phase.timeBound ? new Date(phase.timeBound + 'T23:59:59') : null;
@@ -54,7 +78,7 @@ export function processReminders(clients: Client[]): void {
         return;
       }
 
-      if (!canSendAlert) return; // Wait 24h before escalating further
+      if (!canSendAlert) return; // Redundant safety guard
 
       // ── 2. PRE-DEADLINE 24H WARNING ──
       if (deadlineDate && now.getTime() < deadlineDate.getTime()) {
