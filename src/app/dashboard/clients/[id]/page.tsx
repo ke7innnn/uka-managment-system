@@ -217,6 +217,7 @@ export default function ClientDetailPage() {
             const fullClient: Client = {
               id: data.id,
               clientId: data.client_id || '',
+              clientUin: data.kyc?.clientUin || '',
               name: data.name,
               company: data.company || '',
               email: data.email || '',
