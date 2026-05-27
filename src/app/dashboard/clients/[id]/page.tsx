@@ -272,7 +272,7 @@ export default function ClientDetailPage() {
                 timeBound: p.time_bound || undefined,
                 startedAt: p.started_at || undefined,
                 tasks: typeof p.tasks === 'string' ? JSON.parse(p.tasks) : (p.tasks || [])
-              })),
+              })).sort((a: any, b: any) => a.order - b.order),
               documents: (localClient?.syncStatus === 'pending' && localClient?.documents) ? localClient.documents : (data.documents || []).map((d: any) => ({
                 id: d.id, name: d.name, url: d.url, uploadedAt: d.uploaded_at,
                 type: d.type || 'unknown', size: d.size || 0, uploadedBy: d.uploaded_by || '',
