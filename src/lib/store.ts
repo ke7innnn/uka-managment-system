@@ -314,10 +314,49 @@ export function getClients(): Client[] {
         clientMigrated = true;
       }
 
-      // Filter to keep only valid checklist IDs (1-71 and 'MIGRATED_V2')
+      // MIGRATION V3
+      // Covers splitting of items 6, 14, and 16-21 into more detailed items
+      if (!isChecklistMigrated || !originalChecklist.includes("MIGRATED_V3")) {
+        const V2_TO_V3_MAP: Record<string, string[]> = {
+          "1": ["1"], "2": ["2"], "3": ["3"], "4": ["4"], "5": ["5"],
+          "6": ["6", "7"],
+          "7": ["8"], "8": ["9"], "9": ["10"], "10": ["11"], "11": ["12"], "12": ["13"], "13": ["14"],
+          "14": ["15", "16"],
+          "15": ["17"],
+          "16": ["18", "19"], 
+          "17": ["18", "20"],
+          "18": ["18", "21"],
+          "19": ["18", "22"],
+          "20": ["18", "23"],
+          "21": ["18", "24"]
+        };
+        for(let i=22; i<=71; i++) {
+          V2_TO_V3_MAP[i.toString()] = [(i + 3).toString()];
+        }
+
+        let newChecklist: string[] = [];
+        uniqueMigratedChecklist.forEach(id => {
+          if (id === "MIGRATED_V2" || id === "MIGRATED_V3") return;
+          const isNA = id.endsWith("-NA");
+          const baseId = isNA ? id.replace("-NA", "") : id;
+
+          const mappedIds = V2_TO_V3_MAP[baseId];
+          if (mappedIds) {
+            mappedIds.forEach(mId => newChecklist.push(isNA ? `${mId}-NA` : mId));
+          } else {
+            newChecklist.push(id);
+          }
+        });
+
+        uniqueMigratedChecklist = [...new Set([...newChecklist, "MIGRATED_V2", "MIGRATED_V3"])];
+        clientMigrated = true;
+      }
+
+      // Filter to keep only valid checklist IDs
       const VALID_IDS = new Set([
         ...PROGRESS_CHECKLIST_ITEMS.map(item => item.id),
-        "MIGRATED_V2"
+        "MIGRATED_V2",
+        "MIGRATED_V3"
       ]);
       uniqueMigratedChecklist = uniqueMigratedChecklist.filter(id => 
         VALID_IDS.has(id) || (id.endsWith('-NA') && VALID_IDS.has(id.replace('-NA', '')))
@@ -952,72 +991,75 @@ export const PROGRESS_CHECKLIST_ITEMS = [
   { id: "3",  label: "PIKPANI (1952 TILL DATE)" },
   { id: "4",  label: "8A EXTRACT" },
   { id: "5",  label: "ADVOCATE TITLE SEARCH REPORT FROM 1952 TILL DATE WITH RECEIPT" },
-  { id: "6",  label: "NO CLAIMS ON LAND TITLE & POSSESSION AFTER ISSUING PAPER NOTICE" },
-  { id: "7",  label: "SALE PERMISSION IF APPLICABLE" },
-  { id: "8",  label: "NA ORDER / LAND CONVERSION WITH RECEIPT" },
-  { id: "9",  label: "GAON NAKASHA" },
-  { id: "10", label: "GAVTHAN CERTIFICATION (IF APPLICABLE)" },
-  { id: "11", label: "PHYSICAL & LEVEL SURVEY WITH 100MT SURROUNDING" },
-  { id: "12", label: "GOOGLE LOCATION & SITE PHOTOS" },
-  { id: "13", label: "COPY OF LATEST RR RATE" },
-  { id: "14", label: "GUTBOOK, TILR MAP WITH RECEIPT / CTS SKETCH WITH RECEIPT" },
-  { id: "15", label: "SOCIETY REGISTRATION CERTIFICATE" },
-  { id: "16", label: "INDIVIDUAL CONSENTS / MOU OF ALL MEMBERS (INDIVIDUAL / COMBINED) NOTARIZED WITH GHARPATTI" },
-  { id: "17", label: "INDIVIDUAL CONSENTS / MOU OF ALL MEMBERS (INDIVIDUAL / COMBINED) NOTARIZED WITH ASSESSMENT" },
-  { id: "18", label: "INDIVIDUAL CONSENTS / MOU OF ALL MEMBERS (INDIVIDUAL / COMBINED) NOTARIZED WITH SHARE CERTIFICATE" },
-  { id: "19", label: "INDIVIDUAL CONSENTS / MOU OF ALL MEMBERS (INDIVIDUAL / COMBINED) NOTARIZED WITH LIGHT BILL" },
-  { id: "20", label: "INDIVIDUAL CONSENTS / MOU OF ALL MEMBERS (INDIVIDUAL / COMBINED) NOTARIZED WITH PAN CARDS" },
-  { id: "21", label: "INDIVIDUAL CONSENTS / MOU OF ALL MEMBERS (INDIVIDUAL / COMBINED) NOTARIZED WITH AADHAR CARDS" },
-  { id: "22", label: "LIST OF ALL MEMBERS WITH FLATS NUMBERS & AREAS STAMPED & SIGNED BY CHAIRMAN, SECRETARY" },
-  { id: "23", label: "SECTION 79 A REDEVELOPMENT RESOLUTION OF SOC" },
-  { id: "24", label: "SECTION 79 A SUB REGISTER NOC" },
-  { id: "25", label: "SOCIETY RESOLUTION FOR CHAIRMAN, SECRETARY APPOINTMENT" },
-  { id: "26", label: "DILAPIDATED NOTICE FROM VVCMC (C1 NOTICE)" },
-  { id: "27", label: "DEV. AGREEMENT (REGISTERED)" },
-  { id: "28", label: "POWER (REGISTERED)" },
-  { id: "29", label: "PARTNERSHIP DEED / SIGNING AUTHORIZATION OF FIRM (REGISTERED) / PVT. LTD. FIRM" },
-  { id: "30", label: "FIRM PAN CARD" },
-  { id: "31", label: "NO DUES LETTER FROM VVCMC WARD OFFICE FOR REDEVELOPMENT PROPOSAL" },
-  { id: "32", label: "OLD APPROVAL" },
-  { id: "33", label: "AS BUILT FLOOR & ROOM SIZE SURVEY" },
-  { id: "34", label: "RESOLUTION FOR JOINT SOCIETY" },
-  { id: "35", label: "ALL AFFIDAVIT: SIGN/PHOTO IS REMAINING" },
-  { id: "36", label: "SOCIETY RESOLUTION FOR CHAIRMAN, SECRETARY AUTHORIZATION TO SIGN THE D.A/P.O.A" },
-  { id: "37", label: "ALL XEROX PAPER TRUE COPY" },
-  { id: "38", label: "APPOINTMENT LETTER OF ARCHITECT IN FAVOUR OF UMESH KEKRE & ASSOCIATES" },
-  { id: "39", label: "500 ₹ STAMP PAPERS (16 TYPES: SITE ENGINEER, ADJOINING FLAT, INDEMNITY BOND, SEWAGE, TENANT BAND PATR, UNDERTAKING 100, PRATIDNYA-PATRA 7/12, TREE PRATIDNYA, BAND-PATRA, GREEN ZONE, EWS)" },
-  { id: "40", label: "ZONE REMARK" },
-  { id: "41", label: "CLIENT PHOTOS" },
-  { id: "42", label: "CLIENT KYC" },
-  { id: "43", label: "CLIENT ID / PASSWORD" },
-  { id: "44", label: "CLIENT DIGITAL SIGNATURE (DSC)" },
-  { id: "45", label: "OTP BASED CLIENT MOBILE NUMBER" },
-  { id: "46", label: "PERMISSION TYPE (CC / RDP / OC)" },
-  { id: "47", label: "SCHEME (REDEVELOPMENT / EWS)" },
-  { id: "48", label: "APPENDIX - A1" },
-  { id: "49", label: "APPENDIX - B" },
-  { id: "50", label: "RAILWAY NOC (IF REQUIRED)" },
-  { id: "51", label: "ARCHITECT APPOINTMENT / ENGINEER APPOINTMENT" },
-  { id: "52", label: "STRUCTURAL APPOINTMENT" },
-  { id: "53", label: "STRUCTURAL STABILITY" },
-  { id: "54", label: "RECEIPT" },
-  { id: "55", label: "EE REPORT" },
-  { id: "56", label: "DP" },
-  { id: "57", label: "PROVISIONAL TREE NOC" },
-  { id: "58", label: "PROVISIONAL FIRE NOC" },
-  { id: "59", label: "LEVEL SURVEY" },
-  { id: "60", label: "PHYSICAL SURVEY" },
-  { id: "61", label: "REPORT & DRAWING" },
-  { id: "62", label: "BLUE BOARD" },
-  { id: "63", label: "HARDSHIP REPORT" },
-  { id: "64", label: "LAYOUT" },
-  { id: "65", label: "ANY SPECIFIC NOC IF APPLICABLE" },
-  { id: "66", label: "WORK STATUS REPORT" },
-  { id: "67", label: "MOEF CLEARANCE" },
-  { id: "68", label: "COPY OF LATEST RR RATE (CC/RDP)" },
-  { id: "69", label: "RIGHT OF WAY REGISTERED AGREEMENT" },
-  { id: "70", label: "EC DRAWING WITH NOC" },
-  { id: "71", label: "TDR UTILISATION FORM" }
+  { id: "6",  label: "NO CLAIM" },
+  { id: "7",  label: "PAPER NOTICE" },
+  { id: "8",  label: "SALE PERMISSION IF APPLICABLE" },
+  { id: "9",  label: "NA ORDER / LAND CONVERSION WITH RECEIPT" },
+  { id: "10", label: "GAON NAKASHA" },
+  { id: "11", label: "GAVTHAN CERTIFICATION (IF APPLICABLE)" },
+  { id: "12", label: "PHYSICAL & LEVEL SURVEY WITH 100MT SURROUNDING" },
+  { id: "13", label: "GOOGLE LOCATION & SITE PHOTOS" },
+  { id: "14", label: "COPY OF LATEST RR RATE" },
+  { id: "15", label: "GUT BOOK" },
+  { id: "16", label: "TLR" },
+  { id: "17", label: "SOCIETY REGISTRATION CERTIFICATE" },
+  { id: "18", label: "INDIVIDUAL CONSENTS / MOU OF ALL MEMBERS (INDIVIDUAL / COMBINED) NOTARIZED" },
+  { id: "19", label: "GHARPATTI" },
+  { id: "20", label: "ASSESSMENT" },
+  { id: "21", label: "SHARE CERTIFICATE" },
+  { id: "22", label: "LIGHT BILL" },
+  { id: "23", label: "PAN CARDS" },
+  { id: "24", label: "AADHAR CARDS" },
+    { id: "25", label: "LIST OF ALL MEMBERS WITH FLATS NUMBERS & AREAS STAMPED & SIGNED BY CHAIRMAN, SECRETARY" },
+    { id: "26", label: "SECTION 79 A REDEVELOPMENT RESOLUTION OF SOC" },
+    { id: "27", label: "SECTION 79 A SUB REGISTER NOC" },
+    { id: "28", label: "SOCIETY RESOLUTION FOR CHAIRMAN, SECRETARY APPOINTMENT" },
+    { id: "29", label: "DILAPIDATED NOTICE FROM VVCMC (C1 NOTICE)" },
+    { id: "30", label: "DEV. AGREEMENT (REGISTERED)" },
+    { id: "31", label: "POWER (REGISTERED)" },
+    { id: "32", label: "PARTNERSHIP DEED / SIGNING AUTHORIZATION OF FIRM (REGISTERED) / PVT. LTD. FIRM" },
+    { id: "33", label: "FIRM PAN CARD" },
+    { id: "34", label: "NO DUES LETTER FROM VVCMC WARD OFFICE FOR REDEVELOPMENT PROPOSAL" },
+    { id: "35", label: "OLD APPROVAL" },
+    { id: "36", label: "AS BUILT FLOOR & ROOM SIZE SURVEY" },
+    { id: "37", label: "RESOLUTION FOR JOINT SOCIETY" },
+    { id: "38", label: "ALL AFFIDAVIT: SIGN/PHOTO IS REMAINING" },
+    { id: "39", label: "SOCIETY RESOLUTION FOR CHAIRMAN, SECRETARY AUTHORIZATION TO SIGN THE D.A/P.O.A" },
+    { id: "40", label: "ALL XEROX PAPER TRUE COPY" },
+    { id: "41", label: "APPOINTMENT LETTER OF ARCHITECT IN FAVOUR OF UMESH KEKRE & ASSOCIATES" },
+    { id: "42", label: "500 ₹ STAMP PAPERS (16 TYPES: SITE ENGINEER, ADJOINING FLAT, INDEMNITY BOND, SEWAGE, TENANT BAND PATR, UNDERTAKING 100, PRATIDNYA-PATRA 7/12, TREE PRATIDNYA, BAND-PATRA, GREEN ZONE, EWS)" },
+    { id: "43", label: "ZONE REMARK" },
+    { id: "44", label: "CLIENT PHOTOS" },
+    { id: "45", label: "CLIENT KYC" },
+    { id: "46", label: "CLIENT ID / PASSWORD" },
+    { id: "47", label: "CLIENT DIGITAL SIGNATURE (DSC)" },
+    { id: "48", label: "OTP BASED CLIENT MOBILE NUMBER" },
+    { id: "49", label: "PERMISSION TYPE (CC / RDP / OC)" },
+    { id: "50", label: "SCHEME (REDEVELOPMENT / EWS)" },
+    { id: "51", label: "APPENDIX - A1" },
+    { id: "52", label: "APPENDIX - B" },
+    { id: "53", label: "RAILWAY NOC (IF REQUIRED)" },
+    { id: "54", label: "ARCHITECT APPOINTMENT / ENGINEER APPOINTMENT" },
+    { id: "55", label: "STRUCTURAL APPOINTMENT" },
+    { id: "56", label: "STRUCTURAL STABILITY" },
+    { id: "57", label: "RECEIPT" },
+    { id: "58", label: "EE REPORT" },
+    { id: "59", label: "DP" },
+    { id: "60", label: "PROVISIONAL TREE NOC" },
+    { id: "61", label: "PROVISIONAL FIRE NOC" },
+    { id: "62", label: "LEVEL SURVEY" },
+    { id: "63", label: "PHYSICAL SURVEY" },
+    { id: "64", label: "REPORT & DRAWING" },
+    { id: "65", label: "BLUE BOARD" },
+    { id: "66", label: "HARDSHIP REPORT" },
+    { id: "67", label: "LAYOUT" },
+    { id: "68", label: "ANY SPECIFIC NOC IF APPLICABLE" },
+    { id: "69", label: "WORK STATUS REPORT" },
+    { id: "70", label: "MOEF CLEARANCE" },
+    { id: "71", label: "COPY OF LATEST RR RATE (CC/RDP)" },
+    { id: "72", label: "RIGHT OF WAY REGISTERED AGREEMENT" },
+    { id: "73", label: "EC DRAWING WITH NOC" },
+    { id: "74", label: "TDR UTILISATION FORM" }
 ];
 
 export const OC_CHECKLIST_ITEMS = [
