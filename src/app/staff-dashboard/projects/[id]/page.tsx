@@ -836,6 +836,7 @@ export default function ClientDetailPage() {
           <div className={styles.infoGrid}>
             <InfoItem label="Full Name" value={client.name} />
             {client.clientId && <InfoItem label="Client ID" value={client.clientId} />}
+            {client.clientUin && <InfoItem label="Client UIN" value={client.clientUin} />}
             <InfoItem label="Company" value={client.company} />
             <InfoItem label="Email" value={client.email} />
             <InfoItem label="Phone" value={client.phone} />
