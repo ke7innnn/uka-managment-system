@@ -268,7 +268,7 @@ export default function ClientDetailPage() {
                 startedAt: p.started_at || undefined,
                 tasks: typeof p.tasks === 'string' ? JSON.parse(p.tasks) : (p.tasks || [])
               })),
-              documents: (data.documents || []).map((d: any) => ({
+              documents: (localClient?.syncStatus === 'pending' && localClient?.documents) ? localClient.documents : (data.documents || []).map((d: any) => ({
                 id: d.id, name: d.name, url: d.url, uploadedAt: d.uploaded_at,
                 type: d.type || 'unknown', size: d.size || 0, uploadedBy: d.uploaded_by || '',
                 folder: d.folder || undefined, subfolder: d.subfolder || undefined
