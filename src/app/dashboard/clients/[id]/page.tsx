@@ -38,9 +38,37 @@ export default function ClientDetailPage() {
   const handleToggleChecklist = (itemId: string) => {
     if (!client) return;
     const current = client.progressChecklist || [];
-    const updated = current.includes(itemId)
-      ? current.filter(id => id !== itemId)
-      : [...current, itemId];
+    let updated = [...current];
+    
+    if (updated.includes(`${itemId}-NA`)) {
+      // If it was NA, remove NA
+      updated = updated.filter(id => id !== `${itemId}-NA`);
+    }
+
+    if (updated.includes(itemId)) {
+      updated = updated.filter(id => id !== itemId);
+    } else {
+      updated.push(itemId);
+    }
+    
+    updateClient(client.id, { progressChecklist: updated });
+    reload();
+  };
+
+  const handleToggleNA = (e: React.MouseEvent, itemId: string) => {
+    e.stopPropagation();
+    if (!client) return;
+    const current = client.progressChecklist || [];
+    let updated = [...current];
+    
+    if (updated.includes(`${itemId}-NA`)) {
+      // Remove NA
+      updated = updated.filter(id => id !== `${itemId}-NA`);
+    } else {
+      // Set to NA (remove completed if it was)
+      updated = updated.filter(id => id !== itemId);
+      updated.push(`${itemId}-NA`);
+    }
     
     updateClient(client.id, { progressChecklist: updated });
     reload();
@@ -66,9 +94,34 @@ export default function ClientDetailPage() {
   const handleToggleOcChecklist = (itemId: string) => {
     if (!client) return;
     const current = client.ocChecklist || [];
-    const updated = current.includes(itemId)
-      ? current.filter(id => id !== itemId)
-      : [...current, itemId];
+    let updated = [...current];
+
+    if (updated.includes(`${itemId}-NA`)) {
+      updated = updated.filter(id => id !== `${itemId}-NA`);
+    }
+
+    if (updated.includes(itemId)) {
+      updated = updated.filter(id => id !== itemId);
+    } else {
+      updated.push(itemId);
+    }
+    
+    updateClient(client.id, { ocChecklist: updated });
+    reload();
+  };
+
+  const handleToggleOcNA = (e: React.MouseEvent, itemId: string) => {
+    e.stopPropagation();
+    if (!client) return;
+    const current = client.ocChecklist || [];
+    let updated = [...current];
+
+    if (updated.includes(`${itemId}-NA`)) {
+      updated = updated.filter(id => id !== `${itemId}-NA`);
+    } else {
+      updated = updated.filter(id => id !== itemId);
+      updated.push(`${itemId}-NA`);
+    }
     
     updateClient(client.id, { ocChecklist: updated });
     reload();
@@ -751,14 +804,14 @@ export default function ClientDetailPage() {
             {tab === 'ccrdp' && client.documents.filter(d => d.folder?.startsWith('ccrdp-')).length > 0 && (
               <span className={styles.tabCount}>{client.documents.filter(d => d.folder?.startsWith('ccrdp-')).length}</span>
             )}
-            {tab === 'progress' && (client.progressChecklist || []).length > 0 && (
+            {tab === 'progress' && (client.progressChecklist || []).filter(id => !id.endsWith('-NA')).length > 0 && (
               <span className={styles.tabCount} style={{ background: '#25d366', color: '#fff', border: 'none' }}>
-                {(client.progressChecklist || []).length}
+                {(client.progressChecklist || []).filter(id => !id.endsWith('-NA')).length}
               </span>
             )}
-            {tab === 'oc' && (client.ocChecklist || []).length > 0 && (
+            {tab === 'oc' && (client.ocChecklist || []).filter(id => !id.endsWith('-NA')).length > 0 && (
               <span className={styles.tabCount} style={{ background: '#25d366', color: '#fff', border: 'none' }}>
-                {(client.ocChecklist || []).length}
+                {(client.ocChecklist || []).filter(id => !id.endsWith('-NA')).length}
               </span>
             )}
           </button>
@@ -1005,25 +1058,33 @@ export default function ClientDetailPage() {
             )}
 
             {/* Checklist Progress Bar */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
-                <span>Document Gathering & Verification Progress</span>
-                <span>
-                  {Math.round(((client.progressChecklist || []).length / PROGRESS_CHECKLIST_ITEMS.length) * 100)}%
-                </span>
-              </div>
-              <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%',
-                  background: 'linear-gradient(90deg, #25d366, #128c7e)',
-                  width: `${Math.round(((client.progressChecklist || []).length / PROGRESS_CHECKLIST_ITEMS.length) * 100)}%`,
-                  transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                }} />
-              </div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
-                {(client.progressChecklist || []).length} of {PROGRESS_CHECKLIST_ITEMS.length} documents collected and verified.
-              </p>
-            </div>
+            {(() => {
+              const progressItems = client.progressChecklist || [];
+              const naCount = progressItems.filter(id => id.endsWith('-NA')).length;
+              const completedCount = progressItems.filter(id => !id.endsWith('-NA') && id !== 'MIGRATED_V2').length;
+              const totalApplicable = PROGRESS_CHECKLIST_ITEMS.length - naCount;
+              const progressPct = totalApplicable > 0 ? Math.round((completedCount / totalApplicable) * 100) : 0;
+              
+              return (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                    <span>Document Gathering & Verification Progress</span>
+                    <span>{progressPct}%</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #25d366, #128c7e)',
+                      width: `${progressPct}%`,
+                      transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }} />
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                    {completedCount} of {totalApplicable} applicable documents collected and verified ({naCount} NA).
+                  </p>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Search & Filter Row */}
@@ -1092,64 +1153,89 @@ export default function ClientDetailPage() {
               if (filteredItems.length === 0) return null;
 
               const completedInGroup = filteredItems.filter(item => (client.progressChecklist || []).includes(item.id)).length;
+              const applicableInGroup = filteredItems.filter(item => !(client.progressChecklist || []).includes(`${item.id}-NA`)).length;
 
               return (
                 <div key={grpIdx} className={styles.checklistGroup}>
                   <div className={styles.groupHeader}>
                     <span>{grp.title}</span>
                     <span className={styles.groupCountBadge}>
-                      {completedInGroup} / {filteredItems.length} Done
+                      {completedInGroup} / {applicableInGroup} Done
                     </span>
                   </div>
 
                   <div className={styles.checklistGrid}>
                     {filteredItems.map(item => {
                       const isChecked = (client.progressChecklist || []).includes(item.id);
+                      const isNA = (client.progressChecklist || []).includes(`${item.id}-NA`);
                       return (
                         <div
                           key={item.id}
                           onClick={() => handleToggleChecklist(item.id)}
-                          className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''}`}
+                          className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''} ${isNA ? styles.checkItemNA : ''}`}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '1rem',
+                            justifyContent: 'space-between',
                             padding: '0.85rem 1.25rem',
-                            background: isChecked ? 'rgba(37, 211, 102, 0.04)' : 'rgba(255, 255, 255, 0.01)',
+                            background: isChecked ? 'rgba(37, 211, 102, 0.04)' : isNA ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.01)',
                             border: '1px solid var(--border)',
-                            borderColor: isChecked ? 'rgba(37, 211, 102, 0.2)' : 'var(--border)',
+                            borderColor: isChecked ? 'rgba(37, 211, 102, 0.2)' : isNA ? 'transparent' : 'var(--border)',
                             borderRadius: '8px',
                             cursor: 'pointer',
-                            transition: 'all 0.15s ease'
+                            transition: 'all 0.15s ease',
+                            opacity: isNA ? 0.6 : 1
                           }}
                         >
-                          <div style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '4px',
-                            border: '2px solid',
-                            borderColor: isChecked ? '#25d366' : 'var(--text-tertiary)',
-                            background: isChecked ? '#25d366' : 'transparent',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#fff',
-                            flexShrink: 0
-                          }}>
-                            {isChecked && <Check size={14} strokeWidth={3} />}
-                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '4px',
+                              border: '2px solid',
+                              borderColor: isChecked ? '#25d366' : isNA ? 'var(--text-muted)' : 'var(--text-tertiary)',
+                              background: isChecked ? '#25d366' : 'transparent',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              flexShrink: 0
+                            }}>
+                              {isChecked && <Check size={14} strokeWidth={3} />}
+                              {isNA && <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 800 }}>-</span>}
+                            </div>
 
-                          <div style={{
-                            fontSize: '0.9rem',
-                            color: isChecked ? 'var(--text-main)' : 'var(--text-secondary)',
-                            fontWeight: 500,
-                            lineHeight: 1.4
-                          }}>
-                            <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
-                              {item.id}.
-                            </span>
-                            {item.label}
+                            <div style={{
+                              fontSize: '0.9rem',
+                              color: isChecked ? 'var(--text-main)' : isNA ? 'var(--text-muted)' : 'var(--text-secondary)',
+                              fontWeight: 500,
+                              lineHeight: 1.4,
+                              textDecoration: isNA ? 'line-through' : 'none'
+                            }}>
+                              <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
+                                {item.id}.
+                              </span>
+                              {item.label}
+                            </div>
                           </div>
+                          
+                          <button
+                            onClick={(e) => handleToggleNA(e, item.id)}
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              borderRadius: '4px',
+                              background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                              color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                              border: '1px solid',
+                              borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            NA
+                          </button>
                         </div>
                       );
                     })}
@@ -1200,25 +1286,33 @@ export default function ClientDetailPage() {
             )}
 
             {/* Checklist Progress Bar */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
-                <span>OC Document Gathering & Verification Progress</span>
-                <span>
-                  {Math.round(((client.ocChecklist || []).length / OC_CHECKLIST_ITEMS.length) * 100)}%
-                </span>
-              </div>
-              <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%',
-                  background: 'linear-gradient(90deg, #25d366, #128c7e)',
-                  width: `${Math.round(((client.ocChecklist || []).length / OC_CHECKLIST_ITEMS.length) * 100)}%`,
-                  transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                }} />
-              </div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
-                {(client.ocChecklist || []).length} of {OC_CHECKLIST_ITEMS.length} documents collected and verified.
-              </p>
-            </div>
+            {(() => {
+              const ocItems = client.ocChecklist || [];
+              const naCount = ocItems.filter(id => id.endsWith('-NA')).length;
+              const completedCount = ocItems.filter(id => !id.endsWith('-NA')).length;
+              const totalApplicable = OC_CHECKLIST_ITEMS.length - naCount;
+              const progressPct = totalApplicable > 0 ? Math.round((completedCount / totalApplicable) * 100) : 0;
+              
+              return (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                    <span>OC Document Gathering & Verification Progress</span>
+                    <span>{progressPct}%</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #25d366, #128c7e)',
+                      width: `${progressPct}%`,
+                      transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }} />
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                    {completedCount} of {totalApplicable} applicable documents collected and verified ({naCount} NA).
+                  </p>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Search & Filter Row */}
@@ -1273,64 +1367,89 @@ export default function ClientDetailPage() {
               if (filteredItems.length === 0) return null;
 
               const completedInGroup = filteredItems.filter(item => (client.ocChecklist || []).includes(item.id)).length;
+              const applicableInGroup = filteredItems.filter(item => !(client.ocChecklist || []).includes(`${item.id}-NA`)).length;
 
               return (
                 <div key={grpIdx} className={styles.checklistGroup}>
                   <div className={styles.groupHeader}>
                     <span>{grp.title}</span>
                     <span className={styles.groupCountBadge}>
-                      {completedInGroup} / {filteredItems.length} Done
+                      {completedInGroup} / {applicableInGroup} Done
                     </span>
                   </div>
 
                   <div className={styles.checklistGrid}>
                     {filteredItems.map(item => {
                       const isChecked = (client.ocChecklist || []).includes(item.id);
+                      const isNA = (client.ocChecklist || []).includes(`${item.id}-NA`);
                       return (
                         <div
                           key={item.id}
                           onClick={() => handleToggleOcChecklist(item.id)}
-                          className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''}`}
+                          className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''} ${isNA ? styles.checkItemNA : ''}`}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '1rem',
+                            justifyContent: 'space-between',
                             padding: '0.85rem 1.25rem',
-                            background: isChecked ? 'rgba(37, 211, 102, 0.04)' : 'rgba(255, 255, 255, 0.01)',
+                            background: isChecked ? 'rgba(37, 211, 102, 0.04)' : isNA ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.01)',
                             border: '1px solid var(--border)',
-                            borderColor: isChecked ? 'rgba(37, 211, 102, 0.2)' : 'var(--border)',
+                            borderColor: isChecked ? 'rgba(37, 211, 102, 0.2)' : isNA ? 'transparent' : 'var(--border)',
                             borderRadius: '8px',
                             cursor: 'pointer',
-                            transition: 'all 0.15s ease'
+                            transition: 'all 0.15s ease',
+                            opacity: isNA ? 0.6 : 1
                           }}
                         >
-                          <div style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '4px',
-                            border: '2px solid',
-                            borderColor: isChecked ? '#25d366' : 'var(--text-tertiary)',
-                            background: isChecked ? '#25d366' : 'transparent',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#fff',
-                            flexShrink: 0
-                          }}>
-                            {isChecked && <Check size={14} strokeWidth={3} />}
-                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '4px',
+                              border: '2px solid',
+                              borderColor: isChecked ? '#25d366' : isNA ? 'var(--text-muted)' : 'var(--text-tertiary)',
+                              background: isChecked ? '#25d366' : 'transparent',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              flexShrink: 0
+                            }}>
+                              {isChecked && <Check size={14} strokeWidth={3} />}
+                              {isNA && <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 800 }}>-</span>}
+                            </div>
 
-                          <div style={{
-                            fontSize: '0.9rem',
-                            color: isChecked ? 'var(--text-main)' : 'var(--text-secondary)',
-                            fontWeight: 500,
-                            lineHeight: 1.4
-                          }}>
-                            <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
-                              {item.id}.
-                            </span>
-                            {item.label}
+                            <div style={{
+                              fontSize: '0.9rem',
+                              color: isChecked ? 'var(--text-main)' : isNA ? 'var(--text-muted)' : 'var(--text-secondary)',
+                              fontWeight: 500,
+                              lineHeight: 1.4,
+                              textDecoration: isNA ? 'line-through' : 'none'
+                            }}>
+                              <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
+                                {item.id}.
+                              </span>
+                              {item.label}
+                            </div>
                           </div>
+                          
+                          <button
+                            onClick={(e) => handleToggleOcNA(e, item.id)}
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              borderRadius: '4px',
+                              background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                              color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                              border: '1px solid',
+                              borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            NA
+                          </button>
                         </div>
                       );
                     })}

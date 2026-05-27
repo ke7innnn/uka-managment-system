@@ -320,7 +320,9 @@ export function getClients(): Client[] {
         ...PROGRESS_CHECKLIST_ITEMS.map(item => item.id),
         "MIGRATED_V2"
       ]);
-      uniqueMigratedChecklist = uniqueMigratedChecklist.filter(id => VALID_IDS.has(id));
+      uniqueMigratedChecklist = uniqueMigratedChecklist.filter(id => 
+        VALID_IDS.has(id) || (id.endsWith('-NA') && VALID_IDS.has(id.replace('-NA', '')))
+      );
 
       if (clientMigrated) {
         migrated = true;
