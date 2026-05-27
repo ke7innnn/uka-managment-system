@@ -37,7 +37,6 @@ export default function StaffDashboardHome() {
         setMember(m);
         // Load active stage tasks assigned to this staff member
         const allClients = getClients();
-        processReminders(allClients);
         
         const stagesList: AssignedStage[] = [];
         allClients.forEach(client => {

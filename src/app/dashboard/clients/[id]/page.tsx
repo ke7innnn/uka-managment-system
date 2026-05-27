@@ -254,8 +254,7 @@ export default function ClientDetailPage() {
         (err) => console.error('Error fetching un-stripped client details:', err)
       );
 
-    // Process any due reminders on each reload
-    processReminders(getClients());
+    // Supabase fetch above handles data refresh
   };
 
   useEffect(() => { reload(); }, [params.id]);
@@ -388,9 +387,6 @@ export default function ClientDetailPage() {
     updateClient(client.id, { phases: updated });
     setEditingTimeBound(null);
     reload();
-    
-    // Process reminders immediately
-    processReminders(getClients());
   };
 
   const formatDeadline = (dateStr?: string) => {
