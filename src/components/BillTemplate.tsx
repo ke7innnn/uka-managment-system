@@ -143,9 +143,30 @@ export default function BillTemplate() {
   const sectionDivider = { borderTop: `1.5px solid ${C.ink}` };
 
   return (
-    <div style={{ fontFamily: "'Times New Roman', Georgia, serif", maxWidth: 900, margin: "0 auto", padding: "1rem", color: C.ink, background: "#fff", borderRadius: 8 }}>
+    <div className="printable-bill-wrapper" style={{ fontFamily: "'Times New Roman', Georgia, serif", maxWidth: 900, margin: "0 auto", padding: "1rem", color: C.ink, background: "#fff", borderRadius: 8 }}>
       <style>{`
         @media print {
+          /* 1. HIDE ABSOLUTELY EVERYTHING ON THE PAGE BY DEFAULT */
+          body * {
+            visibility: hidden !important;
+          }
+
+          /* 2. ONLY SHOW THE BILL AND ITS CHILDREN */
+          .printable-bill-wrapper, .printable-bill-wrapper * {
+            visibility: visible !important;
+          }
+
+          /* 3. POSITION THE BILL AT THE VERY TOP LEFT OF THE PAGE */
+          .printable-bill-wrapper {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+          }
           @page {
             size: A4 portrait;
             margin: 10mm;
@@ -154,7 +175,11 @@ export default function BillTemplate() {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          .np { display: none !important; }
+          .np { 
+            display: none !important; 
+            visibility: hidden !important; 
+            opacity: 0 !important;
+          }
           .bill-outer { 
             border-color: ${C.ink} !important;
             box-sizing: border-box;
