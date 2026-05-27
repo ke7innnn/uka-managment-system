@@ -31,8 +31,22 @@ export default function ReportsPage() {
 
   // --- Staff Analytics ---
   const staffWithStats = staff.map(s => {
-    const done = s.tasks.filter(t => t.completed).length;
-    const total = s.tasks.length;
+    let done = s.tasks.filter(t => t.completed).length;
+    let total = s.tasks.length;
+    
+    // Client project tasks assigned to this staff member
+    const firstName = s.name.split(' ')[0].toLowerCase();
+    clients.forEach(c => {
+      c.phases.forEach(p => {
+        (p.tasks || []).forEach(t => {
+          if (t.assignedTo && t.assignedTo.toLowerCase().includes(firstName)) {
+            total++;
+            if (t.completed) done++;
+          }
+        });
+      });
+    });
+
     const pct = total === 0 ? 0 : Math.round((done / total) * 100);
     const hrs = totalHoursWorked(s);
     const velocity = hrs > 0 ? (done / hrs) : 0;
@@ -56,10 +70,15 @@ export default function ReportsPage() {
 
   // --- Client/Project Analytics ---
   const projectsWithStats = clients.map(c => {
+    const allTasks = c.phases.flatMap(p => p.tasks || []);
+    const doneTasks = allTasks.filter(t => t.completed).length;
+    const totalTasks = allTasks.length;
+    const pct = totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100);
+    
     const donePhases = c.phases.filter(p => p.status === 'completed' || p.completed).length;
     const totalPhases = c.phases.length;
-    const pct = totalPhases === 0 ? 0 : Math.round((donePhases / totalPhases) * 100);
-    return { ...c, donePhases, totalPhases, pct };
+    
+    return { ...c, donePhases, totalPhases, pct, doneTasks, totalTasks };
   });
 
   const highPriority = projectsWithStats.filter(c => c.projectStatus === 'active' && c.pct < 50 && c.totalPhases > 0).sort((a, b) => a.pct - b.pct);

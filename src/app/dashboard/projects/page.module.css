@@ -265,4 +265,5 @@
   .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
   .grid { grid-template-columns: 1fr; }
   .phaseGrid { grid-template-columns: 1fr; }
+  .projectGrid { grid-template-columns: 1fr; }
 }
