@@ -6,6 +6,10 @@ import { supabase, stripLargeBase64 } from './supabase';
 export async function downloadDocumentSafe(url: string, filename: string) {
   try {
     const response = await fetch(url);
+    if (response.status === 404) {
+      alert("This file is missing from the storage server (HTTP 404 Object Not Found).\n\nIt may have been permanently deleted, or the initial upload did not complete successfully. You will need to re-upload this file if you need it.");
+      return;
+    }
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const blob = await response.blob();
 
@@ -829,9 +833,18 @@ export function staffStatusColor(member: StaffMember): 'green' | 'yellow' | 'red
 }
 
 /** Safely open data URLs in a new tab without being blocked by browser security */
-export function viewDocumentSafe(dataUrl: string) {
+export async function viewDocumentSafe(dataUrl: string) {
   try {
     if (!dataUrl.startsWith('data:')) {
+      try {
+        const response = await fetch(dataUrl, { method: 'HEAD' });
+        if (response.status === 404) {
+          alert("This file is missing from the storage server (HTTP 404 Object Not Found).\n\nIt may have been permanently deleted, or the initial upload did not complete successfully. You will need to re-upload this file if you need it.");
+          return;
+        }
+      } catch (e) {
+        console.error("HEAD request failed for viewDocumentSafe", e);
+      }
       window.open(dataUrl, '_blank');
       return;
     }

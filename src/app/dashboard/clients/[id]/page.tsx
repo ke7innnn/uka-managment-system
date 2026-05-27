@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, downloadDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, CC_RDP_FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
-import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare } from 'lucide-react';
+import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare, AlertCircle } from 'lucide-react';
 import styles from './page.module.css';
 
 const STATUS_COLORS: Record<Client['projectStatus'], string> = {
@@ -147,6 +147,36 @@ export default function ClientDetailPage() {
   // CC/RDP/OC/PCC separate upload state
   const [ccrdpUploadFolderId, setCcrdpUploadFolderId] = useState<string | null>(null);
   const [uploadingCcrdpFolders, setUploadingCcrdpFolders] = useState<Record<string, boolean>>({});
+
+  const checkedDocsRef = useRef<Set<string>>(new Set());
+  const [documentHealth, setDocumentHealth] = useState<Record<string, 'loading' | 'healthy' | 'broken'>>({});
+
+  useEffect(() => {
+    if (!client) return;
+    const timeout = setTimeout(() => {
+      client.documents.forEach(doc => {
+        if (!doc.url || checkedDocsRef.current.has(doc.id)) return;
+        checkedDocsRef.current.add(doc.id);
+        setDocumentHealth(prev => ({ ...prev, [doc.id]: 'loading' }));
+        fetch(doc.url, { method: 'HEAD' })
+          .then(res => {
+            setDocumentHealth(prev => ({ ...prev, [doc.id]: res.ok ? 'healthy' : 'broken' }));
+          })
+          .catch(() => {
+            setDocumentHealth(prev => ({ ...prev, [doc.id]: 'broken' }));
+          });
+      });
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [client?.documents]);
+
+  const renderHealthStatus = (docId: string) => {
+    const status = documentHealth[docId];
+    if (status === 'loading') return <Loader2 size={12} className="animate-spin text-muted" style={{ marginLeft: 6, opacity: 0.5, display: 'inline-block', verticalAlign: 'middle' }} title="Checking file status..." />;
+    if (status === 'healthy') return <CheckCircle2 size={12} style={{ color: '#10b981', marginLeft: 6, display: 'inline-block', verticalAlign: 'middle' }} title="File is properly uploaded and available" />;
+    if (status === 'broken') return <AlertCircle size={12} style={{ color: '#ef4444', marginLeft: 6, display: 'inline-block', verticalAlign: 'middle' }} title="File is missing from server! You may need to re-upload." />;
+    return null;
+  };
 
   const toggleFolder = (folderId: string) => {
     setOpenFolders(prev => ({ ...prev, [folderId]: !prev[folderId] }));
@@ -1679,7 +1709,7 @@ export default function ClientDetailPage() {
                         onDragStart={(e) => onDragStart(e, doc.id)}
                       >
                         <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
-                        <span className={styles.fileChipName} title={doc.name}>{doc.name}</span>
+                        <span className={styles.fileChipName} title={doc.name}>{doc.name}{renderHealthStatus(doc.id)}</span>
                         <Pencil className={styles.fileChipDownload} size={14} onClick={() => startRename(doc)} />
                         <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
                         <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} title="Download" className={styles.iconBtn}>
@@ -1805,7 +1835,7 @@ export default function ClientDetailPage() {
                                     <>
                                       <div className={styles.fileRowLeft}>
                                         <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
-                                        <span className={styles.fileRowName} title={doc.name}>{doc.name}</span>
+                                        <span className={styles.fileRowName} title={doc.name}>{doc.name}{renderHealthStatus(doc.id)}</span>
                                         <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                                       </div>
                                       <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
@@ -1873,7 +1903,7 @@ export default function ClientDetailPage() {
                             <>
                               <div className={styles.fileRowLeft}>
                                 <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
-                                <span className={styles.fileRowName} title={doc.name}>{doc.name}</span>
+                                <span className={styles.fileRowName} title={doc.name}>{doc.name}{renderHealthStatus(doc.id)}</span>
                                 <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                               </div>
                               <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
@@ -1996,7 +2026,7 @@ export default function ClientDetailPage() {
                           <div key={doc.id} className={styles.fileRow}>
                             <div className={styles.fileRowLeft}>
                               <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
-                              <span className={styles.fileRowName} title={doc.name}>{doc.name}</span>
+                              <span className={styles.fileRowName} title={doc.name}>{doc.name}{renderHealthStatus(doc.id)}</span>
                               <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                             </div>
                             <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
