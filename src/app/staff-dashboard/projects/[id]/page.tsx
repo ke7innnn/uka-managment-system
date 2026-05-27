@@ -166,9 +166,9 @@ export default function ClientDetailPage() {
 
   const renderHealthStatus = (docId: string) => {
     const status = documentHealth[docId];
-    if (status === 'loading') return <span title="Checking file status..."><Loader2 size={12} className="animate-spin text-muted" style={{ marginLeft: 6, opacity: 0.5, display: 'inline-block', verticalAlign: 'middle' }} /></span>;
-    if (status === 'healthy') return <span title="File is properly uploaded and available"><CheckCircle2 size={12} style={{ color: '#10b981', marginLeft: 6, display: 'inline-block', verticalAlign: 'middle' }} /></span>;
-    if (status === 'broken') return <span title="File is missing from server! You may need to re-upload."><AlertCircle size={12} style={{ color: '#ef4444', marginLeft: 6, display: 'inline-block', verticalAlign: 'middle' }} /></span>;
+    if (status === 'loading') return <span title="Checking file status..."><Loader2 size={12} className="animate-spin text-muted" style={{ marginRight: 6, opacity: 0.5, display: 'inline-block', verticalAlign: 'middle' }} /></span>;
+    if (status === 'healthy') return <span title="File is properly uploaded and available"><CheckCircle2 size={12} style={{ color: '#10b981', marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }} /></span>;
+    if (status === 'broken') return <span title="File is missing from server! You may need to re-upload."><AlertCircle size={12} style={{ color: '#ef4444', marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }} /></span>;
     return null;
   };
 
@@ -1616,7 +1616,7 @@ export default function ClientDetailPage() {
                         onDragStart={(e) => onDragStart(e, doc.id)}
                       >
                         <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
-                        <span className={styles.fileChipName} title={doc.name}>{doc.name}{renderHealthStatus(doc.id)}</span>
+                        <span className={styles.fileChipName} title={doc.name}>{renderHealthStatus(doc.id)}{doc.name}</span>
                         <Pencil className={styles.fileChipDownload} size={14} onClick={() => startRename(doc)} />
                         <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
                         <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} title="Download" className={styles.iconBtn}>
@@ -1742,7 +1742,7 @@ export default function ClientDetailPage() {
                                     <>
                                       <div className={styles.fileRowLeft}>
                                         <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
-                                        <span className={styles.fileRowName} title={doc.name}>{doc.name}{renderHealthStatus(doc.id)}</span>
+                                        <span className={styles.fileRowName} title={doc.name}>{renderHealthStatus(doc.id)}{doc.name}</span>
                                         <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                                       </div>
                                       <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
@@ -1810,7 +1810,7 @@ export default function ClientDetailPage() {
                             <>
                               <div className={styles.fileRowLeft}>
                                 <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
-                                <span className={styles.fileRowName} title={doc.name}>{doc.name}{renderHealthStatus(doc.id)}</span>
+                                <span className={styles.fileRowName} title={doc.name}>{renderHealthStatus(doc.id)}{doc.name}</span>
                                 <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                               </div>
                               <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
@@ -1910,7 +1910,7 @@ export default function ClientDetailPage() {
                           <div key={doc.id} className={styles.fileRow}>
                             <div className={styles.fileRowLeft}>
                               <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
-                              <span className={styles.fileRowName} title={doc.name}>{doc.name}{renderHealthStatus(doc.id)}</span>
+                              <span className={styles.fileRowName} title={doc.name}>{renderHealthStatus(doc.id)}{doc.name}</span>
                               <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                             </div>
                             <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
