@@ -31,8 +31,21 @@ export default function ReportsPage() {
 
   // --- Staff Analytics ---
   const staffWithStats = staff.map(s => {
-    let done = s.tasks.filter(t => t.completed).length;
-    let total = s.tasks.length;
+    let done = 0;
+    let total = 0;
+    let overdue = 0;
+    
+    const now = new Date().toISOString();
+
+    // Personal tasks
+    s.tasks.forEach(t => {
+      total++;
+      if (t.completed) {
+        done++;
+      } else if (t.deadline && t.deadline < now) {
+        overdue++;
+      }
+    });
     
     // Client project tasks assigned to this staff member
     const firstName = s.name.split(' ')[0].toLowerCase();
@@ -41,7 +54,11 @@ export default function ReportsPage() {
         (p.tasks || []).forEach(t => {
           if (t.assignedTo && t.assignedTo.toLowerCase().includes(firstName)) {
             total++;
-            if (t.completed) done++;
+            if (t.completed) {
+              done++;
+            } else if (p.timeBound && p.timeBound < now) {
+              overdue++;
+            }
           }
         });
       });
@@ -50,7 +67,7 @@ export default function ReportsPage() {
     const pct = total === 0 ? 0 : Math.round((done / total) * 100);
     const hrs = totalHoursWorked(s);
     const velocity = hrs > 0 ? (done / hrs) : 0;
-    return { ...s, done, total, pct, hrs, velocity };
+    return { ...s, done, total, overdue, pct, hrs, velocity };
   });
 
   // --- Performance Data for Chart ---
@@ -66,7 +83,7 @@ export default function ReportsPage() {
   }
 
   const topPerformers = [...staffWithStats].filter(s => s.total > 0 && s.pct >= 50).sort((a, b) => b.pct - a.pct || b.done - a.done);
-  const needsAttention = [...staffWithStats].filter(s => s.total > 0 && s.pct < 50).sort((a, b) => a.pct - b.pct);
+  const needsAttention = [...staffWithStats].filter(s => s.overdue > 0).sort((a, b) => b.overdue - a.overdue);
 
   // --- Client/Project Analytics ---
   const projectsWithStats = clients.map(c => {
@@ -220,7 +237,7 @@ export default function ReportsPage() {
                 </div>
                 <div className={styles.itemRight}>
                   <span className={styles.itemStat} style={{ color: '#ef4444' }}>{s.pct}% Done</span>
-                  <span className={`${styles.badge} ${styles.bgRed}`}>{s.total - s.done} Pending</span>
+                  <span className={`${styles.badge} ${styles.bgRed}`}>{s.overdue} OVERDUE</span>
                 </div>
               </div>
             )) : <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No staff falling behind.</p>}
