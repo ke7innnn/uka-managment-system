@@ -140,6 +140,14 @@ export interface Client {
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
 
+// ─── PERMANENT TOMBSTONE ────────────────────────────────────────────────────
+// Client IDs permanently banned from ever appearing in the system.
+// Mirrors the same set in supabaseSync.ts.
+const PERMANENTLY_DELETED_CLIENT_IDS = new Set<string>([
+  'fb057c0a-e1f9-4789-b8f2-c16984634261', // Kevin Pimenta (boi@gmail.com) — deleted 2026-05-27
+]);
+// ────────────────────────────────────────────────────────────────────────────
+
 const STORAGE_KEY = 'uka_clients';
 
 export function getClients(): Client[] {
@@ -154,7 +162,7 @@ export function getClients(): Client[] {
     
     const deduplicatedMap = new Map<string, Client>();
     parsedClients.forEach(c => {
-      if (!deletedIds.has(c.id)) {
+      if (!deletedIds.has(c.id) && !PERMANENTLY_DELETED_CLIENT_IDS.has(c.id)) {
         deduplicatedMap.set(c.id, c);
       }
     });

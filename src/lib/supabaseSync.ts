@@ -1,6 +1,16 @@
 import { supabase, stripLargeBase64 } from './supabase';
 import { Client, StaffMember, WorkspaceMessage } from './store';
 
+// ─── PERMANENT TOMBSTONE ────────────────────────────────────────────────────
+// These client IDs are permanently banned and must NEVER be re-imported from
+// Supabase or localStorage, even if local tombstone storage is cleared.
+// Add permanently deleted client IDs here (they have already been removed
+// from Supabase — this is a last line of defence).
+const PERMANENTLY_DELETED_CLIENT_IDS = new Set<string>([
+  'fb057c0a-e1f9-4789-b8f2-c16984634261', // Kevin Pimenta (boi@gmail.com) — deleted 2026-05-27
+]);
+// ────────────────────────────────────────────────────────────────────────────
+
 // ─── SYNC DOWN (Supabase -> LocalStorage) ──────────────────────────────────
 export async function pullFromSupabase() {
   if (typeof window === 'undefined') return false;
@@ -103,7 +113,7 @@ export async function pullFromSupabase() {
     const deletedStaffRaw = localStorage.getItem('uka_deleted_staff_ids');
     const deletedStaffIds = new Set<string>(deletedStaffRaw ? JSON.parse(deletedStaffRaw) : []);
 
-    const activeSupabaseClients = supabaseClients.filter(c => !deletedIds.has(c.id));
+    const activeSupabaseClients = supabaseClients.filter(c => !deletedIds.has(c.id) && !PERMANENTLY_DELETED_CLIENT_IDS.has(c.id));
     // Filter out tombstoned staff from Supabase data — they must never come back
     const activeSupabaseStaff = supabaseStaff.filter(s => !deletedStaffIds.has(s.id));
 
@@ -113,7 +123,7 @@ export async function pullFromSupabase() {
     const supabaseStaffNames = new Set(activeSupabaseStaff.map(s => s.name.toLowerCase()));
 
     // Clients pending push: local clients that have explicitly been marked as 'pending' syncStatus (and not deleted)
-    const pendingLocalClients = localClients.filter(c => c.syncStatus === 'pending' && !deletedIds.has(c.id));
+    const pendingLocalClients = localClients.filter(c => c.syncStatus === 'pending' && !deletedIds.has(c.id) && !PERMANENTLY_DELETED_CLIENT_IDS.has(c.id));
     // Staff pending push: not in Supabase by ID AND not already there by name (prevents clones), and not tombstoned
     const pendingLocalStaff = localStaff.filter(s =>
       !supabaseStaffIds.has(s.id) && !supabaseStaffNames.has(s.name.toLowerCase()) && !deletedStaffIds.has(s.id)
