@@ -33,12 +33,36 @@ export default function DailyAttendancePage() {
 
     const data: ReportRow[] = staff.map(member => {
       const log = member.attendance.find(a => a.date === selectedDate) || null;
-      // Find tasks completed on this exact date
+      // Find tasks completed on this exact date during the shift
       const tasksDone = member.tasks.filter(t => {
         if (!t.completed) return false;
-        // If it has completedAt, use it. Otherwise fallback to checking if deadline was today and it's done.
+        
         if (t.completedAt) {
-          return t.completedAt.startsWith(selectedDate);
+          const d = new Date(t.completedAt);
+          const localStr = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+          
+          if (localStr !== selectedDate) return false;
+          
+          if (log && log.checkIn && log.checkIn !== '-') {
+            const [timeIn, modIn] = log.checkIn.split(' ');
+            let [hIn, mIn] = timeIn.split(':');
+            if (hIn === '12') hIn = '00';
+            if (modIn === 'PM') hIn = String(parseInt(hIn, 10) + 12);
+            const checkInTime = new Date(`${selectedDate}T${hIn.padStart(2, '0')}:${mIn}:00`).getTime();
+            
+            if (d.getTime() < checkInTime) return false;
+            
+            if (log.checkOut && log.checkOut !== '-') {
+              const [timeOut, modOut] = log.checkOut.split(' ');
+              let [hOut, mOut] = timeOut.split(':');
+              if (hOut === '12') hOut = '00';
+              if (modOut === 'PM') hOut = String(parseInt(hOut, 10) + 12);
+              const checkOutTime = new Date(`${selectedDate}T${hOut.padStart(2, '0')}:${mOut}:00`).getTime();
+              
+              if (d.getTime() > checkOutTime) return false;
+            }
+          }
+          return true;
         } else {
           return t.deadline.startsWith(selectedDate);
         }

@@ -20,9 +20,13 @@ export default function ReportsPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setStaff(getStaff());
-    setClients(getClients());
-    setMounted(true);
+    import('@/lib/supabaseSync').then(({ pullFromSupabase }) => {
+      pullFromSupabase().then(() => {
+        setStaff(getStaff());
+        setClients(getClients());
+        setMounted(true);
+      });
+    });
   }, []);
 
   // --- Staff Analytics ---
