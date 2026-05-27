@@ -73,7 +73,6 @@ type FormData = {
   use: string;
   noOfBldgs: string;
   floor: string;
-  subSecondary: string;
   pLine: string;
   architect: string;
   structuralEngName: string;
@@ -159,7 +158,6 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
     use: client?.kyc?.use || '',
     noOfBldgs: client?.kyc?.noOfBldgs || '',
     floor: client?.kyc?.floor || '',
-    subSecondary: client?.kyc?.subSecondary || '',
     pLine: client?.kyc?.pLine || '',
     architect: client?.kyc?.architect || '',
     structuralEngName: client?.kyc?.structuralEngName || '',

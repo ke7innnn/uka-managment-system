@@ -106,7 +106,6 @@ export interface KycData {
   use?: string;
   noOfBldgs?: string;
   floor?: string;
-  subSecondary?: string;
   pLine?: string;
   architect?: string;
   structuralEngName?: string;
