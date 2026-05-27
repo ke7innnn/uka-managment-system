@@ -82,7 +82,10 @@ export default function ReportsPage() {
     performanceData.push({ name: 'No Data', target: 0, actual: 0 });
   }
 
-  const topPerformers = [...staffWithStats].filter(s => s.total > 0 && s.pct >= 50).sort((a, b) => b.pct - a.pct || b.done - a.done);
+  const topPerformers = [...staffWithStats]
+    .filter(s => s.done > 0)
+    .sort((a, b) => b.done - a.done || b.pct - a.pct)
+    .slice(0, 5);
   const needsAttention = [...staffWithStats].filter(s => s.overdue > 0).sort((a, b) => b.overdue - a.overdue);
 
   // --- Client/Project Analytics ---
