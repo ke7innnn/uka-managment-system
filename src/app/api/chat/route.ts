@@ -29,8 +29,11 @@ export async function POST(req: Request) {
       --- CLIENTS & ACTIVE PROJECTS ---
       ${JSON.stringify(context.clients || [])}
       
-      Use this exact data to answer the Admin's questions. 
-      Always be concise. Never make up data that was not given to you.
+      CRITICAL INSTRUCTIONS FOR ACCURACY:
+      1. Your answers MUST be 100% accurate and based STRICTLY on the real-time JSON data provided above.
+      2. NEVER hallucinate, guess, or make up any names, project details, or statistics.
+      3. If a user asks about something not present in the JSON data, explicitly tell them "I do not have that information in the current database."
+      4. Cross-check your final answer against the JSON data before responding to ensure zero errors.
     `;
 
     // Format messages for Gemini API - strictly limit to the last 6 messages for context memory
