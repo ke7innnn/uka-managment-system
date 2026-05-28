@@ -115,7 +115,7 @@ export default function AdminAssistantChat() {
       setCooldown(true);
       setTimeout(() => {
         setCooldown(false);
-      }, 3000); // 3 seconds forced wait between questions
+      }, 1000); // 1 second forced wait between questions
     }
   };
 
@@ -274,7 +274,7 @@ export default function AdminAssistantChat() {
             type="text" 
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={cooldown ? "Cooling down for 3 seconds..." : "Ask UKA a question..."}
+            placeholder={cooldown ? "Cooling down for 1 second..." : "Ask UKA a question..."}
             disabled={isLoading || cooldown}
             style={{
               flex: 1, background: 'var(--bg)', border: '1px solid var(--border)',
