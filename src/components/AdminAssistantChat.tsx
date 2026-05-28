@@ -125,8 +125,30 @@ export default function AdminAssistantChat() {
         <button 
           onClick={() => setIsOpen(true)}
           className="floating-assistant-btn"
+          style={{
+            position: 'fixed',
+            bottom: '2rem',
+            right: '2rem',
+            zIndex: 9999,
+            width: '82px',
+            height: '82px',
+            borderRadius: '50%',
+            background: 'transparent',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer'
+          }}
         >
-          <img src="/chatbot-logo.png" alt="Bruce Wayne Assistant" className="floating-assistant-icon" />
+          <img 
+            src="/chatbot-logo.png" 
+            alt="Bruce Wayne Assistant" 
+            className="floating-assistant-icon"
+            width={82}
+            height={82}
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
         </button>
 
         <style jsx global>{`
