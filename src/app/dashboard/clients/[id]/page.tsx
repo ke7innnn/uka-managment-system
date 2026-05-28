@@ -462,10 +462,7 @@ export default function ClientDetailPage() {
         const newTasks = p.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
         const allCompleted = newTasks.length > 0 && newTasks.every(t => t.completed);
         let newStatus = p.status;
-        if (allCompleted && p.status !== 'completed') {
-          newStatus = 'completed';
-          clearStageReminders(phaseId, client.id);
-        } else if (!allCompleted && p.status === 'completed') {
+        if (!allCompleted && p.status === 'completed') {
           newStatus = 'in-progress';
         }
         return {
@@ -1598,9 +1595,11 @@ export default function ClientDetailPage() {
                 const totalTasks = phase.tasks?.length || 0;
                 const doneTasks = phase.tasks?.filter(t => t.completed).length || 0;
                 const isCompleted = phase.status === 'completed';
+                const allTasksDone = totalTasks > 0 && doneTasks === totalTasks;
+                const needsAdminReview = allTasksDone && !isCompleted;
 
                 return (
-                  <div key={phase.id} className={`${styles.stageSection} ${isOpen ? styles.open : ''} ${isCompleted ? styles.completed : ''}`}>
+                  <div key={phase.id} className={`${styles.stageSection} ${isOpen ? styles.open : ''} ${isCompleted ? styles.completed : ''} ${needsAdminReview ? styles.blinkingPhase : ''}`}>
                     <div className={styles.stageHeader} onClick={() => toggleStageAccordion(phase.id)}>
                       <div className={styles.stageHeaderLeft}>
                         <div className={styles.stageHeaderTitle}>

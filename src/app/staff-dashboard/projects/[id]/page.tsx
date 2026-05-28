@@ -452,14 +452,19 @@ export default function ClientDetailPage() {
   };
 
   const toggleTask = (phaseId: string, taskId: string) => {
+    let triggeredAlert = false;
+    let stageName = '';
+
     const updated = client.phases.map((p) => {
       if (p.id === phaseId) {
         const newTasks = p.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
         const allCompleted = newTasks.length > 0 && newTasks.every(t => t.completed);
+        const previouslyAllCompleted = p.tasks.length > 0 && p.tasks.every(t => t.completed);
+        
         let newStatus = p.status;
-        if (allCompleted && p.status !== 'completed') {
-          newStatus = 'completed';
-          clearStageReminders(phaseId, client.id);
+        if (allCompleted && !previouslyAllCompleted && p.status !== 'completed') {
+          triggeredAlert = true;
+          stageName = p.name;
         } else if (!allCompleted && p.status === 'completed') {
           newStatus = 'in-progress';
         }
@@ -471,7 +476,23 @@ export default function ClientDetailPage() {
       }
       return p;
     });
+
     updateClient(client.id, { phases: updated });
+    
+    if (triggeredAlert && stageName) {
+      import('@/lib/store').then(({ addAlert }) => {
+        addAlert({
+          clientId: client.id,
+          clientName: client.name,
+          stageName: stageName,
+          severity: 'info',
+          templateKey: 'stage-ready',
+          message: `All tasks for ${stageName} have been completed by the staff. It is ready for your review and to be marked as complete.`,
+          assignedTo: currentStaffId || 'Staff',
+        });
+      });
+    }
+
     reload();
   };
 

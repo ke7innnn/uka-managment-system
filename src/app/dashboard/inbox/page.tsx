@@ -12,6 +12,7 @@ const SEVERITY_CONFIG = {
 
 const TEMPLATE_LABELS: Record<string, string> = {
   'stage-start':    '🚀 Stage Started',
+  'stage-ready':    '✅ Ready for Admin Review',
   'day-1-light':    '💬 Day 1 Reminder',
   'day-2-moderate': '📌 Day 2 Follow-up',
   'day-3-warning':  '⚠️ Day 3 Warning',
