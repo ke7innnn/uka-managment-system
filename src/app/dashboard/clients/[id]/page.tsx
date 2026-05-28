@@ -1875,6 +1875,102 @@ export default function ClientDetailPage() {
                               ))}
                             </div>
                           )}
+                          
+                          {/* Render sub-subfolders if any exist inside this subfolder */}
+                          {(sub as any).subfolders && ((sub as any).subfolders.length > 0) && (
+                            <div className={styles.subsubfoldersContainer} style={{ paddingLeft: '1.5rem', marginTop: '0.25rem', borderLeft: '2px solid rgba(var(--accent-rgb), 0.1)' }}>
+                              {(sub as any).subfolders.map((subsub: any) => {
+                                const subsubDocs = folderDocs.filter(d => d.subfolder === subsub.id);
+                                return (
+                                  <div key={subsub.id} style={{ marginTop: '0.25rem' }}>
+                                    <div
+                                      className={`${styles.subfolder} ${dragOverTarget === subsub.id ? styles.dropTarget : ''}`}
+                                      onDragOver={(e) => { e.stopPropagation(); onDragOver(e, subsub.id); }}
+                                      onDragLeave={onDragLeave}
+                                      onDrop={(e) => { e.stopPropagation(); onDrop(e, folder.id, subsub.id); }}
+                                    >
+                                      <FolderOpen className={styles.subfolderIcon} size={13} strokeWidth={1.5} />
+                                      <span className={styles.subfolderName} style={{ fontSize: '0.8rem' }}>{subsub.name}</span>
+                                      
+                                      <div className={styles.subfolderActions} onClick={(e) => e.stopPropagation()}>
+                                        {uploadingSubfolders[subsub.id] ? (
+                                          <span style={{ color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.65rem', fontWeight: 600, marginRight: '8px' }}>
+                                            <Loader2 size={10} className="animate-spin" /> Uploading...
+                                          </span>
+                                        ) : (
+                                          <span className={styles.subfolderCode} style={{ fontSize: '0.65rem' }}>{subsub.code}</span>
+                                        )}
+                                        <button
+                                          className={styles.subfolderActionBtn}
+                                          onClick={(e) => triggerSubfolderUpload(e, folder.id, subsub.id)}
+                                          title={`Upload file directly to ${subsub.name}`}
+                                          disabled={uploadingSubfolders[subsub.id]}
+                                        >
+                                          <Upload size={10} />
+                                        </button>
+                                      </div>
+                                    </div>
+                                    {subsubDocs.length > 0 && (
+                                      <div className={styles.subfolderFiles}>
+                                        {subsubDocs.map((doc: any) => (
+                                          <div
+                                            key={doc.id}
+                                            className={styles.fileRow}
+                                            draggable={renamingId !== doc.id}
+                                            onDragStart={(e) => onDragStart(e, doc.id)}
+                                          >
+                                            {renamingId === doc.id ? (
+                                              <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
+                                                <input
+                                                  type="text"
+                                                  ref={renameInputRef}
+                                                  value={renameDraft}
+                                                  onChange={(e) => setRenameDraft(e.target.value)}
+                                                  onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') commitRename();
+                                                    if (e.key === 'Escape') cancelRename();
+                                                  }}
+                                                  className={styles.renameInput}
+                                                />
+                                                <button className={styles.renameSave} onClick={commitRename} title="Save">
+                                                  <Check size={14} />
+                                                </button>
+                                                <button className={styles.renameCancel} onClick={cancelRename} title="Cancel">
+                                                  <X size={14} />
+                                                </button>
+                                              </div>
+                                            ) : (
+                                              <>
+                                                <div className={styles.fileRowLeft}>
+                                                  <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                                                  <span className={styles.fileRowName} title={doc.name}>{renderHealthStatus(doc.id)}{doc.name}</span>
+                                                  <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
+                                                </div>
+                                                <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                                                  <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                                    <Pencil size={13} />
+                                                  </button>
+                                                  <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                                    <Eye size={13} />
+                                                  </button>
+                                                  <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
+                                                    <Download size={13} />
+                                                  </button>
+                                                  <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
+                                                    <Trash2 size={13} />
+                                                  </button>
+                                                </div>
+                                              </>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                       );
                     })}

@@ -1153,7 +1153,11 @@ export const DOCUMENT_FOLDERS = [
     { id: "1b", code: "1.B", name: "6/12 Extracts" },
     { id: "1c", code: "1.C", name: "Pikpahani Extracts" },
     { id: "1d", code: "1.D", name: "8A Extract" },
-    { id: "1e", code: "1.E", name: "Advocate Reports" },
+    { id: "1e", code: "1.E", name: "Advocate Reports", subfolders: [
+      { id: "1e-1", code: "1.E.1", name: "No claim" },
+      { id: "1e-2", code: "1.E.2", name: "Pepper noticed" },
+      { id: "1e-3", code: "1.E.3", name: "Title search reports" }
+    ]},
     { id: "1g", code: "1.G", name: "TiLR" },
     { id: "1h", code: "1.H", name: "Gut Book" },
     { id: "1f", code: "1.F", name: "Others" }
@@ -1202,7 +1206,22 @@ export const DOCUMENT_FOLDERS = [
     { id: "8a", code: "8.1", name: "Drawing" },
     { id: "8b", code: "8.2", name: "Report" },
     { id: "8c", code: "8.3", name: "Marginal" },
-    { id: "8d", code: "8.4", name: "Engineering Drawing" }
+    { id: "8d", code: "8.4", name: "Engineering Drawing" },
+    { id: "8e", code: "8.5", name: "Physical" },
+    { id: "8f", code: "8.6", name: "Google image" },
+    { id: "8g", code: "8.7", name: "Engineer Report" }
+  ]},
+  { id: '9', name: "Owner/Society Papers", code: "OSP", subfolders: [
+    { id: "9a", code: "9.1", name: "Section 79" },
+    { id: "9b", code: "9.2", name: "Resolutions" },
+    { id: "9c", code: "9.3", name: "C1 Notice" },
+    { id: "9d", code: "9.4", name: "Development agreement" },
+    { id: "9e", code: "9.5", name: "Power agreement" },
+    { id: "9f", code: "9.6", name: "Partnership deed" },
+    { id: "9g", code: "9.7", name: "Firm pan card" },
+    { id: "9h", code: "9.8", name: "No dues" },
+    { id: "9i", code: "9.9", name: "Tenants Peppers" },
+    { id: "9j", code: "9.10", name: "List of members" }
   ]}
 ];
 
