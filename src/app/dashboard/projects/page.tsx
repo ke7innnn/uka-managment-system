@@ -15,12 +15,19 @@ const STATUS_COLORS: Record<Client['projectStatus'], string> = {
 
 export default function ProjectsPage() {
   const [clients, setClients] = useState<Client[]>([]);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     setClients(getClients());
   }, []);
 
-  const withProjects = clients.filter((c) => c.projectName || c.phases.length > 0);
+  const withProjects = clients.filter((c) => {
+    const hasProject = c.projectName || c.phases.length > 0;
+    const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
+                        (c.projectName || '').toLowerCase().includes(search.toLowerCase()) ||
+                        (c.clientUin || '').toLowerCase().includes(search.toLowerCase());
+    return hasProject && matchSearch;
+  });
 
   return (
     <div className={`animate-fade-in ${styles.page}`}>
@@ -30,6 +37,26 @@ export default function ProjectsPage() {
           <p className={styles.subtitle}>Track phase progress across all clients</p>
         </div>
         <Link href="/dashboard/clients/new" className={styles.newBtn}>+ New Client</Link>
+      </div>
+
+      <div style={{ marginBottom: '1.5rem' }}>
+        <input
+          type="text"
+          placeholder="Search by client, project name, or UIN..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            width: '100%',
+            maxWidth: '400px',
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            border: '1px solid var(--border)',
+            background: 'var(--bg-elevated)',
+            color: 'var(--text)',
+            fontSize: '0.9rem',
+            outline: 'none'
+          }}
+        />
       </div>
 
       {withProjects.length === 0 ? (

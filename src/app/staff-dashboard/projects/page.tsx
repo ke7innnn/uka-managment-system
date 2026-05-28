@@ -8,12 +8,19 @@ import styles from '@/app/dashboard/projects/page.module.css';
 
 export default function StaffProjectsPage() {
   const [clients, setClients] = useState<Client[]>([]);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     setClients(getClients());
     window.addEventListener('uka-sync-complete', () => setClients(getClients()));
     return () => window.removeEventListener('uka-sync-complete', () => setClients(getClients()));
   }, []);
+
+  const filteredClients = clients.filter(c => 
+    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    (c.projectName || '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.clientUin || '').toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className={`animate-fade-in ${styles.page}`} style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -44,8 +51,28 @@ export default function StaffProjectsPage() {
         </Link>
       </div>
 
+      <div style={{ marginBottom: '1.5rem' }}>
+        <input
+          type="text"
+          placeholder="Search by client, project name, or UIN..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            width: '100%',
+            maxWidth: '400px',
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            border: '1px solid var(--border)',
+            background: 'var(--bg-elevated)',
+            color: 'var(--text)',
+            fontSize: '0.9rem',
+            outline: 'none'
+          }}
+        />
+      </div>
+
       <div className={styles.projectGrid}>
-        {clients.map((client) => (
+        {filteredClients.map((client) => (
           <div key={client.id} className={`glass-panel ${styles.projectCard}`}>
             {client.clientUin && (
               <div style={{
@@ -96,7 +123,7 @@ export default function StaffProjectsPage() {
             </div>
           </div>
         ))}
-        {clients.length === 0 && (
+        {filteredClients.length === 0 && (
           <div className={styles.emptyState} style={{ gridColumn: '1 / -1' }}>
             No clients or projects available.
           </div>
