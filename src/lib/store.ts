@@ -1234,3 +1234,10 @@ export const CC_RDP_FOLDERS = [
   { id: 'ccrdp-oc',  name: 'OC',  code: 'OC'  },
   { id: 'ccrdp-pcc', name: 'PCC', code: 'PCC' },
 ];
+
+export const OC_DOCUMENT_FOLDERS = OC_CHECKLIST_ITEMS.map(item => ({
+  id: `oc_doc-${item.id}`,
+  name: item.label,
+  code: `OC-${item.id}`
+}));
+

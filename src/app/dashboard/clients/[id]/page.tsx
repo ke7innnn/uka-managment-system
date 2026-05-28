@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, downloadDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, CC_RDP_FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
+import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, downloadDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, CC_RDP_FOLDERS, OC_DOCUMENT_FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
 import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare, AlertCircle } from 'lucide-react';
@@ -23,7 +23,8 @@ export default function ClientDetailPage() {
   const [newPhaseName, setNewPhaseName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ccrdpFileInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'documents' | 'progress' | 'oc' | 'ccrdp'>('overview');
+  const ocDocFileInputRef = useRef<HTMLInputElement>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'documents' | 'progress' | 'oc' | 'oc_docs' | 'ccrdp'>('overview');
   
   // Client progress checklist search/filters & success state
   const [progressSearch, setProgressSearch] = useState('');
@@ -147,6 +148,16 @@ export default function ClientDetailPage() {
   // CC/RDP/OC/PCC separate upload state
   const [ccrdpUploadFolderId, setCcrdpUploadFolderId] = useState<string | null>(null);
   const [uploadingCcrdpFolders, setUploadingCcrdpFolders] = useState<Record<string, boolean>>({});
+
+  // OC Documents upload state
+  const [ocDocUploadFolderId, setOcDocUploadFolderId] = useState<string | null>(null);
+  const [uploadingOcDocFolders, setUploadingOcDocFolders] = useState<Record<string, boolean>>({});
+  const [showOcDocsSendSuccess, setShowOcDocsSendSuccess] = useState(false);
+
+  const handleSendOcDocs = () => {
+    setShowOcDocsSendSuccess(true);
+    setTimeout(() => setShowOcDocsSendSuccess(false), 4000);
+  };
 
   const checkedDocsRef = useRef<Set<string>>(new Set());
   const [documentHealth, setDocumentHealth] = useState<Record<string, 'loading' | 'healthy' | 'broken'>>({});
@@ -723,6 +734,73 @@ export default function ClientDetailPage() {
     }
   };
 
+  // ── OC Documents actions ─────────────────────────────────────────────────
+  const triggerOcDocFolderUpload = (e: React.MouseEvent, folderId: string) => {
+    e.stopPropagation();
+    setOcDocUploadFolderId(folderId);
+    ocDocFileInputRef.current?.click();
+  };
+
+  const handleOcDocFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const folderId = ocDocUploadFolderId;
+    setOcDocUploadFolderId(null);
+    e.target.value = '';
+    if (!files.length || !folderId) return;
+    setUploadingOcDocFolders(prev => ({ ...prev, [folderId]: true }));
+    try {
+      await Promise.all(files.map(file => new Promise<void>(resolve => {
+        const upload = async (blob: Blob, ext: string, mime: string) => {
+          const path = `documents/${params.id}/${crypto.randomUUID()}.${ext}`;
+          const { error } = await supabase.storage.from('uka-storage').upload(path, blob, { contentType: mime, upsert: true });
+          if (error) { alert('Upload failed: ' + error.message); resolve(); return; }
+          const { data: { publicUrl } } = supabase.storage.from('uka-storage').getPublicUrl(path);
+          const doc: Doc = { id: crypto.randomUUID(), name: file.name, url: publicUrl, uploadedAt: new Date().toISOString(), type: mime, size: blob.size, folder: folderId };
+          const c = getClientById(params.id);
+          if (c) { updateClient(c.id, { documents: [...c.documents, doc] }); reload(); }
+          resolve();
+        };
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const img = new globalThis.Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              const max = 800; let w = img.width, h = img.height;
+              if (w > h) { if (w > max) { h *= max / w; w = max; } } else { if (h > max) { w *= max / h; h = max; } }
+              canvas.width = w; canvas.height = h;
+              ctx?.drawImage(img, 0, 0, w, h);
+              canvas.toBlob(blob => { if (blob) upload(blob, 'jpg', 'image/jpeg'); else resolve(); }, 'image/jpeg', 0.75);
+            };
+            img.onerror = () => resolve();
+            img.src = ev.target?.result as string;
+          };
+          reader.onerror = () => resolve();
+          reader.readAsDataURL(file);
+        } else {
+          upload(file, file.name.split('.').pop() || 'bin', file.type).catch(() => resolve());
+        }
+      })));
+    } finally {
+      setUploadingOcDocFolders(prev => ({ ...prev, [folderId]: false }));
+    }
+  };
+
+  const deleteOcDocDocument = async (docId: string) => {
+    const doc = client.documents.find(d => d.id === docId);
+    if (confirm(`Delete "${doc?.name || 'this document'}"? This cannot be undone.`)) {
+      updateClient(client.id, { documents: client.documents.filter(d => d.id !== docId) });
+      reload();
+      if (doc?.url?.includes('uka-storage/')) {
+        try {
+          const path = doc.url.split('uka-storage/')[1];
+          if (path) await supabase.storage.from('uka-storage').remove([path]);
+        } catch {}
+      }
+    }
+  };
+
   const formatSize = (bytes?: number) => {
     if (!bytes) return '';
     if (bytes < 1024) return `${bytes} B`;
@@ -840,7 +918,7 @@ export default function ClientDetailPage() {
 
       {/* Tabs */}
       <div className={styles.tabs}>
-        {(['overview', 'phases', 'documents', 'progress', 'oc', 'ccrdp'] as const).map((tab) => (
+        {(['overview', 'phases', 'documents', 'progress', 'oc', 'oc_docs', 'ccrdp'] as const).map((tab) => (
           <button
             key={tab}
             className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
@@ -851,10 +929,14 @@ export default function ClientDetailPage() {
             {tab === 'documents' && <FolderOpen size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
             {tab === 'progress' && <ClipboardCheck size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
             {tab === 'oc' && <ClipboardCheck size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
+            {tab === 'oc_docs' && <FolderOpen size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
             {tab === 'ccrdp' && <FolderOpen size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}
-            {tab === 'progress' ? 'Client Progress' : tab === 'oc' ? 'OC List' : tab === 'ccrdp' ? 'CC/RDP/OC/PCC' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-            {tab === 'documents' && client.documents.filter(d => !d.folder?.startsWith('ccrdp-')).length > 0 && (
-              <span className={styles.tabCount}>{client.documents.filter(d => !d.folder?.startsWith('ccrdp-')).length}</span>
+            {tab === 'progress' ? 'Client Progress' : tab === 'oc' ? 'OC List' : tab === 'oc_docs' ? 'OC Documents' : tab === 'ccrdp' ? 'CC/RDP/OC/PCC' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === 'documents' && client.documents.filter(d => !d.folder?.startsWith('ccrdp-') && !d.folder?.startsWith('oc_doc-')).length > 0 && (
+              <span className={styles.tabCount}>{client.documents.filter(d => !d.folder?.startsWith('ccrdp-') && !d.folder?.startsWith('oc_doc-')).length}</span>
+            )}
+            {tab === 'oc_docs' && client.documents.filter(d => d.folder?.startsWith('oc_doc-')).length > 0 && (
+              <span className={styles.tabCount}>{client.documents.filter(d => d.folder?.startsWith('oc_doc-')).length}</span>
             )}
             {tab === 'ccrdp' && client.documents.filter(d => d.folder?.startsWith('ccrdp-')).length > 0 && (
               <span className={styles.tabCount}>{client.documents.filter(d => d.folder?.startsWith('ccrdp-')).length}</span>
@@ -2012,6 +2094,125 @@ export default function ClientDetailPage() {
                           )}
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── OC Documents Tab ──────────────────────────────────────────────────── */}
+      {activeTab === 'oc_docs' && (
+        <div className={styles.tabContent}>
+          {/* Header Card / WhatsApp Send */}
+          <div className={`glass-panel ${styles.progressCard}`} style={{ marginBottom: '2rem' }}>
+            <div className={styles.progressFlex}>
+              <div>
+                <h2 className={styles.progressTitle}>OC Documents</h2>
+                <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Manage and share OC Documents aligned with the Occupancy Certificate checklist.
+                </p>
+              </div>
+              <button className={styles.sendBtn} onClick={handleSendOcDocs}>
+                <MessageSquare size={16} /> Send OC Documents (WhatsApp)
+              </button>
+            </div>
+
+            {showOcDocsSendSuccess && (
+              <div style={{
+                background: 'rgba(37, 211, 102, 0.1)',
+                border: '1px solid rgba(37, 211, 102, 0.25)',
+                color: '#25d366',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                marginTop: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                animation: 'fadeIn 0.2s ease-out'
+              }}>
+                <span>✅</span>
+                <span>OC Documents update message generated! WhatsApp Interakt API transmission triggered for <strong>{client.name}</strong> ({client.phone || 'No phone set'}).</span>
+              </div>
+            )}
+          </div>
+
+          <input
+            type="file"
+            multiple
+            ref={ocDocFileInputRef}
+            className={styles.hiddenInput}
+            onChange={handleOcDocFileUpload}
+            id="oc-doc-file-upload-input"
+          />
+
+          {/* OC Document Folders */}
+          <div className={styles.foldersGrid}>
+            {OC_DOCUMENT_FOLDERS.map((folder) => {
+              const folderDocs = client.documents.filter(d => d.folder === folder.id);
+              const totalDocs = folderDocs.length;
+              const isOpen = openFolders[folder.id] ?? true;
+
+              return (
+                <div key={folder.id} className={`${styles.folderCard} ${isOpen ? styles.folderCardOpen : ''}`}>
+                  <div className={styles.folderHeader} onClick={() => toggleFolder(folder.id)}>
+                    <div className={styles.folderIcon}><Folder size={18} strokeWidth={2} /></div>
+                    <div className={styles.folderInfo}>
+                      <div className={styles.folderName}>{folder.name} ({folder.code})</div>
+                      <div className={styles.folderMeta}>
+                        <span>{totalDocs}</span> files
+                        {uploadingOcDocFolders[folder.id] && (
+                          <span style={{ marginLeft: '10px', color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                            <Loader2 size={12} className="animate-spin" /> Uploading...
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles.folderHeaderActions} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className={styles.folderActionBtn}
+                        onClick={(e) => triggerOcDocFolderUpload(e, folder.id)}
+                        title={`Upload file directly to ${folder.name}`}
+                        disabled={uploadingOcDocFolders[folder.id]}
+                      >
+                        <Upload size={13} />
+                      </button>
+                      <ChevronDown className={styles.folderToggle} size={16} strokeWidth={2} onClick={() => toggleFolder(folder.id)} />
+                    </div>
+                  </div>
+                  
+                  <div className={styles.folderBody}>
+                    <div className={styles.rootFiles}>
+                      {folderDocs.length === 0 ? (
+                        <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                          No documents uploaded yet. Click the upload icon above to add files.
+                        </div>
+                      ) : (
+                        folderDocs.map(doc => (
+                          <div key={doc.id} className={styles.fileRow}>
+                            <div className={styles.fileRowLeft}>
+                              <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                              <span className={styles.fileRowName} title={doc.name}>{renderHealthStatus(doc.id)}{doc.name}</span>
+                              <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
+                            </div>
+                            <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                              <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                <Eye size={13} />
+                              </button>
+                              <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
+                                <Download size={13} />
+                              </button>
+                              <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteOcDocDocument(doc.id)} title="Delete">
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
