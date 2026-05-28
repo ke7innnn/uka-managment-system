@@ -100,8 +100,7 @@ export default function AdminAssistantChat() {
 
       const data = await response.json();
 
-      // Artificial 2.9s premium thinking delay
-      await new Promise(resolve => setTimeout(resolve, 2900));
+      // Removed artificial delay since we have paid tier
 
       if (response.ok) {
         setMessages(prev => [...prev, { role: 'model', content: data.message }]);
@@ -116,7 +115,7 @@ export default function AdminAssistantChat() {
       setCooldown(true);
       setTimeout(() => {
         setCooldown(false);
-      }, 10000); // 10 seconds forced wait between questions
+      }, 3000); // 3 seconds forced wait between questions
     }
   };
 
@@ -281,7 +280,7 @@ export default function AdminAssistantChat() {
             type="text" 
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={cooldown ? "Cooling down for 10 seconds..." : "Ask UKA a question..."}
+            placeholder={cooldown ? "Cooling down for 3 seconds..." : "Ask UKA a question..."}
             disabled={isLoading || cooldown}
             style={{
               flex: 1, background: 'var(--bg)', border: '1px solid var(--border)',
