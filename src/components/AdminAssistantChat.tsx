@@ -38,7 +38,7 @@ export default function AdminAssistantChat() {
         // Initial greeting
         setMessages([{
           role: 'model',
-          content: 'Greetings, I am UKA, How can I help you today?'
+          content: 'Greetings, I am Bruce Wayne, How can I help you today?'
         }]);
       }
     } catch (e) {
@@ -63,10 +63,10 @@ export default function AdminAssistantChat() {
   }, [messages, isOpen, isLoading]);
 
   const handleClearChat = () => {
-    if (window.confirm("Are you sure you want to clear the conversation history? UKA will forget this chat context.")) {
+    if (window.confirm("Are you sure you want to clear the conversation history? Bruce Wayne will forget this chat context.")) {
       const initial = [{
         role: 'model' as const,
-        content: 'Greetings, I am UKA, How can I help you today?'
+        content: 'Greetings, I am Bruce Wayne, How can I help you today?'
       }];
       setMessages(initial);
       localStorage.setItem('uka_admin_chat_history', JSON.stringify(initial));
@@ -108,7 +108,7 @@ export default function AdminAssistantChat() {
         setMessages(prev => [...prev, { role: 'model', content: `⚠️ Error: ${data.error || 'Failed to connect to AI.'}` }]);
       }
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', content: "⚠️ Network Error: Could not reach the UKA AI server." }]);
+      setMessages(prev => [...prev, { role: 'model', content: "⚠️ Network Error: Could not reach the Bruce Wayne AI server." }]);
     } finally {
       setIsLoading(false);
       // 3. Keep the input locked for an artificial "Cooldown" period to mathematically prevent hitting the 20/min API limit.
@@ -126,7 +126,7 @@ export default function AdminAssistantChat() {
           onClick={() => setIsOpen(true)}
           className="floating-assistant-btn"
         >
-          <img src="/chatbot-logo.png" alt="UKA Assistant" className="floating-assistant-icon" />
+          <img src="/chatbot-logo.png" alt="Bruce Wayne Assistant" className="floating-assistant-icon" />
         </button>
 
         <style jsx global>{`
@@ -212,10 +212,10 @@ export default function AdminAssistantChat() {
             width: '36px', height: '36px', borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <img src="/chatbot-logo.png" alt="UKA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src="/chatbot-logo.png" alt="Bruce Wayne" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>UKA Assistant</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>Bruce Wayne Assistant</h3>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Real-time Admin Advisor</p>
           </div>
         </div>
@@ -261,7 +261,7 @@ export default function AdminAssistantChat() {
             padding: '0.85rem 1rem', borderRadius: '16px', borderBottomLeftRadius: '4px', border: '1px solid var(--border)',
             display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem'
           }}>
-            <Loader2 size={16} className="animate-spin" /> UKA is thinking...
+            <Loader2 size={16} className="animate-spin" /> Bruce Wayne is thinking...
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -274,7 +274,7 @@ export default function AdminAssistantChat() {
             type="text" 
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={cooldown ? "Cooling down for 1 second..." : "Ask UKA a question..."}
+            placeholder={cooldown ? "Cooling down for 1 second..." : "Ask Bruce Wayne a question..."}
             disabled={isLoading || cooldown}
             style={{
               flex: 1, background: 'var(--bg)', border: '1px solid var(--border)',
