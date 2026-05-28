@@ -1155,7 +1155,7 @@ export const DOCUMENT_FOLDERS = [
     { id: "1d", code: "1.D", name: "8A Extract" },
     { id: "1e", code: "1.E", name: "Advocate Reports", subfolders: [
       { id: "1e-1", code: "1.E.1", name: "No claim" },
-      { id: "1e-2", code: "1.E.2", name: "Pepper noticed" },
+      { id: "1e-2", code: "1.E.2", name: "Paper noticed" },
       { id: "1e-3", code: "1.E.3", name: "Title search reports" }
     ]},
     { id: "1g", code: "1.G", name: "TiLR" },
@@ -1188,7 +1188,11 @@ export const DOCUMENT_FOLDERS = [
     { id: "3e", code: "3.5", name: "Structural Appointment" },
     { id: "3f", code: "3.6", name: "Structural Acceptance" },
     { id: "3g", code: "3.7", name: "Structural Supervision" },
-    { id: "3h", code: "3.8", name: "Structural License" }
+    { id: "3h", code: "3.8", name: "Structural License" },
+    { id: "3i", code: "3.9", name: "Site engineer appointment" },
+    { id: "3j", code: "3.10", name: "Site engineer accept" },
+    { id: "3k", code: "3.11", name: "Site engineer supervisor" },
+    { id: "3l", code: "3.12", name: "Site engineer license" }
   ]},
   { id: '4', name: "VVCMC NOC's", code: "NOC", subfolders: [
     { id: "4a", code: "4.A", name: "D.P Remark" },
@@ -1220,7 +1224,7 @@ export const DOCUMENT_FOLDERS = [
     { id: "9f", code: "9.6", name: "Partnership deed" },
     { id: "9g", code: "9.7", name: "Firm pan card" },
     { id: "9h", code: "9.8", name: "No dues" },
-    { id: "9i", code: "9.9", name: "Tenants Peppers" },
+    { id: "9i", code: "9.9", name: "Tenants Papers" },
     { id: "9j", code: "9.10", name: "List of members" }
   ]}
 ];
