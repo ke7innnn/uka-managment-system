@@ -1357,122 +1357,97 @@ export default function ClientDetailPage() {
             </div>
           </div>
 
-          {/* Checklist Items Grouped */}
+          {/* Checklist Items */}
           {(() => {
-            const groups = [
-              {
-                title: "MANDATORY DOCUMENTS",
-                items: OC_CHECKLIST_ITEMS.filter(item => item.type === 'mandatory')
-              },
-              {
-                title: "OPTIONAL DOCUMENTS",
-                items: OC_CHECKLIST_ITEMS.filter(item => item.type === 'optional')
-              }
-            ];
-
-            return groups.map((grp, grpIdx) => {
-              // Apply search & filter
-              const filteredItems = grp.items.filter(item => {
-                const matchesSearch = item.label.toLowerCase().includes(ocSearch.toLowerCase()) || item.id === ocSearch;
-                const isChecked = (client.ocChecklist || []).includes(item.id);
-                if (ocFilter === 'completed') return matchesSearch && isChecked;
-                if (ocFilter === 'pending') return matchesSearch && !isChecked;
-                return matchesSearch;
-              });
-
-              if (filteredItems.length === 0) return null;
-
-              const completedInGroup = filteredItems.filter(item => (client.ocChecklist || []).includes(item.id)).length;
-              const applicableInGroup = filteredItems.filter(item => !(client.ocChecklist || []).includes(`${item.id}-NA`)).length;
-
-              return (
-                <div key={grpIdx} className={styles.checklistGroup}>
-                  <div className={styles.groupHeader}>
-                    <span>{grp.title}</span>
-                    <span className={styles.groupCountBadge}>
-                      {completedInGroup} / {applicableInGroup} Done
-                    </span>
-                  </div>
-
-                  <div className={styles.checklistGrid}>
-                    {filteredItems.map(item => {
-                      const isChecked = (client.ocChecklist || []).includes(item.id);
-                      const isNA = (client.ocChecklist || []).includes(`${item.id}-NA`);
-                      return (
-                        <div
-                          key={item.id}
-                          onClick={() => handleToggleOcChecklist(item.id)}
-                          className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''} ${isNA ? styles.checkItemNA : ''}`}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '0.85rem 1.25rem',
-                            background: isChecked ? 'rgba(37, 211, 102, 0.04)' : isNA ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.01)',
-                            border: '1px solid var(--border)',
-                            borderColor: isChecked ? 'rgba(37, 211, 102, 0.2)' : isNA ? 'transparent' : 'var(--border)',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease',
-                            opacity: isNA ? 0.6 : 1
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                            <div style={{
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '4px',
-                              border: '2px solid',
-                              borderColor: isChecked ? '#25d366' : isNA ? 'var(--text-muted)' : 'var(--text-tertiary)',
-                              background: isChecked ? '#25d366' : 'transparent',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: '#fff',
-                              flexShrink: 0
-                            }}>
-                              {isChecked && <Check size={14} strokeWidth={3} />}
-                              {isNA && <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 800 }}>-</span>}
-                            </div>
-
-                            <div style={{
-                              fontSize: '0.9rem',
-                              color: isChecked ? 'var(--text-main)' : isNA ? 'var(--text-muted)' : 'var(--text-secondary)',
-                              fontWeight: 500,
-                              lineHeight: 1.4,
-                              textDecoration: isNA ? 'line-through' : 'none'
-                            }}>
-                              <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
-                                {item.id}.
-                              </span>
-                              {item.label}
-                            </div>
-                          </div>
-                          
-                          <button
-                            onClick={(e) => handleToggleOcNA(e, item.id)}
-                            style={{
-                              padding: '0.25rem 0.5rem',
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
-                              borderRadius: '4px',
-                              background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
-                              color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
-                              border: '1px solid',
-                              borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
-                              cursor: 'pointer',
-                              transition: 'all 0.15s ease'
-                            }}
-                          >
-                            NA
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
+            // Apply search & filter
+            const filteredItems = OC_CHECKLIST_ITEMS.filter(item => {
+              const matchesSearch = item.label.toLowerCase().includes(ocSearch.toLowerCase()) || item.id === ocSearch;
+              const isChecked = (client.ocChecklist || []).includes(item.id);
+              if (ocFilter === 'completed') return matchesSearch && isChecked;
+              if (ocFilter === 'pending') return matchesSearch && !isChecked;
+              return matchesSearch;
             });
+
+            if (filteredItems.length === 0) return null;
+
+            return (
+              <div className={styles.checklistGrid}>
+                {filteredItems.map(item => {
+                  const isChecked = (client.ocChecklist || []).includes(item.id);
+                  const isNA = (client.ocChecklist || []).includes(`${item.id}-NA`);
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => handleToggleOcChecklist(item.id)}
+                      className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''} ${isNA ? styles.checkItemNA : ''}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.85rem 1.25rem',
+                        background: isChecked ? 'rgba(37, 211, 102, 0.04)' : isNA ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.01)',
+                        border: '1px solid var(--border)',
+                        borderColor: isChecked ? 'rgba(37, 211, 102, 0.2)' : isNA ? 'transparent' : 'var(--border)',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        opacity: isNA ? 0.6 : 1
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                        <div style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '4px',
+                          border: '2px solid',
+                          borderColor: isChecked ? '#25d366' : isNA ? 'var(--text-muted)' : 'var(--text-tertiary)',
+                          background: isChecked ? '#25d366' : 'transparent',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#fff',
+                          flexShrink: 0
+                        }}>
+                          {isChecked && <Check size={14} strokeWidth={3} />}
+                          {isNA && <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 800 }}>-</span>}
+                        </div>
+
+                        <div style={{
+                          fontSize: '0.9rem',
+                          color: isChecked ? 'var(--text-main)' : isNA ? 'var(--text-muted)' : 'var(--text-secondary)',
+                          fontWeight: 500,
+                          lineHeight: 1.4,
+                          textDecoration: isNA ? 'line-through' : 'none'
+                        }}>
+                          <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
+                            {item.id}.
+                          </span>
+                          {item.label}
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={(e) => handleToggleOcNA(e, item.id)}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          borderRadius: '4px',
+                          background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                          color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                          border: '1px solid',
+                          borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        NA
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            );
           })()}
         </div>
       )}
