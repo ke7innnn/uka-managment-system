@@ -489,6 +489,7 @@ export default function ClientDetailPage() {
           templateKey: 'stage-ready',
           message: `All tasks for ${stageName} have been completed by the staff. It is ready for your review and to be marked as complete.`,
           assignedTo: currentStaffId || 'Staff',
+          pendingTasks: [],
         });
       });
     }
