@@ -1163,7 +1163,6 @@ export const DOCUMENT_FOLDERS = [
     { id: "1f", code: "1.F", name: "Others" }
   ]},
   { id: '2', name: "VVCMC Bonds & Forms", code: "VBF", subfolders: [
-    { id: "2a", code: "2.1", name: "REGARDING APPOINTMENT OF SITE ENGINEER. (500 STAMP)" },
     { id: "2b", code: "2.2", name: "ADJOINING FLAT AFFIDAVIT. (500 STAMP) - IF REQUIRED" },
     { id: "2c", code: "2.3", name: "AFFIDAVIT 1. (500 STAMP)" },
     { id: "2d", code: "2.4", name: "BALANCE PAPER AFFIDAVIT. (500 STAMP)" },
