@@ -126,7 +126,7 @@ export default function AdminAssistantChat() {
           onClick={() => setIsOpen(true)}
           className="floating-assistant-btn"
         >
-          <Bot className="floating-assistant-icon" size={48} strokeWidth={2.25} />
+          <img src="/chatbot-logo.png" alt="UKA Assistant" className="floating-assistant-icon" />
         </button>
 
         <style jsx global>{`
@@ -138,39 +138,33 @@ export default function AdminAssistantChat() {
             width: 82px;
             height: 82px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent, #c8a96e), #818cf8);
-            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.35);
+            background: transparent;
+            box-shadow: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             border: none;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
           }
           .floating-assistant-btn:hover {
             transform: scale(1.05);
-            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.5);
           }
           .floating-assistant-btn:active {
             transform: scale(0.95);
           }
           .floating-assistant-icon {
-            color: white !important;
-            width: 38px !important;
-            height: 38px !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
           }
           @media (max-width: 768px) {
             .floating-assistant-btn {
-              width: 44px;
-              height: 44px;
+              width: 56px;
+              height: 56px;
               bottom: 1.25rem;
               right: 1.25rem;
-              box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
-            }
-            .floating-assistant-icon {
-              width: 20px !important;
-              height: 20px !important;
             }
           }
         `}</style>
@@ -215,10 +209,10 @@ export default function AdminAssistantChat() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ 
-            width: '36px', height: '36px', borderRadius: '50%', background: 'var(--grad-accent)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
+            width: '36px', height: '36px', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <Bot size={20} strokeWidth={2.5} style={{ color: 'white' }} />
+            <img src="/chatbot-logo.png" alt="UKA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>UKA Assistant</h3>
