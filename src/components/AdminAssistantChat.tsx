@@ -144,12 +144,13 @@ export default function AdminAssistantChat() {
             cursor: 'pointer'
           }}
         >
-          <Script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js" strategy="lazyOnload" />
+          <Script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js" strategy="beforeInteractive" />
           {/* @ts-ignore */}
           <ModelViewer 
             src="/glb/Batman.glb" 
             alt="Bruce Wayne Assistant" 
             scale="6 6 6"
+            loading="eager"
             camera-orbit="0deg 90deg auto"
             className="breathe-animation"
             style={{ width: '100%', height: '100%', pointerEvents: 'none', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
@@ -253,6 +254,7 @@ export default function AdminAssistantChat() {
               src="/glb/Batman.glb" 
               alt="Bruce Wayne" 
               scale="3 3 3"
+              loading="eager"
               camera-orbit="0deg 90deg auto"
               className="breathe-animation"
               style={{ width: '120%', height: '120%', pointerEvents: 'none' }}
