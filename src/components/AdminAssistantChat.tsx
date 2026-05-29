@@ -147,7 +147,7 @@ export default function AdminAssistantChat() {
           <Script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js" strategy="lazyOnload" />
           {/* @ts-ignore */}
           <ModelViewer 
-            src="/glb/batman.glb" 
+            src="/glb/Batman.glb" 
             alt="Bruce Wayne Assistant" 
             auto-rotate
             style={{ width: '100%', height: '100%', pointerEvents: 'none', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
@@ -239,7 +239,7 @@ export default function AdminAssistantChat() {
           }}>
             {/* @ts-ignore */}
             <ModelViewer 
-              src="/glb/batman.glb" 
+              src="/glb/Batman.glb" 
               alt="Bruce Wayne" 
               auto-rotate
               style={{ width: '120%', height: '120%', pointerEvents: 'none' }}
