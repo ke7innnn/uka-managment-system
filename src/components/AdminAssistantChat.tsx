@@ -133,8 +133,8 @@ export default function AdminAssistantChat() {
             bottom: '2rem',
             right: '2rem',
             zIndex: 9999,
-            width: '82px',
-            height: '82px',
+            width: '240px',
+            height: '240px',
             borderRadius: '50%',
             background: 'transparent',
             border: 'none',
@@ -150,7 +150,7 @@ export default function AdminAssistantChat() {
             src="/glb/Batman.glb" 
             alt="Bruce Wayne Assistant" 
             auto-rotate
-            scale="3 3 3"
+            scale="6 6 6"
             style={{ width: '100%', height: '100%', pointerEvents: 'none', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
           ></ModelViewer>
         </button>
@@ -161,8 +161,8 @@ export default function AdminAssistantChat() {
             bottom: 2rem;
             right: 2rem;
             z-index: 9999;
-            width: 82px;
-            height: 82px;
+            width: 240px;
+            height: 240px;
             border-radius: 50%;
             background: transparent;
             box-shadow: none;
