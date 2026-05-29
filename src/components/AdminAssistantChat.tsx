@@ -153,6 +153,7 @@ export default function AdminAssistantChat() {
             loading="eager"
             camera-orbit="0deg 90deg auto"
             camera-controls
+            interaction-prompt="none"
             className="breathe-animation"
             style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
           ></ModelViewer>
@@ -258,6 +259,7 @@ export default function AdminAssistantChat() {
               loading="eager"
               camera-orbit="0deg 90deg auto"
               camera-controls
+              interaction-prompt="none"
               className="breathe-animation"
               style={{ width: '120%', height: '120%' }}
             ></ModelViewer>
