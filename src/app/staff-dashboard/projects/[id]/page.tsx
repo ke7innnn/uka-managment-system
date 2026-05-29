@@ -1763,17 +1763,19 @@ export default function ClientDetailPage() {
               const folderDocs = client.documents.filter(d => d.folder === folder.id);
               const totalDocs = folderDocs.length;
               const isOpen = openFolders[folder.id];
+              const isMainFolderNA = (client.naFolders || []).includes(folder.id);
 
               return (
                 <div key={folder.id} className={`${styles.folderCard} ${isOpen ? styles.folderCardOpen : ''} ${dragOverTarget === folder.id ? styles.dropTarget : ''}`}
                   onDragOver={(e) => onDragOver(e, folder.id)}
                   onDragLeave={onDragLeave}
                   onDrop={(e) => onDrop(e, folder.id, undefined)}
+                  style={{ opacity: isMainFolderNA ? 0.5 : 1, transition: 'opacity 0.15s ease' }}
                 >
                   <div className={styles.folderHeader} onClick={() => toggleFolder(folder.id)}>
                     <div className={styles.folderIcon}><Folder size={18} strokeWidth={2} /></div>
                     <div className={styles.folderInfo}>
-                      <div className={styles.folderName}>{folder.name}</div>
+                      <div className={styles.folderName} style={{ textDecoration: isMainFolderNA ? 'line-through' : 'none', color: isMainFolderNA ? 'var(--text-muted)' : undefined }}>{folder.name}</div>
                       <div className={styles.folderMeta}>
                         {folder.code} &nbsp;&middot;&nbsp; <span>{totalDocs}</span> files
                         {uploadingFolders[folder.id] && (
@@ -1784,6 +1786,26 @@ export default function ClientDetailPage() {
                       </div>
                     </div>
                     <div className={styles.folderHeaderActions} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={(e) => handleToggleFolderNA(e, folder.id)}
+                        title={isMainFolderNA ? 'Remove N/A' : 'Mark folder as Not Applicable'}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          borderRadius: '4px',
+                          background: isMainFolderNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                          color: isMainFolderNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                          border: '1px solid',
+                          borderColor: isMainFolderNA ? 'var(--text-main)' : 'var(--border)',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          lineHeight: 1,
+                          marginRight: '4px'
+                        }}
+                      >
+                        NA
+                      </button>
                       <button
                         className={styles.folderActionBtn}
                         onClick={(e) => triggerFolderUpload(e, folder.id)}
@@ -2132,13 +2154,16 @@ export default function ClientDetailPage() {
               const folderDocs = client.documents.filter(d => d.folder === folder.id);
               const totalDocs = folderDocs.length;
               const isOpen = openFolders[folder.id] ?? true;
+              const isOcFolderNA = (client.naFolders || []).includes(folder.id);
 
               return (
-                <div key={folder.id} className={`${styles.folderCard} ${isOpen ? styles.folderCardOpen : ''}`}>
+                <div key={folder.id} className={`${styles.folderCard} ${isOpen ? styles.folderCardOpen : ''}`}
+                  style={{ opacity: isOcFolderNA ? 0.5 : 1, transition: 'opacity 0.15s ease' }}
+                >
                   <div className={styles.folderHeader} onClick={() => toggleFolder(folder.id)}>
                     <div className={styles.folderIcon}><Folder size={18} strokeWidth={2} /></div>
                     <div className={styles.folderInfo}>
-                      <div className={styles.folderName}>{folder.name} ({folder.code})</div>
+                      <div className={styles.folderName} style={{ textDecoration: isOcFolderNA ? 'line-through' : 'none', color: isOcFolderNA ? 'var(--text-muted)' : undefined }}>{folder.name} ({folder.code})</div>
                       <div className={styles.folderMeta}>
                         <span>{totalDocs}</span> files
                         {uploadingOcDocFolders[folder.id] && (
@@ -2149,6 +2174,26 @@ export default function ClientDetailPage() {
                       </div>
                     </div>
                     <div className={styles.folderHeaderActions} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={(e) => handleToggleFolderNA(e, folder.id)}
+                        title={isOcFolderNA ? 'Remove N/A' : 'Mark folder as Not Applicable'}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          borderRadius: '4px',
+                          background: isOcFolderNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                          color: isOcFolderNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                          border: '1px solid',
+                          borderColor: isOcFolderNA ? 'var(--text-main)' : 'var(--border)',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          lineHeight: 1,
+                          marginRight: '4px'
+                        }}
+                      >
+                        NA
+                      </button>
                       <button
                         className={styles.folderActionBtn}
                         onClick={(e) => triggerOcDocFolderUpload(e, folder.id)}
