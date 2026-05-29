@@ -149,11 +149,8 @@ export default function AdminAssistantChat() {
           <ModelViewer 
             src="/glb/Batman.glb" 
             alt="Bruce Wayne Assistant" 
-            auto-rotate
-            rotation-per-second="20deg"
-            min-camera-orbit="-40deg auto auto"
-            max-camera-orbit="40deg auto auto"
             scale="6 6 6"
+            camera-orbit="0deg 90deg auto"
             className="breathe-animation"
             style={{ width: '100%', height: '100%', pointerEvents: 'none', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
           ></ModelViewer>
@@ -255,11 +252,8 @@ export default function AdminAssistantChat() {
             <ModelViewer 
               src="/glb/Batman.glb" 
               alt="Bruce Wayne" 
-              auto-rotate
-              rotation-per-second="20deg"
-              min-camera-orbit="-40deg auto auto"
-              max-camera-orbit="40deg auto auto"
               scale="3 3 3"
+              camera-orbit="0deg 90deg auto"
               className="breathe-animation"
               style={{ width: '120%', height: '120%', pointerEvents: 'none' }}
             ></ModelViewer>
