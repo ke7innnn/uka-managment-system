@@ -5,6 +5,8 @@ import { Bot, X, MessageSquare, Trash2, Send, Loader2 } from 'lucide-react';
 import Script from 'next/script';
 import { getStaff, getClients } from '@/lib/store';
 
+const ModelViewer = 'model-viewer' as any;
+
 type Message = {
   role: 'user' | 'model';
   content: string;
@@ -144,12 +146,12 @@ export default function AdminAssistantChat() {
         >
           <Script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js" strategy="lazyOnload" />
           {/* @ts-ignore */}
-          <model-viewer 
+          <ModelViewer 
             src="/glb/batman.glb" 
             alt="Bruce Wayne Assistant" 
             auto-rotate
             style={{ width: '100%', height: '100%', pointerEvents: 'none', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
-          ></model-viewer>
+          ></ModelViewer>
         </button>
 
         <style jsx global>{`
@@ -236,12 +238,12 @@ export default function AdminAssistantChat() {
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
             {/* @ts-ignore */}
-            <model-viewer 
+            <ModelViewer 
               src="/glb/batman.glb" 
               alt="Bruce Wayne" 
               auto-rotate
               style={{ width: '120%', height: '120%', pointerEvents: 'none' }}
-            ></model-viewer>
+            ></ModelViewer>
           </div>
           <div>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>Bruce Wayne Assistant</h3>
