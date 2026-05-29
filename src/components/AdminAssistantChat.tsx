@@ -152,8 +152,9 @@ export default function AdminAssistantChat() {
             scale="6 6 6"
             loading="eager"
             camera-orbit="0deg 90deg auto"
+            camera-controls
             className="breathe-animation"
-            style={{ width: '100%', height: '100%', pointerEvents: 'none', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
+            style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
           ></ModelViewer>
         </button>
 
@@ -256,8 +257,9 @@ export default function AdminAssistantChat() {
               scale="3 3 3"
               loading="eager"
               camera-orbit="0deg 90deg auto"
+              camera-controls
               className="breathe-animation"
-              style={{ width: '120%', height: '120%', pointerEvents: 'none' }}
+              style={{ width: '120%', height: '120%' }}
             ></ModelViewer>
           </div>
           <div>
