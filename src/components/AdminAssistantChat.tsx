@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Bot, X, MessageSquare, Trash2, Send, Loader2 } from 'lucide-react';
+import Script from 'next/script';
 import { getStaff, getClients } from '@/lib/store';
 
 type Message = {
@@ -141,14 +142,14 @@ export default function AdminAssistantChat() {
             cursor: 'pointer'
           }}
         >
-          <img 
-            src="/chatbot-logo.png" 
+          <Script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js" strategy="lazyOnload" />
+          {/* @ts-ignore */}
+          <model-viewer 
+            src="/glb/batman.glb" 
             alt="Bruce Wayne Assistant" 
-            className="floating-assistant-icon"
-            width={82}
-            height={82}
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-          />
+            auto-rotate
+            style={{ width: '100%', height: '100%', pointerEvents: 'none', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
+          ></model-viewer>
         </button>
 
         <style jsx global>{`
@@ -234,7 +235,13 @@ export default function AdminAssistantChat() {
             width: '36px', height: '36px', borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <img src="/chatbot-logo.png" alt="Bruce Wayne" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            {/* @ts-ignore */}
+            <model-viewer 
+              src="/glb/batman.glb" 
+              alt="Bruce Wayne" 
+              auto-rotate
+              style={{ width: '120%', height: '120%', pointerEvents: 'none' }}
+            ></model-viewer>
           </div>
           <div>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>Bruce Wayne Assistant</h3>
