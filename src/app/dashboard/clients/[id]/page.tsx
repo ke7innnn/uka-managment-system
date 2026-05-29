@@ -127,6 +127,25 @@ export default function ClientDetailPage() {
     updateClient(client.id, { ocChecklist: updated });
     reload();
   };
+
+  // ── Document Folder NA toggle ─────────────────────────────────────────────
+  const handleToggleFolderNA = (e: React.MouseEvent, folderId: string) => {
+    e.stopPropagation();
+    if (!client) return;
+    const current = client.naFolders || [];
+    let updated = [...current];
+
+    if (updated.includes(folderId)) {
+      // Remove NA
+      updated = updated.filter(id => id !== folderId);
+    } else {
+      updated.push(folderId);
+    }
+
+    updateClient(client.id, { naFolders: updated });
+    reload();
+  };
+
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [openStages, setOpenStages] = useState<Record<string, boolean>>({});
   const [editingTimeBound, setEditingTimeBound] = useState<string | null>(null);
@@ -1846,6 +1865,7 @@ export default function ClientDetailPage() {
                   <div className={styles.folderBody}>
                     {folder.subfolders.map(sub => {
                       const subDocs = folderDocs.filter(d => d.subfolder === sub.id);
+                      const isFolderNA = (client.naFolders || []).includes(sub.id);
                       return (
                         <div key={sub.id}>
                           <div
@@ -1853,9 +1873,10 @@ export default function ClientDetailPage() {
                             onDragOver={(e) => { e.stopPropagation(); onDragOver(e, sub.id); }}
                             onDragLeave={onDragLeave}
                             onDrop={(e) => { e.stopPropagation(); onDrop(e, folder.id, sub.id); }}
+                            style={{ opacity: isFolderNA ? 0.5 : 1, transition: 'opacity 0.15s ease' }}
                           >
                             <FolderOpen className={styles.subfolderIcon} size={14} strokeWidth={1.5} />
-                            <span className={styles.subfolderName}>{sub.name}</span>
+                            <span className={styles.subfolderName} style={{ textDecoration: isFolderNA ? 'line-through' : 'none', color: isFolderNA ? 'var(--text-muted)' : undefined }}>{sub.name}</span>
                             
                             <div className={styles.subfolderActions} onClick={(e) => e.stopPropagation()}>
                               {uploadingSubfolders[sub.id] ? (
@@ -1865,6 +1886,26 @@ export default function ClientDetailPage() {
                               ) : (
                                 <span className={styles.subfolderCode}>{sub.code}</span>
                               )}
+                              <button
+                                onClick={(e) => handleToggleFolderNA(e, sub.id)}
+                                title={isFolderNA ? 'Remove N/A' : 'Mark as Not Applicable'}
+                                style={{
+                                  padding: '0.2rem 0.45rem',
+                                  fontSize: '0.65rem',
+                                  fontWeight: 700,
+                                  borderRadius: '4px',
+                                  background: isFolderNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                                  color: isFolderNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                                  border: '1px solid',
+                                  borderColor: isFolderNA ? 'var(--text-main)' : 'var(--border)',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.15s ease',
+                                  lineHeight: 1,
+                                  marginRight: '4px'
+                                }}
+                              >
+                                NA
+                              </button>
                               <button
                                 className={styles.subfolderActionBtn}
                                 onClick={(e) => triggerSubfolderUpload(e, folder.id, sub.id)}
@@ -1937,6 +1978,7 @@ export default function ClientDetailPage() {
                             <div className={styles.subsubfoldersContainer} style={{ paddingLeft: '1.5rem', marginTop: '0.25rem', borderLeft: '2px solid rgba(var(--accent-rgb), 0.1)' }}>
                               {(sub as any).subfolders.map((subsub: any) => {
                                 const subsubDocs = folderDocs.filter(d => d.subfolder === subsub.id);
+                                const isSubsubNA = (client.naFolders || []).includes(subsub.id);
                                 return (
                                   <div key={subsub.id} style={{ marginTop: '0.25rem' }}>
                                     <div
@@ -1944,9 +1986,10 @@ export default function ClientDetailPage() {
                                       onDragOver={(e) => { e.stopPropagation(); onDragOver(e, subsub.id); }}
                                       onDragLeave={onDragLeave}
                                       onDrop={(e) => { e.stopPropagation(); onDrop(e, folder.id, subsub.id); }}
+                                      style={{ opacity: isSubsubNA ? 0.5 : 1, transition: 'opacity 0.15s ease' }}
                                     >
                                       <FolderOpen className={styles.subfolderIcon} size={13} strokeWidth={1.5} />
-                                      <span className={styles.subfolderName} style={{ fontSize: '0.8rem' }}>{subsub.name}</span>
+                                      <span className={styles.subfolderName} style={{ fontSize: '0.8rem', textDecoration: isSubsubNA ? 'line-through' : 'none', color: isSubsubNA ? 'var(--text-muted)' : undefined }}>{subsub.name}</span>
                                       
                                       <div className={styles.subfolderActions} onClick={(e) => e.stopPropagation()}>
                                         {uploadingSubfolders[subsub.id] ? (
@@ -1956,6 +1999,26 @@ export default function ClientDetailPage() {
                                         ) : (
                                           <span className={styles.subfolderCode} style={{ fontSize: '0.65rem' }}>{subsub.code}</span>
                                         )}
+                                        <button
+                                          onClick={(e) => handleToggleFolderNA(e, subsub.id)}
+                                          title={isSubsubNA ? 'Remove N/A' : 'Mark as Not Applicable'}
+                                          style={{
+                                            padding: '0.15rem 0.4rem',
+                                            fontSize: '0.6rem',
+                                            fontWeight: 700,
+                                            borderRadius: '4px',
+                                            background: isSubsubNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                                            color: isSubsubNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                                            border: '1px solid',
+                                            borderColor: isSubsubNA ? 'var(--text-main)' : 'var(--border)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.15s ease',
+                                            lineHeight: 1,
+                                            marginRight: '4px'
+                                          }}
+                                        >
+                                          NA
+                                        </button>
                                         <button
                                           className={styles.subfolderActionBtn}
                                           onClick={(e) => triggerSubfolderUpload(e, folder.id, subsub.id)}

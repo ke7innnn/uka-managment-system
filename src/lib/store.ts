@@ -161,6 +161,7 @@ export interface Client {
   syncStatus?: 'pending' | 'synced';
   ocChecklist?: string[];
   kyc?: KycData;
+  naFolders?: string[];   // NEW: subfolder/folder IDs marked as Not Applicable
 }
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
@@ -1149,6 +1150,7 @@ export const OC_CHECKLIST_ITEMS = [
 
 export const DOCUMENT_FOLDERS = [
   { id: '1', name: "Revenue", code: "REV", subfolders: [
+    { id: "1-ic", code: "1.IC", name: "Inward Copy" },
     { id: "1a", code: "1.A", name: "7/12 Extract / Property Card" },
     { id: "1b", code: "1.B", name: "6/12 Extracts" },
     { id: "1c", code: "1.C", name: "Pikpahani Extracts" },
