@@ -1843,6 +1843,26 @@ export default function ClientDetailPage() {
                                 <span className={styles.subfolderCode}>{sub.code}</span>
                               )}
                               <button
+                                onClick={(e) => handleToggleFolderNA(e, sub.id)}
+                                title={isFolderNA ? 'Remove N/A' : 'Mark as Not Applicable'}
+                                style={{
+                                  padding: '0.2rem 0.45rem',
+                                  fontSize: '0.65rem',
+                                  fontWeight: 700,
+                                  borderRadius: '4px',
+                                  background: isFolderNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                                  color: isFolderNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                                  border: '1px solid',
+                                  borderColor: isFolderNA ? 'var(--text-main)' : 'var(--border)',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.15s ease',
+                                  lineHeight: 1,
+                                  marginRight: '4px'
+                                }}
+                              >
+                                NA
+                              </button>
+                              <button
                                 className={styles.subfolderActionBtn}
                                 onClick={(e) => triggerSubfolderUpload(e, folder.id, sub.id)}
                                 title={`Upload file directly to ${sub.name}`}
