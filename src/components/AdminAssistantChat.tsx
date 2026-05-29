@@ -151,11 +151,21 @@ export default function AdminAssistantChat() {
             alt="Bruce Wayne Assistant" 
             auto-rotate
             scale="6 6 6"
+            className="breathe-animation"
             style={{ width: '100%', height: '100%', pointerEvents: 'none', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
           ></ModelViewer>
         </button>
 
         <style jsx global>{`
+          @keyframes breatheEffect {
+            0% { transform: scale(1) translateY(0px); }
+            50% { transform: scale(1.03) translateY(-6px); }
+            100% { transform: scale(1) translateY(0px); }
+          }
+          .breathe-animation {
+            animation: breatheEffect 4s ease-in-out infinite;
+            transform-origin: center bottom;
+          }
           .floating-assistant-btn {
             position: fixed;
             bottom: 2rem;
@@ -244,6 +254,7 @@ export default function AdminAssistantChat() {
               alt="Bruce Wayne" 
               auto-rotate
               scale="3 3 3"
+              className="breathe-animation"
               style={{ width: '120%', height: '120%', pointerEvents: 'none' }}
             ></ModelViewer>
           </div>
