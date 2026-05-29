@@ -58,6 +58,7 @@ export async function pullFromSupabase() {
       tags: c.tags || [],
       progressChecklist: c.progress_checklist || [],
       ocChecklist: c.oc_checklist || [],
+      naFolders: c.kyc?.naFolders || [],
       clientPassword: c.client_password || '',
       kyc: c.kyc || {},
       syncStatus: 'synced',
@@ -305,7 +306,8 @@ export async function pushClientsToSupabase(clients: Client[]) {
     const remoteKyc = existingMap.get(c.id);
     const kycWithUin = {
       ...(c.kyc || {}),
-      clientUin: c.clientUin || ''
+      clientUin: c.clientUin || '',
+      naFolders: c.naFolders || []
     };
     const safeKyc = restoreStrippedBase64(kycWithUin, remoteKyc);
 

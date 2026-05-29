@@ -289,6 +289,7 @@ export default function ClientDetailPage() {
               ocChecklist: (localClient?.syncStatus === 'pending' && localClient?.ocChecklist) ? localClient.ocChecklist : (data.oc_checklist || []),
               clientPassword: data.client_password || '',
               kyc: data.kyc || {},
+              naFolders: (localClient?.syncStatus === 'pending' && localClient?.naFolders) ? localClient.naFolders : (data.kyc?.naFolders || []),
               syncStatus: 'synced',
               phases: (localClient?.syncStatus === 'pending' && localClient?.phases) ? localClient.phases : (data.phases || []).map((p: any) => ({
                 id: p.id, name: p.name, completed: p.completed, order: p.order,
