@@ -150,6 +150,7 @@ export default function AdminAssistantChat() {
             src="/glb/Batman.glb" 
             alt="Bruce Wayne Assistant" 
             auto-rotate
+            scale="3 3 3"
             style={{ width: '100%', height: '100%', pointerEvents: 'none', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
           ></ModelViewer>
         </button>
@@ -242,6 +243,7 @@ export default function AdminAssistantChat() {
               src="/glb/Batman.glb" 
               alt="Bruce Wayne" 
               auto-rotate
+              scale="3 3 3"
               style={{ width: '120%', height: '120%', pointerEvents: 'none' }}
             ></ModelViewer>
           </div>
