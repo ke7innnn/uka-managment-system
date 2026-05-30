@@ -5,6 +5,28 @@ export async function POST(req: Request) {
   try {
     const { messages, context } = await req.json();
 
+    // Prune context to save tokens and reduce API costs (prevents fast spending)
+    const prunedStaff = (context.staff || []).map((s: any) => ({
+      name: s.name,
+      role: s.role,
+      department: s.department,
+      totalTasksAssigned: s.tasks?.length || 0
+    }));
+
+    const prunedClients = (context.clients || []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      projectName: c.projectName,
+      projectStatus: c.projectStatus,
+      priority: c.priority,
+      stages: (c.phases || []).map((p: any) => ({
+        name: p.name,
+        status: p.status,
+        completedTasks: (p.tasks || []).filter((t: any) => t.completed).length,
+        totalTasks: (p.tasks || []).length
+      }))
+    }));
+
     const primaryKey = process.env.GEMINI_API_KEY;
     const secondaryKey = process.env.GEMINI_API_KEY_SECONDARY;
 
@@ -24,10 +46,10 @@ export async function POST(req: Request) {
       Here is the complete, real-time data of the UKA Management System right now:
       
       --- STAFF DIRECTORY & PERFORMANCE ---
-      ${JSON.stringify(context.staff || [])}
+      ${JSON.stringify(prunedStaff)}
       
       --- CLIENTS & ACTIVE PROJECTS ---
-      ${JSON.stringify(context.clients || [])}
+      ${JSON.stringify(prunedClients)}
       
       CRITICAL INSTRUCTIONS FOR ACCURACY:
       1. Your answers MUST be 100% accurate and based STRICTLY on the real-time JSON data provided above.
@@ -37,8 +59,8 @@ export async function POST(req: Request) {
       5. Summarize your responses and give very short, concise answers, but ensure the complete context of the answer is still provided. Do not write unnecessarily long responses.
     `;
 
-    // Format messages for Gemini API - strictly limit to the last 6 messages for context memory
-    const recentMessages = messages.slice(-6);
+    // Format messages for Gemini API - strictly limit to the last 3 messages for context memory
+    const recentMessages = messages.slice(-3);
     const formattedMessages = recentMessages.map((msg: any) => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }]
