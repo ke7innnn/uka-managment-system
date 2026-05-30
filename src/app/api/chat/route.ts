@@ -34,6 +34,7 @@ export async function POST(req: Request) {
       2. NEVER hallucinate, guess, or make up any names, project details, or statistics.
       3. If a user asks about something not present in the JSON data, explicitly tell them "I do not have that information in the current database."
       4. Cross-check your final answer against the JSON data before responding to ensure zero errors.
+      5. Summarize your responses and give very short, concise answers, but ensure the complete context of the answer is still provided. Do not write unnecessarily long responses.
     `;
 
     // Format messages for Gemini API - strictly limit to the last 6 messages for context memory
