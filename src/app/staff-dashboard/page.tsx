@@ -66,6 +66,12 @@ export default function StaffDashboardHome() {
           });
         });
 
+        stagesList.sort((a, b) => {
+          if (a.status === 'in-progress' && b.status !== 'in-progress') return -1;
+          if (a.status !== 'in-progress' && b.status === 'in-progress') return 1;
+          return 0;
+        });
+
         setAssignedStages(stagesList);
       }
     }
