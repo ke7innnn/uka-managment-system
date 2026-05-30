@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       contents: formattedMessages,
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 2000,
+        maxOutputTokens: 8192,
       }
     };
 
