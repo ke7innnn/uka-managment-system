@@ -5,36 +5,36 @@ export async function POST(req: Request) {
   try {
     const { messages, context } = await req.json();
 
-    // Prune context to save tokens and reduce API costs (prevents fast spending)
-    const prunedStaff = (context.staff || []).map((s: any) => ({
-      name: s.name,
-      role: s.role,
-      department: s.department,
-      totalTasksAssigned: s.tasks?.length || 0,
-      completedTasks: (s.tasks || []).filter((t: any) => t.completed).length,
-      recentAttendance: (s.attendance || []).slice(-3).map((a: any) => `${a.date}: ${a.checkIn} - ${a.checkOut || 'N/A'}`)
-    }));
+    // Deep prune function: Gives AI 100% of details but strips all expensive/bloated data
+    function pruneDeep(obj: any): any {
+      if (Array.isArray(obj)) {
+        const arr = obj.map(pruneDeep).filter(v => v !== null && v !== undefined && v !== '');
+        return arr.length > 0 ? arr : undefined;
+      }
+      if (typeof obj === 'object' && obj !== null) {
+        const res: any = {};
+        for (const [k, v] of Object.entries(obj)) {
+          // Skip expensive or useless keys (base64 images, internal IDs, timestamps, empty values)
+          if (
+            ['id', 'password', 'createdAt', 'uploadedAt', 'url'].includes(k) || 
+            k.endsWith('Photo') || 
+            k.endsWith('Certificate') || 
+            k.endsWith('Signature')
+          ) {
+            continue;
+          }
+          const pruned = pruneDeep(v);
+          if (pruned !== undefined && pruned !== null && pruned !== '') {
+            res[k] = pruned;
+          }
+        }
+        return Object.keys(res).length > 0 ? res : undefined;
+      }
+      return obj;
+    }
 
-    const prunedClients = (context.clients || []).map((c: any) => ({
-      id: c.id,
-      name: c.name,
-      projectName: c.projectName,
-      projectStatus: c.projectStatus,
-      priority: c.priority,
-      stages: (c.phases || []).map((p: any) => ({
-        name: p.name,
-        status: p.status,
-        completedTasks: (p.tasks || []).filter((t: any) => t.completed).length,
-        totalTasks: (p.tasks || []).length
-      })),
-      uploadedDocuments: (c.documents || []).map((d: any) => d.name),
-      kycSummary: {
-        scheme: c.kyc?.scheme || 'N/A',
-        permissionType: c.kyc?.permissionType || 'N/A',
-        development: c.kyc?.proposedDevelopment || 'N/A'
-      },
-      checklistCompletedCount: (c.progressChecklist || []).length
-    }));
+    const prunedStaff = pruneDeep(context.staff || []);
+    const prunedClients = pruneDeep(context.clients || []);
 
     const primaryKey = process.env.GEMINI_API_KEY;
     const secondaryKey = process.env.GEMINI_API_KEY_SECONDARY;
