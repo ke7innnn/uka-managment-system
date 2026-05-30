@@ -482,9 +482,6 @@ export default function ClientDetailPage() {
         const newTasks = p.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
         const allCompleted = newTasks.length > 0 && newTasks.every(t => t.completed);
         let newStatus = p.status;
-        if (!allCompleted && p.status === 'completed') {
-          newStatus = 'in-progress';
-        }
         return {
           ...p,
           status: newStatus,

@@ -484,8 +484,6 @@ export default function ClientDetailPage() {
         if (allCompleted && !previouslyAllCompleted && p.status !== 'completed') {
           triggeredAlert = true;
           stageName = p.name;
-        } else if (!allCompleted && p.status === 'completed') {
-          newStatus = 'in-progress';
         }
         return {
           ...p,
