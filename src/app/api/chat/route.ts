@@ -33,8 +33,31 @@ export async function POST(req: Request) {
       return obj;
     }
 
-    const prunedStaff = pruneDeep(context.staff || []);
-    const prunedClients = pruneDeep(context.clients || []);
+    // Hyper-compress Staff: Convert heavy task objects into simple strings
+    const compressedStaff = (context.staff || []).map((s: any) => ({
+      ...s,
+      tasks: (s.tasks || []).map((t: any) => `${t.completed ? '[DONE]' : '[TODO]'} ${t.title}`)
+    }));
+
+    // Hyper-compress Clients: Drop tasks for inactive phases entirely. Convert active tasks to simple strings.
+    const compressedClients = (context.clients || []).map((c: any) => {
+      const compressedPhases = (c.phases || []).map((p: any) => {
+        // If a phase is completed or not started, the AI can infer that all tasks inside are either all done or all pending.
+        // Sending them wastes massive tokens. We only send the detailed task list for the 'in-progress' phase.
+        if (p.status !== 'in-progress') {
+          return { name: p.name, status: p.status };
+        }
+        return {
+          name: p.name,
+          status: p.status,
+          tasks: (p.tasks || []).map((t: any) => `${t.completed ? '[DONE]' : '[TODO]'} ${t.title} (@${t.assignedTo || 'Unassigned'})`)
+        };
+      });
+      return { ...c, phases: compressedPhases };
+    });
+
+    const prunedStaff = pruneDeep(compressedStaff);
+    const prunedClients = pruneDeep(compressedClients);
 
     const primaryKey = process.env.GEMINI_API_KEY;
     const secondaryKey = process.env.GEMINI_API_KEY_SECONDARY;
