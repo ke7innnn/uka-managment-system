@@ -10,7 +10,9 @@ export async function POST(req: Request) {
       name: s.name,
       role: s.role,
       department: s.department,
-      totalTasksAssigned: s.tasks?.length || 0
+      totalTasksAssigned: s.tasks?.length || 0,
+      completedTasks: (s.tasks || []).filter((t: any) => t.completed).length,
+      recentAttendance: (s.attendance || []).slice(-3).map((a: any) => `${a.date}: ${a.checkIn} - ${a.checkOut || 'N/A'}`)
     }));
 
     const prunedClients = (context.clients || []).map((c: any) => ({
@@ -24,7 +26,14 @@ export async function POST(req: Request) {
         status: p.status,
         completedTasks: (p.tasks || []).filter((t: any) => t.completed).length,
         totalTasks: (p.tasks || []).length
-      }))
+      })),
+      uploadedDocuments: (c.documents || []).map((d: any) => d.name),
+      kycSummary: {
+        scheme: c.kyc?.scheme || 'N/A',
+        permissionType: c.kyc?.permissionType || 'N/A',
+        development: c.kyc?.proposedDevelopment || 'N/A'
+      },
+      checklistCompletedCount: (c.progressChecklist || []).length
     }));
 
     const primaryKey = process.env.GEMINI_API_KEY;
