@@ -520,6 +520,11 @@ export default function ClientDetailPage() {
   };
 
   const reassignTask = (phaseId: string, taskId: string) => {
+    // Capture the currently assigned staff before clearing
+    const phase = client.phases.find(p => p.id === phaseId);
+    const task = phase?.tasks.find(t => t.id === taskId);
+    const previousAssignee = task?.assignedTo || '';
+
     const updated = client.phases.map((p) => {
       if (p.id === phaseId) {
         return {
@@ -531,6 +536,23 @@ export default function ClientDetailPage() {
       return p;
     });
     updateClient(client.id, { phases: updated });
+
+    // Send inbox alert to the previously assigned staff member
+    if (previousAssignee && phase && task) {
+      import('@/lib/store').then(({ addAlert }) => {
+        addAlert({
+          clientId: client.id,
+          clientName: client.name,
+          stageName: phase.name,
+          severity: 'info',
+          templateKey: 'task-reassigned',
+          message: `The task "${task.title}" from stage "${phase.name}" for client ${client.name} has been reassigned to you by the admin. Please check your current assignments.`,
+          assignedTo: previousAssignee,
+          pendingTasks: [task.title],
+        });
+      });
+    }
+
     reload();
   };
 

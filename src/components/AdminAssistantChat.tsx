@@ -41,7 +41,7 @@ export default function AdminAssistantChat() {
         // Initial greeting
         setMessages([{
           role: 'model',
-          content: 'Greetings, I am Bruce Wayne, How can I help you today?'
+          content: 'Greetings Umesh, I am Bruce Wayne, How can I help you today?'
         }]);
       }
     } catch (e) {
@@ -69,7 +69,7 @@ export default function AdminAssistantChat() {
     if (window.confirm("Are you sure you want to clear the conversation history? Bruce Wayne will forget this chat context.")) {
       const initial = [{
         role: 'model' as const,
-        content: 'Greetings, I am Bruce Wayne, How can I help you today?'
+        content: 'Greetings Umesh, I am Bruce Wayne, How can I help you today?'
       }];
       setMessages(initial);
       localStorage.setItem('uka_admin_chat_history', JSON.stringify(initial));
