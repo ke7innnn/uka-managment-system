@@ -519,6 +519,21 @@ export default function ClientDetailPage() {
     reload();
   };
 
+  const reassignTask = (phaseId: string, taskId: string) => {
+    const updated = client.phases.map((p) => {
+      if (p.id === phaseId) {
+        return {
+          ...p,
+          status: p.status === 'completed' ? 'in-progress' : p.status,
+          tasks: p.tasks.map(t => t.id === taskId ? { ...t, completed: false, assignedTo: '' } : t)
+        };
+      }
+      return p;
+    });
+    updateClient(client.id, { phases: updated });
+    reload();
+  };
+
   const toggleStageAccordion = (phaseId: string) => {
     setOpenStages(prev => ({ ...prev, [phaseId]: !prev[phaseId] }));
   };
@@ -1703,6 +1718,28 @@ export default function ClientDetailPage() {
                                     <option key={s.id} value={s.name} />
                                   ))}
                                 </datalist>
+                                {task.completed && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); reassignTask(phase.id, task.id); }}
+                                    title="Reassign this task"
+                                    style={{
+                                      fontSize: '0.72rem',
+                                      padding: '2px 8px',
+                                      background: 'rgba(59, 130, 246, 0.1)',
+                                      color: '#3b82f6',
+                                      border: '1px solid rgba(59, 130, 246, 0.25)',
+                                      borderRadius: '6px',
+                                      cursor: 'pointer',
+                                      fontWeight: 600,
+                                      whiteSpace: 'nowrap',
+                                      transition: 'all 0.18s ease',
+                                    }}
+                                    onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.22)'; }}
+                                    onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
+                                  >
+                                    ↺ Reassign
+                                  </button>
+                                )}
                                 <button className={styles.taskDeleteBtn} onClick={() => deleteTask(phase.id, task.id)}><X size={14} /></button>
                               </div>
                             </div>
