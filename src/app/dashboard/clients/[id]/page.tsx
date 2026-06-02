@@ -396,10 +396,11 @@ export default function ClientDetailPage() {
     reload();
   };
 
-  const deleteStage = (phaseId: string) => {
+  const deleteStage = async (phaseId: string) => {
     const updated = client.phases.filter((p) => p.id !== phaseId);
     updateClient(client.id, { phases: updated });
     reload();
+    await supabase.from('phases').delete().eq('id', phaseId);
   };
 
   const startStage = (phaseId: string) => {
@@ -691,6 +692,9 @@ export default function ClientDetailPage() {
           console.error("Error extracting file path:", err);
         }
       }
+      
+      // 3. Delete from Supabase Database to prevent ghost document reappearing
+      await supabase.from('documents').delete().eq('id', docId);
     }
   };
 
@@ -783,6 +787,7 @@ export default function ClientDetailPage() {
           if (path) await supabase.storage.from('uka-storage').remove([path]);
         } catch {}
       }
+      await supabase.from('documents').delete().eq('id', docId);
     }
   };
 
@@ -850,6 +855,7 @@ export default function ClientDetailPage() {
           if (path) await supabase.storage.from('uka-storage').remove([path]);
         } catch {}
       }
+      await supabase.from('documents').delete().eq('id', docId);
     }
   };
 
