@@ -7,7 +7,7 @@ export async function downloadDocumentSafe(url: string, filename: string) {
   try {
     const response = await fetch(url);
     if (response.status === 404) {
-      alert("This file is missing from the storage server (HTTP 404 Object Not Found).\n\nIt may have been permanently deleted, or the initial upload did not complete successfully. You will need to re-upload this file if you need it.");
+      alert(`"${filename}" is missing from storage (HTTP 404).\n\nThis file was permanently deleted from the server. Please re-upload it from the client's document page.`);
       return;
     }
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -844,26 +844,34 @@ export function staffStatusColor(member: StaffMember): 'green' | 'yellow' | 'red
   return 'red';
 }
 
-/** Safely open data URLs in a new tab without being blocked by browser security */
-export async function viewDocumentSafe(dataUrl: string) {
+/** Safely open a document in a new tab — avoids popup blocking from async HEAD checks */
+export async function viewDocumentSafe(url: string) {
   try {
-    if (!dataUrl.startsWith('data:')) {
+    if (!url.startsWith('data:')) {
+      // For Supabase public URLs: open immediately in new tab to avoid popup blocking.
+      // Then fetch to check if it's a 404 — if so, close the tab and show alert.
+      // This avoids the browser blocking window.open() called after async awaits.
+      const newTab = window.open(url, '_blank');
+      
+      // Also check in background — if 404, notify user (tab will show Supabase 404 page)
       try {
-        const response = await fetch(dataUrl, { method: 'HEAD' });
+        const response = await fetch(url, { method: 'HEAD' });
         if (response.status === 404) {
-          alert("This file is missing from the storage server (HTTP 404 Object Not Found).\n\nIt may have been permanently deleted, or the initial upload did not complete successfully. You will need to re-upload this file if you need it.");
-          return;
+          if (newTab) newTab.close();
+          alert(`This file is missing from storage (HTTP 404).\n\nIt was deleted from the server by a previous sync bug. Please re-upload the file from the client's document folder.`);
         }
       } catch (e) {
-        console.error("HEAD request failed for viewDocumentSafe", e);
+        // Network error — tab is already open, that's fine
+        console.error('HEAD check failed for viewDocumentSafe', e);
       }
-      window.open(dataUrl, '_blank');
       return;
     }
-    const arr = dataUrl.split(',');
+    
+    // For base64 data URLs — convert to blob and open
+    const arr = url.split(',');
     const mimeMatch = arr[0].match(/:(.*?);/);
     if (!mimeMatch) {
-      window.open(dataUrl, '_blank');
+      window.open(url, '_blank');
       return;
     }
     const mime = mimeMatch[1];
@@ -877,8 +885,8 @@ export async function viewDocumentSafe(dataUrl: string) {
     const blobUrl = URL.createObjectURL(blob);
     window.open(blobUrl, '_blank');
   } catch (e) {
-    console.error("Failed to view document", e);
-    window.open(dataUrl, '_blank');
+    console.error('Failed to view document', e);
+    window.open(url, '_blank');
   }
 }
 

@@ -388,23 +388,25 @@ export async function pushClientsToSupabase(clients: Client[]) {
     }
   }
 
-  // Clean up orphans
+  // ─── Orphan Phase Cleanup ────────────────────────────────────────────────
+  // Safely remove phases that no longer exist in local state, but ONLY if
+  // the local phases list is non-empty (prevents wiping all phases when
+  // the push is triggered with a client that has no phases loaded yet).
   const clientIdsForCleanup = clients.map(c => c.id);
   if (clientIdsForCleanup.length > 0) {
     const currentPhaseIds = phaseRows.map(p => p.id);
     if (currentPhaseIds.length > 0) {
       await supabase.from('phases').delete().in('client_id', clientIdsForCleanup).not('id', 'in', `(${currentPhaseIds.join(',')})`);
-    } else {
-      await supabase.from('phases').delete().in('client_id', clientIdsForCleanup);
     }
-
-    const currentDocIds = docRows.map(d => d.id);
-    if (currentDocIds.length > 0) {
-      await supabase.from('documents').delete().in('client_id', clientIdsForCleanup).not('id', 'in', `(${currentDocIds.join(',')})`);
-    } else {
-      await supabase.from('documents').delete().in('client_id', clientIdsForCleanup);
-    }
+    // If currentPhaseIds is empty, do NOT delete phases — client may not have loaded them yet.
   }
+
+  // ─── Documents: NEVER auto-delete ───────────────────────────────────────
+  // Documents are NEVER auto-cleaned here. They are only removed when the user
+  // explicitly deletes a file via the UI. Auto-deleting based on local state
+  // is DANGEROUS because localStorage strips large Base64 URLs
+  // (stripLargeBase64), making it appear as if uploaded files don't exist,
+  // which previously caused ALL documents to be wiped from Supabase on every sync.
 }
 
 export async function pushStaffToSupabase(staff: StaffMember[]) {
