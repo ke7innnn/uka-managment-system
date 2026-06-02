@@ -1,0 +1,70 @@
+Created At: 2026-06-02T09:07:58Z
+Completed At: 2026-06-02T09:08:00Z
+
+				The command completed successfully.
+				Output:
+				<truncated 70 lines>
+    27:   ✅ "UNDERTAKING.pdf" → EXISTS in Storage
+    28:   ✅ "UNDERTAKING NOT ENCLOSE.pdf" → EXISTS in Storage
+    29:   ✅ "INDEMNITY BOND.pdf" → EXISTS in Storage
+    30:   ✅ "DECLERATION.pdf" → EXISTS in Storage
+    31:   ✅ "AFF.pdf" → EXISTS in Storage
+    32:   ✅ "P  A.pdf" → EXISTS in Storage
+    33:   ✅ "SEC 79.pdf" → EXISTS in Storage
+    34:   ✅ "UNDERTAKING STRUCTURE SUPERVISION.pdf" → E
+        - 9435eeaf-b588-4e95-9879-7965b21ad90a.pdf (1717KB)
+    368:    - 9598f016-697a-4775-afb9-8eb4de6d86ab.pdf (252KB)
+    369:    - 97d9cbb6-529a-4f19-ac61-0f3864d0a4af.pdf (973KB)
+    370:    - 9b3d2a92-bf38-486a-8853-44160d1d1533.pdf (1080KB)
+    371:    - 9ba7d09b-12d7-4d93-954c-bd21a77b67cd.pdf (303KB)
+    372:    - 9c3065dd-4328-4e76-a5d3-6d694ec6b17f.pdf (4255KB)
+    373:    - 9ec96e95-5c2f-4f12-875a-87accd36beea.pdf (48886KB)
+    374:    - a0553e02-bce1-4ff7-b879-1f77beb7339f.pdf (3228KB)
+    375:    - a0c9d582-315e-4841-ad78-3fe5c6a12cd3.pdf (825KB)
+    376:    - a19a38bf-9554-4541-bf9c-32eb3b01d273.pdf (21969KB)
+    377:    - aba67f96-1295-4ea6-9bd4-b00c25060990.pdf (1080KB)
+    378:    - acd525d8-ac0b-4db5-8368-68217e053dcb.pdf (875KB)
+    379:    - b16d7aff-0f1d-4dc0-a259-c1a5248c9d0d.pdf (221KB)
+    380:    - b27295fb-539e-4ca2-9211-f2578f1725dd.pdf (25733KB)
+    381:    - b6a16860-1705-4253-91d3-fa031bf65f84.pdf (83KB)
+    382:    - b923293a-b940-413e-b689-65760ba5a1dd.pdf (599KB)
+    383:    - c06a02bf-cdcf-42b0-aafe-8e27a2587f17.pdf (2323KB)
+    384:    - c0db6e6f-bfb6-44ab-8cfd-8bd415507b9b.pdf (2488KB)
+    385:    - c49c5b4a-9cf0-4452-80d8-ef11b580813f.pdf (538KB)
+    386:    - c6ddb84c-6ee6-46a6-a677-671bc4a245fb.pdf (2025KB)
+    387:    - d0859d4a-1b78-4ba5-9954-6e39e282bc82.pdf (694KB)
+    388:    - d467230d-15ed-4f57-9362-5f4fbc769e86.pdf (13597KB)
+    389:    - daa91cd7-6707-4048-87b5-968172a19973.pdf (235KB)
+    390: 
+<truncated 4161 bytes>
+t/public/uka-storage/documents/b6cc5f05-d0c8-4
+    480:   📄 e89389a2-0dbc-4307-b221-3030b24b4243.pdf (726KB) — ⚠️  ORPHAN (in storage but no DB record)
+    481:        URL: https://teoggshqiyimbilbcvnv.supabase.co/storage/v1/object/public/uka-storage/documents/b6cc5f05-d0c8-4
+    482:   📄 f11c41f7-8d0a-444f-b5b0-7c1f10e690f3.pdf (853KB) — ⚠️  ORPHAN (in storage but no DB record)
+    483:        URL: https://teoggshqiyimbilbcvnv.supabase.co/storage/v1/object/public/uka-storage/documents/b6cc5f05-d0c8-4
+    484:   📄 f24fbf71-c440-42ba-832f-a7bff769e50f.pdf (410KB) — ⚠️  ORPHAN (in storage but no DB record)
+    485:        URL: https://teoggshqiyimbilbcvnv.supabase.co/storage/v1/object/public/uka-storage/documents/b6cc5f05-d0c8-4
+    486:   📄 f3b57a50-3016-4950-af5c-2d662efcaf63.pdf (865KB) — ⚠️  ORPHAN (in storage but no DB record)
+    487:        URL: https://teoggshqiyimbilbcvnv.supabase.co/storage/v1/object/public/uka-storage/documents/b6cc5f05-d0c8-4
+    488:   📄 f7244574-83fc-47ed-aea4-91c33b9d17fe.pdf (275KB) — ⚠️  ORPHAN (in storage but no DB record)
+    489:        URL: https://teoggshqiyimbilbcvnv.supabase.co/storage/v1/object/public/uka-storage/documents/b6cc5f05-d0c8-4
+
+Convo ID: d4f453d8-321d-4a49-b4eb-4a7ce9935785 | Line: 123
+  Type: PLANNER_RESPONSE, Source: MODEL
+
+Convo ID: d4f453d8-321d-4a49-b4eb-4a7ce9935785 | Line: 127
+  Type: PLANNER_RESPONSE, Source: MODEL
+
+Convo ID: d4f453d8-321d-4a49-b4eb-4a7ce9935785 | Line: 128
+  Type: RUN_COMMAND, Source: MODEL
+    [{"id":"bcc224a3-d7a3-4fae-a270-ee7a3c2fbc58","client_id":"b6cc5f05-d0c8-48fe-9d91-b94573aca3f1","name":"AFFIDAVIT.pdf",
+    				[{"id":"bcc224a3-d7a3-4fae-a270-ee7a3c2fbc58","client_id":"b6cc5f05-d0c8-48fe-9d91-b94573aca3f1","name":"AFFIDAVIT.p
+
+Convo ID: d4f453d8-321d-4a49-b4eb-4a7ce9935785 | Line: 129
+  Type: PLANNER_RESPONSE, Source: MODEL
+
+Convo ID: d4f453d8-321d-4a49-b4eb-4a7ce9935785 | Line: 131
+  Type: PLANNER_RESPONSE, Source: MODEL
+
+--- Searching specifically for documents array pattern ---
+
