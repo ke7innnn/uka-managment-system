@@ -274,37 +274,38 @@ export default function ClientDetailPage() {
             // Always prefer local checklist state — Supabase data may be stale
             // if the user just toggled a checkbox (async push hasn't completed yet)
             const localClient = getClientById(params.id);
+            const isPending = localClient?.syncStatus === 'pending';
             const fullClient: Client = {
               id: data.id,
-              clientId: data.client_id || '',
-              clientUin: data.kyc?.clientUin || '',
-              name: data.name,
-              company: data.company || '',
-              email: data.email || '',
-              phone: data.phone || '',
-              place: data.place || '',
-              address: data.address || '',
-              notes: data.notes || '',
-              projectName: data.project_name || '',
-              projectStatus: data.project_status || 'pending',
+              clientId: isPending ? (localClient?.clientId ?? '') : (data.client_id ?? ''),
+              clientUin: isPending ? (localClient?.clientUin ?? '') : (data.kyc?.clientUin ?? ''),
+              name: isPending ? (localClient?.name ?? data.name) : data.name,
+              company: isPending ? (localClient?.company ?? '') : (data.company ?? ''),
+              email: isPending ? (localClient?.email ?? '') : (data.email ?? ''),
+              phone: isPending ? (localClient?.phone ?? '') : (data.phone ?? ''),
+              place: isPending ? (localClient?.place ?? '') : (data.place ?? ''),
+              address: isPending ? (localClient?.address ?? '') : (data.address ?? ''),
+              notes: isPending ? (localClient?.notes ?? '') : (data.notes ?? ''),
+              projectName: isPending ? (localClient?.projectName ?? '') : (data.project_name ?? ''),
+              projectStatus: isPending ? (localClient?.projectStatus ?? 'pending') : (data.project_status ?? 'pending'),
               createdAt: data.created_at,
-              tags: data.tags || [],
+              tags: isPending ? (localClient?.tags ?? []) : (data.tags ?? []),
               // Use local state for checklists AND phases to avoid overwriting fresh toggles
               // (the async push to Supabase may not have completed yet)
-              progressChecklist: (localClient?.syncStatus === 'pending' && localClient?.progressChecklist) ? localClient.progressChecklist : (data.progress_checklist || []),
-              ocChecklist: (localClient?.syncStatus === 'pending' && localClient?.ocChecklist) ? localClient.ocChecklist : (data.oc_checklist || []),
-              clientPassword: data.client_password || '',
-              kyc: data.kyc || {},
-              naFolders: (localClient?.syncStatus === 'pending' && localClient?.naFolders) ? localClient.naFolders : (data.kyc?.naFolders || []),
-              syncStatus: 'synced',
-              phases: (localClient?.syncStatus === 'pending' && localClient?.phases) ? localClient.phases : (data.phases || []).map((p: any) => ({
+              progressChecklist: isPending ? (localClient?.progressChecklist ?? []) : (data.progress_checklist || []),
+              ocChecklist: isPending ? (localClient?.ocChecklist ?? []) : (data.oc_checklist || []),
+              clientPassword: isPending ? (localClient?.clientPassword ?? '') : (data.client_password ?? ''),
+              kyc: isPending ? { ...(data.kyc || {}), ...(localClient?.kyc || {}) } : (data.kyc || {}),
+              naFolders: isPending ? (localClient?.naFolders ?? []) : (data.kyc?.naFolders || []),
+              syncStatus: isPending ? 'pending' : 'synced',
+              phases: isPending ? (localClient?.phases ?? []) : (data.phases || []).map((p: any) => ({
                 id: p.id, name: p.name, completed: p.completed, order: p.order,
                 status: p.status || (p.completed ? 'completed' : 'not-started'),
                 timeBound: p.time_bound || undefined,
                 startedAt: p.started_at || undefined,
                 tasks: typeof p.tasks === 'string' ? JSON.parse(p.tasks) : (p.tasks || [])
               })).sort((a: any, b: any) => a.order - b.order),
-              documents: (localClient?.syncStatus === 'pending' && localClient?.documents) ? localClient.documents : (data.documents || []).map((d: any) => ({
+              documents: isPending ? (localClient?.documents ?? []) : (data.documents || []).map((d: any) => ({
                 id: d.id, name: d.name, url: d.url, uploadedAt: d.uploaded_at,
                 type: d.type || 'unknown', size: d.size || 0, uploadedBy: d.uploaded_by || '',
                 folder: d.folder || undefined, subfolder: d.subfolder || undefined
