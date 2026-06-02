@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, downloadDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, CC_RDP_FOLDERS, OC_DOCUMENT_FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
@@ -35,6 +36,11 @@ export default function ClientDetailPage() {
   const [showWhatsappModal, setShowWhatsappModal] = useState(false);
   const [whatsappTestNumber, setWhatsappTestNumber] = useState('8698930978');
   const [whatsappSending, setWhatsappSending] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSendProgress = () => {
     setShowWhatsappModal(true);
@@ -49,12 +55,90 @@ export default function ClientDetailPage() {
 
     const current = client.progressChecklist || [];
     
+    const SHORT_LABEL_MAP: Record<string, string> = {
+      "1": "7/12 Extract",
+      "2": "6/12 Mutation",
+      "3": "Pikpani",
+      "4": "8A Extract",
+      "5": "Title Search",
+      "6": "No Claim",
+      "7": "Paper Notice",
+      "8": "Sale Permit",
+      "9": "NA Order",
+      "10": "Gaon Nakasha",
+      "11": "Gavthan Cert",
+      "12": "Site Survey",
+      "13": "Site Photos",
+      "14": "RR Rate Copy",
+      "15": "Gut Book",
+      "16": "TLR",
+      "17": "Soc Reg Cert",
+      "18": "Mem Consents",
+      "19": "Gharpatti",
+      "20": "Assessment",
+      "21": "Share Cert",
+      "22": "Light Bill",
+      "23": "Pan Cards",
+      "24": "Aadhar Cards",
+      "25": "Member List",
+      "26": "79A Reso",
+      "27": "79A NOC",
+      "28": "Soc Officer Reso",
+      "29": "C1 Notice",
+      "30": "Dev Agreement",
+      "31": "Power of Atty",
+      "32": "Partner Deed",
+      "33": "Firm PAN",
+      "34": "Ward No Dues",
+      "35": "Old Approval",
+      "36": "As-Built Survey",
+      "37": "Joint Soc Reso",
+      "38": "Affidavits",
+      "39": "DA/POA Auth",
+      "40": "Xerox True Copy",
+      "41": "Arch Appt",
+      "42": "Stamp Papers",
+      "43": "Zone Remark",
+      "44": "Client Photos",
+      "45": "Client KYC",
+      "46": "Client ID/Pass",
+      "47": "Client DSC",
+      "48": "OTP Mobile",
+      "49": "Permit Type",
+      "50": "Scheme Type",
+      "51": "Appendix A1",
+      "52": "Appendix B",
+      "53": "Railway NOC",
+      "54": "Arch/Eng Appt",
+      "55": "Struct Appt",
+      "56": "Struct Stability",
+      "57": "Receipt",
+      "58": "EE Report",
+      "59": "DP",
+      "60": "Tree NOC",
+      "61": "Fire NOC",
+      "62": "Level Survey",
+      "63": "Physical Survey",
+      "64": "Report & Dwg",
+      "65": "Blue Board",
+      "66": "Hardship Report",
+      "67": "Layout",
+      "68": "Specific NOC",
+      "69": "Work Status",
+      "70": "MOEF Clear",
+      "71": "RR Rate CC/RDP",
+      "72": "Right of Way",
+      "73": "EC Dwg NOC",
+      "74": "TDR Form"
+    };
+
     return items.map(item => {
       let icon = "❌";
       if (current.includes(item.id)) icon = "✅";
       if (current.includes(`${item.id}-NA`)) icon = "➖";
-      return `${item.label}: ${icon}`;
-    }).join(", ");
+      const shortName = SHORT_LABEL_MAP[item.id] || item.label;
+      return `${shortName}: ${icon}`;
+    }).join("\n");
   };
 
   const sendWhatsappTest = async () => {
@@ -2566,7 +2650,7 @@ export default function ClientDetailPage() {
         </div>
       )}
       {/* WhatsApp Testing Modal */}
-      {showWhatsappModal && (
+      {showWhatsappModal && mounted && createPortal(
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: 'var(--card)', padding: '24px', borderRadius: '12px', width: '90%', maxWidth: '550px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2614,7 +2698,8 @@ export default function ClientDetailPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
