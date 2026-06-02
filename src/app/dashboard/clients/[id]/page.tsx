@@ -30,10 +30,64 @@ export default function ClientDetailPage() {
   const [progressSearch, setProgressSearch] = useState('');
   const [progressFilter, setProgressFilter] = useState<'all' | 'completed' | 'pending'>('all');
   const [showSendSuccess, setShowSendSuccess] = useState(false);
+  
+  // WhatsApp Integration State
+  const [showWhatsappModal, setShowWhatsappModal] = useState(false);
+  const [whatsappTestNumber, setWhatsappTestNumber] = useState('8698930978');
+  const [whatsappSending, setWhatsappSending] = useState(false);
 
   const handleSendProgress = () => {
-    setShowSendSuccess(true);
-    setTimeout(() => setShowSendSuccess(false), 4000);
+    setShowWhatsappModal(true);
+  };
+
+  const getProgressString = (startId: number, endId: number) => {
+    if (!client) return "";
+    const items = PROGRESS_CHECKLIST_ITEMS.filter(item => {
+      const num = parseInt(item.id, 10);
+      return num >= startId && num <= endId;
+    });
+
+    const current = client.progressChecklist || [];
+    
+    return items.map(item => {
+      let icon = "❌";
+      if (current.includes(item.id)) icon = "✅";
+      if (current.includes(`${item.id}-NA`)) icon = "➖";
+      return `${item.label}: ${icon}`;
+    }).join(", ");
+  };
+
+  const sendWhatsappTest = async () => {
+    if (!client) return;
+    setWhatsappSending(true);
+    try {
+      const p1 = client.name || "Client";
+      const p2 = getProgressString(1, 16);
+      const p3 = getProgressString(17, 74);
+
+      const res = await fetch('/api/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          destination: whatsappTestNumber,
+          userName: p1,
+          params: [p1, p2, p3]
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setShowWhatsappModal(false);
+        setShowSendSuccess(true);
+        setTimeout(() => setShowSendSuccess(false), 4000);
+      } else {
+        alert("Failed to send WhatsApp message: " + JSON.stringify(data.error));
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setWhatsappSending(false);
+    }
   };
 
   const handleToggleChecklist = (itemId: string) => {
@@ -2508,6 +2562,57 @@ export default function ClientDetailPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+      {/* WhatsApp Testing Modal */}
+      {showWhatsappModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--card)', padding: '24px', borderRadius: '12px', width: '90%', maxWidth: '550px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <MessageSquare size={20} color="#25D366" /> Send WhatsApp Progress Update
+            </h3>
+            
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+              You are in <strong>Test Mode</strong>. Enter a phone number below to receive the AiSensy template message.
+            </p>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '6px' }}>Test Phone Number (Country Code + Number)</label>
+              <input 
+                type="text" 
+                value={whatsappTestNumber} 
+                onChange={(e) => setWhatsappTestNumber(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--text)' }}
+              />
+            </div>
+
+            <div style={{ background: 'var(--background)', padding: '12px', borderRadius: '6px', border: '1px dashed var(--border)', marginBottom: '20px', maxHeight: '250px', overflowY: 'auto' }}>
+              <strong style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Template Params Preview:</strong>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text)', marginTop: '8px', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                <strong>{"{{1}}"} :</strong> {client?.name}<br/><br/>
+                <strong>{"{{2}}"} :</strong> {getProgressString(1, 16)}<br/><br/>
+                <strong>{"{{3}}"} :</strong> {getProgressString(17, 74)}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button 
+                onClick={() => setShowWhatsappModal(false)}
+                style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', cursor: 'pointer' }}
+                disabled={whatsappSending}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={sendWhatsappTest}
+                style={{ padding: '8px 16px', background: '#25D366', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                disabled={whatsappSending}
+              >
+                {whatsappSending ? <Loader2 size={16} className="animate-spin" /> : <MessageSquare size={16} />}
+                {whatsappSending ? 'Sending...' : 'Send Test WhatsApp'}
+              </button>
+            </div>
           </div>
         </div>
       )}
