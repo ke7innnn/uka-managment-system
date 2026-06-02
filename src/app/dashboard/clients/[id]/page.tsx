@@ -138,7 +138,7 @@ export default function ClientDetailPage() {
       if (current.includes(`${item.id}-NA`)) icon = "➖";
       const shortName = SHORT_LABEL_MAP[item.id] || item.label;
       return `${shortName}: ${icon}`;
-    }).join("\n");
+    }).join(", ");
   };
 
   const sendWhatsappTest = async () => {
