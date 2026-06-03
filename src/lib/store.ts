@@ -431,7 +431,10 @@ export function saveClients(clients: Client[]): void {
   // Debounce background sync to Supabase (non-blocking with full un-stripped details)
   if (clientPushTimeout) clearTimeout(clientPushTimeout);
   clientPushTimeout = setTimeout(() => {
-    pushClientsToSupabase(getClients()).catch(console.error);
+    const pendingClients = getClients().filter(c => c.syncStatus === 'pending');
+    if (pendingClients.length > 0) {
+      pushClientsToSupabase(pendingClients).catch(console.error);
+    }
   }, 1000);
 }
 
@@ -671,6 +674,7 @@ export interface StaffMember {
   workDeadline?: string;          // ISO date - overall project deadline
   notes?: string;
   profilePicture?: string;        // data URL
+  syncStatus?: 'pending' | 'synced';
 }
 
 // ─── Staff helpers ─────────────────────────────────────────────────────────────
@@ -697,11 +701,17 @@ export function getStaff(): StaffMember[] {
         needsSave = true;
         s.totalTasksTarget = 0;
       }
+      if (!s.syncStatus) {
+        needsSave = true;
+        s.syncStatus = 'synced';
+      }
       if (needsSave) migrated = true;
       return s;
     });
     if (migrated) {
-      localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+      setTimeout(() => {
+        saveStaff(staff);
+      }, 0);
     }
 
     // Auto-initialize if empty — ONLY if Supabase hasn't synced yet on this device.
@@ -758,7 +768,10 @@ export function saveStaff(staff: StaffMember[]): void {
   
   if (staffPushTimeout) clearTimeout(staffPushTimeout);
   staffPushTimeout = setTimeout(() => {
-    pushStaffToSupabase(getStaff()).catch(console.error);
+    const pendingStaff = getStaff().filter(s => s.syncStatus === 'pending');
+    if (pendingStaff.length > 0) {
+      pushStaffToSupabase(pendingStaff).catch(console.error);
+    }
   }, 1000);
 }
 
@@ -772,6 +785,7 @@ export function addStaffMember(data: Omit<StaffMember, 'id' | 'joinedAt'>): Staf
     ...data,
     id: crypto.randomUUID(),
     joinedAt: new Date().toISOString(),
+    syncStatus: 'pending',
   };
   staff.push(member);
   saveStaff(staff);
@@ -782,7 +796,7 @@ export function updateStaffMember(id: string, data: Partial<StaffMember>): Staff
   const staff = getStaff();
   const idx = staff.findIndex((s) => s.id === id);
   if (idx === -1) return undefined;
-  staff[idx] = { ...staff[idx], ...data };
+  staff[idx] = { ...staff[idx], ...data, syncStatus: 'pending' };
   saveStaff(staff);
   return staff[idx];
 }

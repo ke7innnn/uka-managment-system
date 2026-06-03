@@ -469,6 +469,17 @@ export async function pushStaffToSupabase(staff: StaffMember[]) {
       await supabase.from('attendance_logs').delete().in('staff_id', staffIds);
     }
   }
+
+  // Update local storage to mark successfully pushed staff as 'synced'
+  if (typeof window !== 'undefined') {
+    const localRaw = localStorage.getItem('uka_staff');
+    if (localRaw) {
+      const local: StaffMember[] = JSON.parse(localRaw);
+      const pushedIds = new Set(staff.map(s => s.id));
+      const updated = local.map(s => pushedIds.has(s.id) ? { ...s, syncStatus: 'synced' as const } : s);
+      localStorage.setItem('uka_staff', JSON.stringify(updated));
+    }
+  }
 }
 
 export async function pushWorkspaceToSupabase(messages: any[]) {
