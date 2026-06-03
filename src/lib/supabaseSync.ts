@@ -349,7 +349,13 @@ export async function pushClientsToSupabase(clients: Client[]) {
         tasks: JSON.stringify(p.tasks || [])
       });
     });
+
+    // Load document tombstone — IDs that were explicitly deleted and must never be re-pushed
+    const deletedDocRaw = typeof window !== 'undefined' ? localStorage.getItem('uka_deleted_doc_ids') : null;
+    const deletedDocIds = new Set<string>(deletedDocRaw ? JSON.parse(deletedDocRaw) : []);
+
     c.documents.forEach(d => {
+      if (deletedDocIds.has(d.id)) return; // Skip tombstoned (deleted) docs
       docRows.push({
         id: d.id,
         client_id: c.id,
