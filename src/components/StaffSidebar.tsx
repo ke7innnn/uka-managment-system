@@ -78,6 +78,11 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
 
     const updateCount = () => {
       setWorkspaceCount(getUnreadWorkspaceCount(staffId));
+      const allStaff = getStaff();
+      const currentStaff = allStaff.find(s => s.id === staffId);
+      if (currentStaff) {
+        setAlertsCount(getUnreadAlertsCount(currentStaff.name));
+      }
     };
 
     updateCount();

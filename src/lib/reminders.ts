@@ -39,15 +39,10 @@ export function initStageReminders(client: Client, phase: Phase): void {
 export function updateStageReminderSchedule(client: Client, phase: Phase): void {}
 export function clearStageReminders(stageId: string, clientId: string): void {}
 
-// ─── Called once on app load (debounced to 30 min) ──────────────────────────
+// ─── Called once on app load ────────────────────────────────────────────────
 // Only fires FOLLOW-UP reminders (NOT stage-start). Always requires 24h since last alert.
 export function processReminders(clients: Client[]): void {
   if (typeof window === 'undefined') return;
-
-  // Debounce: skip if called again within 30 minutes
-  const nowMs = Date.now();
-  if (nowMs - _lastProcessedAt < PROCESS_DEBOUNCE_MS) return;
-  _lastProcessedAt = nowMs;
 
   const now = new Date();
   const allAlerts = getAlerts();
@@ -65,16 +60,15 @@ export function processReminders(clients: Client[]): void {
       const sentAlerts = allAlerts.filter(a => a.clientId === client.id && a.stageName === phase.name);
       const sentTemplates = sentAlerts.map(a => a.templateKey);
 
-      // If stage-start hasn't been sent yet, skip — handled by initStageReminders (admin action only)
-      if (!sentTemplates.includes('stage-start')) return;
-
       const lastAlertTime = sentAlerts.length > 0
         ? Math.max(...sentAlerts.map(a => new Date(a.createdAt).getTime()))
         : 0;
 
       // ── STRICT 24-HOUR GATE ──
-      const hoursSinceLastAlert = (now.getTime() - lastAlertTime) / (1000 * 60 * 60);
-      if (hoursSinceLastAlert < 23.5) return; // Must wait at least 24h before next alert
+      if (lastAlertTime > 0) {
+        const hoursSinceLastAlert = (now.getTime() - lastAlertTime) / (1000 * 60 * 60);
+        if (hoursSinceLastAlert < 23.5) return; // Must wait at least 24h before next alert
+      }
 
       const startDate = phase.startedAt ? new Date(phase.startedAt) : null;
       const deadlineDate = phase.timeBound ? new Date(phase.timeBound + 'T23:59:59') : null;
