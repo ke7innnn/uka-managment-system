@@ -130,7 +130,7 @@ export default function AdminAssistantChat() {
           className="floating-assistant-btn"
           style={{
             position: 'fixed',
-            bottom: '-40px',
+            bottom: '-75px',
             right: '2rem',
             zIndex: 9999,
             width: '260px',
@@ -152,7 +152,7 @@ export default function AdminAssistantChat() {
             loading="eager"
             min-camera-orbit="auto auto 10%"
             camera-orbit="0deg 85deg 40%"
-            camera-target="0m 1.4m 0m"
+            camera-target="0m 1.3m 0m"
             camera-controls
             interaction-prompt="none"
             className="breathe-animation"
