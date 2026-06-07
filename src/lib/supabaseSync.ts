@@ -432,14 +432,20 @@ export async function pushClientsToSupabase(clients: Client[]) {
   }
 
   // ─── Orphan Phase Cleanup ────────────────────────────────────────────────
-  // Safely remove phases that no longer exist in local state, but ONLY if
-  // the local phases list is non-empty (prevents wiping all phases when
-  // the push is triggered with a client that has no phases loaded yet).
-  const clientIdsForCleanup = clients.map(c => c.id);
-  if (clientIdsForCleanup.length > 0) {
+  // Safely remove phases that no longer exist in local state, but ONLY for
+  // clients whose phases were actually part of this push.
+  const clientIdsWithPhasesPushed = clients
+    .filter(c => {
+      const pending = c.pendingFields || [];
+      const hasPending = pending.length > 0;
+      return !hasPending || pending.includes('phases');
+    })
+    .map(c => c.id);
+
+  if (clientIdsWithPhasesPushed.length > 0) {
     const currentPhaseIds = phaseRows.map(p => p.id);
     if (currentPhaseIds.length > 0) {
-      await supabase.from('phases').delete().in('client_id', clientIdsForCleanup).not('id', 'in', `(${currentPhaseIds.join(',')})`);
+      await supabase.from('phases').delete().in('client_id', clientIdsWithPhasesPushed).not('id', 'in', `(${currentPhaseIds.join(',')})`);
     }
     // If currentPhaseIds is empty, do NOT delete phases — client may not have loaded them yet.
   }
