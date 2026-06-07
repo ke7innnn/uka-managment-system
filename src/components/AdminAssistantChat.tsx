@@ -153,7 +153,6 @@ export default function AdminAssistantChat() {
           min-camera-orbit="auto auto 10%"
           camera-orbit="0deg 85deg 62%"
           camera-target="0m 1.45m 0m"
-          camera-controls
           disable-zoom
           interaction-prompt="none"
           className="breathe-animation"
@@ -165,7 +164,27 @@ export default function AdminAssistantChat() {
       {isOpen && (
         <div className="assistant-chat-bubble-wrapper animate-fade-in">
           {/* Speech Bubble Tail pointing to Batman's head */}
-          <div className="assistant-chat-bubble-tail" />
+          <svg 
+            className="assistant-chat-bubble-tail" 
+            width="50" 
+            height="35" 
+            viewBox="0 0 50 35" 
+            style={{
+              position: 'absolute',
+              bottom: '-34px',
+              right: '60px',
+              zIndex: 9998,
+              pointerEvents: 'none'
+            }}
+          >
+            <path 
+              d="M 0 0 Q 25 15, 50 35 Q 30 10, 25 0 Z" 
+              fill="var(--bg-raised)" 
+              stroke="var(--border)" 
+              strokeWidth="1.2"
+              strokeLinejoin="round"
+            />
+          </svg>
           
           {/* Chat Window */}
           <div className="assistant-chat-window">
@@ -311,16 +330,7 @@ export default function AdminAssistantChat() {
         
         /* Modern Rotated Square Speech Bubble Tail */
         .assistant-chat-bubble-tail {
-          position: absolute;
-          bottom: -9px;
-          right: 40px;
-          width: 18px;
-          height: 18px;
-          background: var(--bg-raised);
-          border-right: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-          transform: rotate(45deg);
-          z-index: 10;
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
         }
 
         /* Glassmorphic Chat Window */
