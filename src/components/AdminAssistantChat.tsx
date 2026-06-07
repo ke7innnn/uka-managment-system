@@ -151,7 +151,7 @@ export default function AdminAssistantChat() {
             scale="6 6 6"
             loading="eager"
             min-camera-orbit="auto auto 10%"
-            camera-orbit="0deg 85deg 46%"
+            camera-orbit="0deg 85deg 62%"
             camera-target="0m 1.45m 0m"
             camera-controls
             interaction-prompt="none"
