@@ -295,13 +295,9 @@ export default function AdminAssistantChat() {
           transform-origin: center bottom;
         }
         .floating-assistant-btn {
-          transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .floating-assistant-btn:hover {
-          transform: scale(1.02);
-        }
-        .floating-assistant-btn:active {
-          transform: scale(0.98);
+          background: transparent;
+          border: none;
+          box-shadow: none;
         }
         
         /* Speech Bubble Wrapper positioned to top-left of Batman */
@@ -317,7 +313,7 @@ export default function AdminAssistantChat() {
         .assistant-chat-bubble-tail {
           position: absolute;
           bottom: -9px;
-          right: 60px;
+          right: 40px;
           width: 18px;
           height: 18px;
           background: var(--bg-raised);
@@ -335,7 +331,7 @@ export default function AdminAssistantChat() {
           backdrop-filter: blur(30px);
           -webkit-backdrop-filter: blur(30px);
           border: 1px solid var(--border);
-          border-radius: 20px;
+          border-radius: 32px;
           display: flex;
           flex-direction: column;
           overflow: hidden;
