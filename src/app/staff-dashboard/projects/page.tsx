@@ -22,6 +22,13 @@ export default function StaffProjectsPage() {
     (c.clientUin || '').toLowerCase().includes(search.toLowerCase())
   );
 
+  // Sort active projects on top
+  const sortedClients = [...filteredClients].sort((a, b) => {
+    if (a.projectStatus === 'active' && b.projectStatus !== 'active') return -1;
+    if (a.projectStatus !== 'active' && b.projectStatus === 'active') return 1;
+    return 0;
+  });
+
   return (
     <div className={`animate-fade-in ${styles.page}`} style={{ maxWidth: '1000px', margin: '0 auto' }}>
       <div className={styles.header}>
@@ -72,7 +79,7 @@ export default function StaffProjectsPage() {
       </div>
 
       <div className={styles.projectGrid}>
-        {filteredClients.map((client) => (
+        {sortedClients.map((client) => (
           <div key={client.id} className={`glass-panel ${styles.projectCard}`}>
             {client.clientUin && (
               <div style={{

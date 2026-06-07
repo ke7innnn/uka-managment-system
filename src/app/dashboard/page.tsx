@@ -113,10 +113,10 @@ export default function DashboardHome() {
 
       {/* ── Stats ── */}
       <div className={styles.statsGrid}>
-        <StatCard label="Total Clients"    value={clients.length} Icon={Users}         />
-        <StatCard label="Active Projects"  value={active}         Icon={Rocket}        accent />
-        <StatCard label="Completed"        value={completed}      Icon={CheckCircle2}  />
-        <StatCard label="On Hold"          value={onHold}         Icon={PauseCircle}   />
+        <StatCard label="Total Clients"    value={clients.length} Icon={Users}         href="/dashboard/clients" />
+        <StatCard label="Active Projects"  value={active}         Icon={Rocket}        accent href="/dashboard/projects?status=active" />
+        <StatCard label="Completed"        value={completed}      Icon={CheckCircle2}  href="/dashboard/projects?status=completed" />
+        <StatCard label="On Hold"          value={onHold}         Icon={PauseCircle}   href="/dashboard/projects?status=on-hold" />
       </div>
 
       {/* ── Main Layout ── */}
@@ -259,9 +259,9 @@ export default function DashboardHome() {
 
 // ── Components ──
 
-function StatCard({ label, value, Icon, accent }: { label: string; value: number; Icon: React.ElementType; accent?: boolean }) {
-  return (
-    <div className={`${styles.statCard} ${accent ? styles.statCardAccent : ''}`}>
+function StatCard({ label, value, Icon, accent, href }: { label: string; value: number; Icon: React.ElementType; accent?: boolean; href?: string }) {
+  const cardContent = (
+    <>
       <div className={styles.statTop}>
         <div className={styles.statIconWrap}>
           <Icon size={18} strokeWidth={2} style={{ color: accent ? '#fff' : 'var(--text)' }} />
@@ -269,6 +269,20 @@ function StatCard({ label, value, Icon, accent }: { label: string; value: number
       </div>
       <div className={styles.statValue}>{value}</div>
       <div className={styles.statLabel}>{label}</div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={`${styles.statCard} ${accent ? styles.statCardAccent : ''}`} style={{ cursor: 'pointer', textDecoration: 'none' }}>
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={`${styles.statCard} ${accent ? styles.statCardAccent : ''}`}>
+      {cardContent}
     </div>
   );
 }

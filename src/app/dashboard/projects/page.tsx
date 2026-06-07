@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { getClients, Client } from '@/lib/store';
 import { FileText } from 'lucide-react';
 import styles from './page.module.css';
@@ -13,9 +14,11 @@ const STATUS_COLORS: Record<Client['projectStatus'], string> = {
   pending: '#9ca3af',
 };
 
-export default function ProjectsPage() {
+function ProjectsContent() {
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
+  const searchParams = useSearchParams();
+  const statusFilter = searchParams.get('status'); // 'active', 'completed', etc.
 
   useEffect(() => {
     setClients(getClients());
@@ -26,20 +29,32 @@ export default function ProjectsPage() {
     const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
                         (c.projectName || '').toLowerCase().includes(search.toLowerCase()) ||
                         (c.clientUin || '').toLowerCase().includes(search.toLowerCase());
-    return hasProject && matchSearch;
+    const matchStatus = statusFilter ? c.projectStatus === statusFilter : true;
+    return hasProject && matchSearch && matchStatus;
+  });
+
+  // Sort active projects on top
+  const sortedProjects = [...withProjects].sort((a, b) => {
+    if (a.projectStatus === 'active' && b.projectStatus !== 'active') return -1;
+    if (a.projectStatus !== 'active' && b.projectStatus === 'active') return 1;
+    return 0;
   });
 
   return (
     <div className={`animate-fade-in ${styles.page}`}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Projects</h1>
-          <p className={styles.subtitle}>Track phase progress across all clients</p>
+          <h1 className={styles.title}>
+            {statusFilter ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Projects` : 'Projects'}
+          </h1>
+          <p className={styles.subtitle}>
+            {statusFilter ? `Viewing only ${statusFilter} projects` : 'Track phase progress across all clients'}
+          </p>
         </div>
         <Link href="/dashboard/clients/new" className={styles.newBtn}>+ New Client</Link>
       </div>
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         <input
           type="text"
           placeholder="Search by client, project name, or UIN..."
@@ -57,16 +72,36 @@ export default function ProjectsPage() {
             outline: 'none'
           }}
         />
+        {statusFilter && (
+          <Link 
+            href="/dashboard/projects" 
+            style={{ 
+              fontSize: '0.8rem', 
+              color: 'var(--accent)', 
+              textDecoration: 'none',
+              background: 'rgba(200, 169, 110, 0.08)',
+              border: '1px solid rgba(200, 169, 110, 0.2)',
+              borderRadius: '8px',
+              padding: '0.5rem 1rem',
+              fontWeight: 600,
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(200, 169, 110, 0.15)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(200, 169, 110, 0.08)'}
+          >
+            Clear Filter (Show All)
+          </Link>
+        )}
       </div>
 
-      {withProjects.length === 0 ? (
+      {sortedProjects.length === 0 ? (
         <div className={styles.empty}>
-          No projects with phases yet.{' '}
+          No {statusFilter ? `${statusFilter} ` : ''}projects found.{' '}
           <Link href="/dashboard/clients/new">Create a client →</Link>
         </div>
       ) : (
         <div className={styles.projectGrid}>
-          {withProjects.map((client) => {
+          {sortedProjects.map((client) => {
             const allTasks = client.phases.flatMap(p => p.tasks || []);
             const doneTasks = allTasks.filter(t => t.completed).length;
             const totalTasks = allTasks.length;
@@ -153,3 +188,12 @@ export default function ProjectsPage() {
     </div>
   );
 }
+
+export default function ProjectsPage() {
+  return (
+    <Suspense fallback={<div style={{ color: 'var(--text-secondary)', padding: '2rem', textAlign: 'center' }}>Loading projects...</div>}>
+      <ProjectsContent />
+    </Suspense>
+  );
+}
+
