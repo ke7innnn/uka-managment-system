@@ -154,6 +154,7 @@ export default function AdminAssistantChat() {
             camera-orbit="0deg 85deg 62%"
             camera-target="0m 1.45m 0m"
             camera-controls
+            disable-zoom
             interaction-prompt="none"
             className="breathe-animation"
             style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))' }}
