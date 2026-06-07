@@ -151,8 +151,8 @@ export default function AdminAssistantChat() {
             alt="Bruce Wayne Assistant" 
             scale="6 6 6"
             loading="eager"
-            camera-orbit="0deg 85deg 50%"
-            camera-target="0m 1.35m 0m"
+            camera-orbit="0deg 85deg 25%"
+            camera-target="0m 1.6m 0m"
             camera-controls
             interaction-prompt="none"
             className="breathe-animation"
@@ -258,7 +258,8 @@ export default function AdminAssistantChat() {
               alt="Bruce Wayne" 
               scale="3 3 3"
               loading="eager"
-              camera-orbit="0deg 90deg auto"
+              camera-orbit="0deg 90deg 25%"
+              camera-target="0m 1.6m 0m"
               camera-controls
               interaction-prompt="none"
               className="breathe-animation"
