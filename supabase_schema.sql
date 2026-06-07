@@ -21,7 +21,8 @@ CREATE TABLE clients (
   progress_checklist JSONB DEFAULT '[]'::jsonb,
   oc_checklist JSONB DEFAULT '[]'::jsonb,
   client_password TEXT,
-  kyc JSONB DEFAULT '{}'::jsonb
+  kyc JSONB DEFAULT '{}'::jsonb,
+  tilr_status TEXT DEFAULT 'pending'
 );
 
 -- 2. Phases Table

@@ -209,6 +209,11 @@ export default function DashboardHome() {
                     </div>
                     <div className={styles.clientRight}>
                       <StatusBadge status={client.projectStatus} />
+                      {client.tilrStatus === 'received' ? (
+                        <span className="tilr-received-badge">TILR RECEIVED</span>
+                      ) : (
+                        <span className="tilr-pending-badge">TILR PENDING</span>
+                      )}
                     </div>
                   </Link>
                 ))}

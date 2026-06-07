@@ -22,6 +22,7 @@ type FormData = {
   projectName: string;
   projectStatus: Client['projectStatus'];
   priority: 'low' | 'medium' | 'high';
+  tilrStatus: 'pending' | 'received';
   
   // KYC fields
   proposedSub: string;
@@ -108,6 +109,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
     projectName: client?.projectName || '',
     projectStatus: client?.projectStatus || 'pending',
     priority: client?.priority || 'medium',
+    tilrStatus: client?.tilrStatus || 'pending',
     
     // KYC initial states
     proposedSub: client?.kyc?.proposedSub || '',
@@ -279,6 +281,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
         projectName: form.projectName.trim() || undefined,
         projectStatus: form.projectStatus,
         priority: form.priority,
+        tilrStatus: form.tilrStatus,
         phases: [],
         documents: [],
         kyc: kycData,
@@ -300,6 +303,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
         projectName: form.projectName.trim() || undefined,
         projectStatus: form.projectStatus,
         priority: form.priority,
+        tilrStatus: form.tilrStatus,
         kyc: kycData,
       });
       router.push(successRedirect ?? `/dashboard/clients/${client!.id}`);
@@ -312,6 +316,18 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
 
       <Section title="Personal Information">
         <div className={styles.grid}>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="tilrStatus" className={styles.label}>TILR Status</label>
+            <select
+              id="tilrStatus"
+              value={form.tilrStatus}
+              onChange={(e) => set('tilrStatus', e.target.value)}
+              className={styles.select}
+            >
+              <option value="pending">TILR PENDING</option>
+              <option value="received">TILR RECEIVED</option>
+            </select>
+          </div>
           <Field label="Full Name *" id="name" value={form.name} onChange={(v) => set('name', v)} placeholder="e.g. Rahul Sharma" />
           <Field label="Client ID" id="clientId" value={form.clientId} onChange={(v) => set('clientId', v)} placeholder="e.g. UKA-101" />
           <Field label="Client UIN" id="clientUin" value={form.clientUin} onChange={(v) => set('clientUin', v)} placeholder="e.g. UKA-UIN-XYZ" />

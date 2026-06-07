@@ -163,6 +163,7 @@ export interface Client {
   kyc?: KycData;
   naFolders?: string[];   // NEW: subfolder/folder IDs marked as Not Applicable
   pendingFields?: string[]; // Tracks which specific fields were edited to prevent wiping other fields during push
+  tilrStatus?: 'pending' | 'received';
 }
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────

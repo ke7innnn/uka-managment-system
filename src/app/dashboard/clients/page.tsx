@@ -116,6 +116,13 @@ export default function ClientsPage() {
                               UIN: {client.clientUin}
                             </span>
                           )}
+                          <div style={{ marginTop: '4px', display: 'flex', gap: '4px' }}>
+                            {client.tilrStatus === 'received' ? (
+                              <span className="tilr-received-badge">TILR RECEIVED</span>
+                            ) : (
+                              <span className="tilr-pending-badge">TILR PENDING</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>

@@ -291,3 +291,43 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); }
     min-width: 0 !important;
   }
 }
+
+/* ─── TILR Status Badges ─── */
+@keyframes tilr-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.tilr-received-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  background-color: var(--green-bg);
+  border: 1px solid rgba(106, 170, 132, 0.25);
+  color: var(--green);
+  width: fit-content;
+  text-transform: uppercase;
+}
+
+.tilr-pending-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  background-color: var(--red-bg);
+  border: 1px solid rgba(192, 96, 96, 0.25);
+  color: var(--red);
+  width: fit-content;
+  text-transform: uppercase;
+  animation: tilr-blink 1.2s ease-in-out infinite;
+}
+

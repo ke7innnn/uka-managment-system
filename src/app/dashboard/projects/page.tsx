@@ -108,23 +108,29 @@ function ProjectsContent() {
             const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
             return (
               <Link key={client.id} href={`/dashboard/clients/${client.id}?tab=phases`} className={`glass-panel ${styles.projectCard}`}>
-                {client.clientUin && (
-                  <div style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 800,
-                    color: 'var(--accent)',
-                    backgroundColor: 'rgba(200, 169, 110, 0.08)',
-                    border: '1px solid rgba(200, 169, 110, 0.2)',
-                    borderRadius: '4px',
-                    padding: '3px 8px',
-                    width: 'fit-content',
-                    marginBottom: '0.75rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
-                    UIN: {client.clientUin}
-                  </div>
-                )}
+                <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {client.clientUin && (
+                    <div style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 800,
+                      color: 'var(--accent)',
+                      backgroundColor: 'rgba(200, 169, 110, 0.08)',
+                      border: '1px solid rgba(200, 169, 110, 0.2)',
+                      borderRadius: '4px',
+                      padding: '3px 8px',
+                      width: 'fit-content',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>
+                      UIN: {client.clientUin}
+                    </div>
+                  )}
+                  {client.tilrStatus === 'received' ? (
+                    <span className="tilr-received-badge" style={{ padding: '3px 8px', fontSize: '0.65rem' }}>TILR RECEIVED</span>
+                  ) : (
+                    <span className="tilr-pending-badge" style={{ padding: '3px 8px', fontSize: '0.65rem' }}>TILR PENDING</span>
+                  )}
+                </div>
                 <div className={styles.cardTopHeader}>
                   <div className={styles.projAvatarCircle}>{client.name.charAt(0).toUpperCase()}</div>
                   <div className={styles.projCardInfo}>

@@ -426,6 +426,7 @@ export default function ClientDetailPage() {
               notes: isPending ? (localClient?.notes ?? '') : (data.notes ?? ''),
               projectName: isPending ? (localClient?.projectName ?? '') : (data.project_name ?? ''),
               projectStatus: isPending ? (localClient?.projectStatus ?? 'pending') : (data.project_status ?? 'pending'),
+              tilrStatus: isPending ? (localClient?.tilrStatus ?? 'pending') : (data.tilr_status ?? 'pending'),
               createdAt: data.created_at,
               tags: isPending ? (localClient?.tags ?? []) : (data.tags ?? []),
               // Use local state for checklists AND phases to avoid overwriting fresh toggles
@@ -1110,6 +1111,11 @@ export default function ClientDetailPage() {
           </div>
         </div>
         <div className={styles.heroRight} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {client.tilrStatus === 'received' ? (
+            <span className="tilr-received-badge" style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', fontWeight: 700 }}>TILR RECEIVED</span>
+          ) : (
+            <span className="tilr-pending-badge" style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', fontWeight: 700 }}>TILR PENDING</span>
+          )}
           <span
             className={styles.statusBadge}
             style={{
