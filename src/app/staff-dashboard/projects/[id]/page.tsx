@@ -1745,12 +1745,11 @@ export default function ClientDetailPage() {
                     ) : (
                       <div
                         className={styles.fileChip}
-                        draggable
-                        onDragStart={(e) => onDragStart(e, doc.id)}
+                        draggable={false}
                       >
                         <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
                         <span className={styles.fileChipName} title={doc.name}>{renderHealthStatus(doc.id)}{doc.name}</span>
-                        <Pencil className={styles.fileChipDownload} size={14} onClick={() => startRename(doc)} />
+                        {doc.uploadedBy === currentStaffId && <Pencil className={styles.fileChipDownload} size={14} onClick={() => startRename(doc)} />}
                         <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
                         <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} title="Download" className={styles.iconBtn}>
                           <Download className={styles.fileChipDownload} size={14} />
@@ -1891,8 +1890,7 @@ export default function ClientDetailPage() {
                                 <div
                                   key={doc.id}
                                   className={styles.fileRow}
-                                  draggable={renamingId !== doc.id}
-                                  onDragStart={(e) => onDragStart(e, doc.id)}
+                                  draggable={false}
                                 >
                                   {renamingId === doc.id ? (
                                     <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
@@ -1922,9 +1920,9 @@ export default function ClientDetailPage() {
                                         <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                                       </div>
                                       <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
-                                        <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                        {doc.uploadedBy === currentStaffId && <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
                                           <Pencil size={13} />
-                                        </button>
+                                        </button>}
                                         <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
                                           <Eye size={13} />
                                         </button>
@@ -2001,8 +1999,7 @@ export default function ClientDetailPage() {
                                           <div
                                             key={doc.id}
                                             className={styles.fileRow}
-                                            draggable={renamingId !== doc.id}
-                                            onDragStart={(e) => onDragStart(e, doc.id)}
+                                            draggable={false}
                                           >
                                             {renamingId === doc.id ? (
                                               <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
@@ -2032,9 +2029,9 @@ export default function ClientDetailPage() {
                                                   <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                                                 </div>
                                                 <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
-                                                  <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                                  {doc.uploadedBy === currentStaffId && <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
                                                     <Pencil size={13} />
-                                                  </button>
+                                                  </button>}
                                                   <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
                                                     <Eye size={13} />
                                                   </button>
@@ -2071,8 +2068,7 @@ export default function ClientDetailPage() {
                         <div
                           key={doc.id}
                           className={styles.fileRow}
-                          draggable={renamingId !== doc.id}
-                          onDragStart={(e) => onDragStart(e, doc.id)}
+                          draggable={false}
                         >
                           {renamingId === doc.id ? (
                             <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
@@ -2102,9 +2098,9 @@ export default function ClientDetailPage() {
                                 <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                               </div>
                               <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
-                                <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                {doc.uploadedBy === currentStaffId && <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
                                   <Pencil size={13} />
-                                </button>
+                                </button>}
                                 <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
                                   <Eye size={13} />
                                 </button>
