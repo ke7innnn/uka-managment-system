@@ -331,7 +331,7 @@ export async function pushClientsToSupabase(clients: Client[]) {
     let finalKyc = safeKyc || {};
     if (remoteClient && hasPending) {
        // Only push local KYC if it or its nested fields were explicitly edited
-       if (!pending.includes('kyc') && !pending.includes('clientUin') && !pending.includes('naFolders')) {
+       if (!pending.includes('kyc') && !pending.includes('clientUin') && !pending.includes('naFolders') && !pending.includes('priority')) {
          finalKyc = remoteKyc;
        }
     }
