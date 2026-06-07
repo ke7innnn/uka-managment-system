@@ -130,11 +130,11 @@ export default function AdminAssistantChat() {
           className="floating-assistant-btn"
           style={{
             position: 'fixed',
-            bottom: '-120px',
-            right: '2rem',
+            bottom: '-200px',
+            right: '-40px',
             zIndex: 9999,
-            width: '260px',
-            height: '340px',
+            width: '480px',
+            height: '600px',
             background: 'transparent',
             border: 'none',
             display: 'flex',
