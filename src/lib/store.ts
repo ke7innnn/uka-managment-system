@@ -500,10 +500,13 @@ export const DEFAULT_PHASES_TEMPLATE = [
     name: "Stage 5 — Uzaid/Vrushali/Nihal: Drawing, Report & Inwarding (14 Days upon TILR/Plans)",
     status: "not-started" as const,
     tasks: [
+      { title: "take Auto Cad drawing from Uday.", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
       { title: "Prepare and upload offline drawing", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
       { title: "Online clear report to be readied and uploaded", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
       { title: "Drawing to be readied and uploaded", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
       { title: "Summarized Auto prompt is sent to client and boss on group (REPORT/DRAWING IS COMPLETE AND ATTACHMENT IS AUTO SENT)", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
+      { title: "point E report and service drawing", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
+      { title: "hardship point", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
       { title: "Drawing", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
       { title: "Report", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
       { title: "Marginal", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },

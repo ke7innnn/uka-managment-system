@@ -1755,7 +1755,6 @@ export default function ClientDetailPage() {
                         <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} title="Download" className={styles.iconBtn}>
                           <Download className={styles.fileChipDownload} size={14} />
                         </button>
-                        <Trash2 className={styles.fileChipRemove} size={14} onClick={() => deleteDocument(doc.id)} />
                       </div>
                     )}
                   </div>
@@ -1932,9 +1931,6 @@ export default function ClientDetailPage() {
                                         <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
                                           <Download size={13} />
                                         </button>
-                                        <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
-                                          <Trash2 size={13} />
-                                        </button>
                                       </div>
                                     </>
                                   )}
@@ -2045,9 +2041,6 @@ export default function ClientDetailPage() {
                                                   <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
                                                     <Download size={13} />
                                                   </button>
-                                                  <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
-                                                    <Trash2 size={13} />
-                                                  </button>
                                                 </div>
                                               </>
                                             )}
@@ -2117,9 +2110,6 @@ export default function ClientDetailPage() {
                                 </button>
                                 <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
                                   <Download size={13} />
-                                </button>
-                                <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteDocument(doc.id)} title="Delete">
-                                  <Trash2 size={13} />
                                 </button>
                               </div>
                             </>
@@ -2261,9 +2251,6 @@ export default function ClientDetailPage() {
                               <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
                                 <Download size={13} />
                               </button>
-                              <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteOcDocDocument(doc.id)} title="Delete">
-                                <Trash2 size={13} />
-                              </button>
                             </div>
                           </div>
                         ))
@@ -2356,9 +2343,6 @@ export default function ClientDetailPage() {
                               </button>
                               <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
                                 <Download size={13} />
-                              </button>
-                              <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => deleteCcrdpDocument(doc.id)} title="Delete">
-                                <Trash2 size={13} />
                               </button>
                             </div>
                           </div>
