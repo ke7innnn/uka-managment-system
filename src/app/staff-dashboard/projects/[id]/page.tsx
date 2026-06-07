@@ -688,10 +688,6 @@ export default function ClientDetailPage() {
 
   // ── Rename actions ─────────────────────────────────────────────────────────
   const startRename = (doc: Doc) => {
-    if (doc.uploadedBy !== currentStaffId) {
-      alert("You can only rename documents that you have uploaded.");
-      return;
-    }
     setRenamingId(doc.id);
     setRenameDraft(doc.name);
   };
@@ -1749,7 +1745,7 @@ export default function ClientDetailPage() {
                       >
                         <span className={styles.fileChipIcon}>{fileIcon(doc.type, 14)}</span>
                         <span className={styles.fileChipName} title={doc.name}>{renderHealthStatus(doc.id)}{doc.name}</span>
-                        {doc.uploadedBy === currentStaffId && <Pencil className={styles.fileChipDownload} size={14} onClick={() => startRename(doc)} />}
+                        <Pencil className={styles.fileChipDownload} size={14} onClick={() => startRename(doc)} />
                         <Eye className={styles.fileChipDownload} size={14} onClick={() => viewDocumentSafe(doc.url)} />
                         <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} title="Download" className={styles.iconBtn}>
                           <Download className={styles.fileChipDownload} size={14} />
@@ -1920,9 +1916,9 @@ export default function ClientDetailPage() {
                                         <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                                       </div>
                                       <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
-                                        {doc.uploadedBy === currentStaffId && <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                        <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
                                           <Pencil size={13} />
-                                        </button>}
+                                        </button>
                                         <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
                                           <Eye size={13} />
                                         </button>
@@ -2029,9 +2025,9 @@ export default function ClientDetailPage() {
                                                   <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                                                 </div>
                                                 <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
-                                                  {doc.uploadedBy === currentStaffId && <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                                  <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
                                                     <Pencil size={13} />
-                                                  </button>}
+                                                  </button>
                                                   <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
                                                     <Eye size={13} />
                                                   </button>
@@ -2098,9 +2094,9 @@ export default function ClientDetailPage() {
                                 <span className={styles.fileRowSize}>{formatSize(doc.size)}</span>
                               </div>
                               <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
-                                {doc.uploadedBy === currentStaffId && <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
                                   <Pencil size={13} />
-                                </button>}
+                                </button>
                                 <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
                                   <Eye size={13} />
                                 </button>
