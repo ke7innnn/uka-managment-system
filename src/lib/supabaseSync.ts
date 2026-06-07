@@ -55,6 +55,7 @@ export async function pullFromSupabase() {
       projectName: c.project_name || '',
       projectStatus: c.project_status || 'pending',
       tilrStatus: c.tilr_status || 'pending',
+      priority: c.kyc?.priority || 'medium',
       createdAt: c.created_at,
       tags: c.tags || [],
       progressChecklist: c.progress_checklist || [],
@@ -135,9 +136,9 @@ export async function pullFromSupabase() {
     pendingLocalStaff.forEach(s => mergedStaffMap.set(s.id, s));
 
     const mergedClients = Array.from(mergedClientsMap.values()).map(c => {
-      // Priority is stored only in localStorage (not Supabase schema) — restore it from local cache
+      // Legacy support: if Supabase doesn't have a priority in kyc yet, but local does, keep local
       const localVersion = localClients.find(lc => lc.id === c.id);
-      if (localVersion?.priority && !c.priority) {
+      if (localVersion?.priority && !c.kyc?.priority) {
         return { ...c, priority: localVersion.priority };
       }
       return c;
@@ -311,7 +312,8 @@ export async function pushClientsToSupabase(clients: Client[]) {
     const kycWithUin = {
       ...(c.kyc || {}),
       clientUin: c.clientUin || '',
-      naFolders: c.naFolders || []
+      naFolders: c.naFolders || [],
+      priority: c.priority || 'medium'
     };
     const safeKyc = restoreStrippedBase64(kycWithUin, remoteKyc);
 

@@ -136,6 +136,7 @@ export interface KycData {
   structuralEngName?: string;
   isDigitalSignature?: string;
   digitalSignaturePhoto?: string;
+  priority?: 'low' | 'medium' | 'high';
 }
 
 export interface Client {
