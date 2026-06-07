@@ -1949,20 +1949,7 @@ export default function ClientDetailPage() {
                                   <button
                                     onClick={(e) => { e.stopPropagation(); reassignTask(phase.id, task.id); }}
                                     title="Reassign this task"
-                                    style={{
-                                      fontSize: '0.72rem',
-                                      padding: '2px 8px',
-                                      background: 'rgba(59, 130, 246, 0.1)',
-                                      color: '#3b82f6',
-                                      border: '1px solid rgba(59, 130, 246, 0.25)',
-                                      borderRadius: '6px',
-                                      cursor: 'pointer',
-                                      fontWeight: 600,
-                                      whiteSpace: 'nowrap',
-                                      transition: 'all 0.18s ease',
-                                    }}
-                                    onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.22)'; }}
-                                    onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
+                                    className={styles.reassignBtn}
                                   >
                                     ↺ Reassign
                                   </button>

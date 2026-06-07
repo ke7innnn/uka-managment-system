@@ -1654,11 +1654,11 @@ export default function ClientDetailPage() {
                               <span className={styles.taskTitle}>{task.title}</span>
                               <div className={styles.taskActions}>
                                 {task.assignedTo ? (
-                                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '2px 8px', borderRadius: '12px' }}>
+                                  <span className={styles.assigneeBadge}>
                                     {task.assignedTo}
                                   </span>
                                 ) : (
-                                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Unassigned</span>
+                                  <span className={styles.unassignedBadge}>Unassigned</span>
                                 )}
 
                               </div>
