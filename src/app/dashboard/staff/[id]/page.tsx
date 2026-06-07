@@ -5,10 +5,10 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   getStaffById, updateStaffMember, StaffMember,
-  StaffTask, AttendanceLog,
-  staffCompletionPct, staffStatusColor, totalHoursWorked,
+  StaffTask,
+  staffCompletionPct, staffStatusColor,
 } from '@/lib/store';
-import { Mail, Phone, BarChart2, Clock, Calendar, AlertTriangle, User, CheckCircle2, MapPin, Check, X, Trash2, Navigation } from 'lucide-react';
+import { Mail, Phone, BarChart2, Calendar, AlertTriangle, User, CheckCircle2, Check, Trash2 } from 'lucide-react';
 import styles from './page.module.css';
 
 const COLOR_MAP = {
@@ -26,18 +26,11 @@ export default function StaffDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [member, setMember] = useState<StaffMember | null>(null);
-  const [tab, setTab] = useState<'tasks' | 'attendance' | 'overview'>('overview');
+  const [tab, setTab] = useState<'tasks' | 'overview'>('overview');
 
   // Task form
   const [taskTitle, setTaskTitle]       = useState('');
   const [taskDeadline, setTaskDeadline] = useState('');
-
-  // Attendance form
-  const [attDate, setAttDate]       = useState('');
-  const [attIn, setAttIn]           = useState('');
-  const [attOut, setAttOut]         = useState('');
-  const [attLocation, setAttLocation] = useState('');
-  const [locLoading, setLocLoading] = useState(false);
 
   const reload = () => {
     const m = getStaffById(params.id);
@@ -52,7 +45,6 @@ export default function StaffDetailPage() {
   const c      = COLOR_MAP[color];
   const pct    = staffCompletionPct(member);
   const done   = member.tasks.filter(t => t.completed).length;
-  const hrs    = totalHoursWorked(member);
   const days   = daysLeft(member.workDeadline);
 
   // ── Tasks ──────────────────────────────────────────────────────────────────
@@ -87,52 +79,7 @@ export default function StaffDetailPage() {
     reload();
   };
 
-  // ── Attendance ─────────────────────────────────────────────────────────────
-  const captureLocation = () => {
-    if (!navigator.geolocation) { setAttLocation('Location not supported'); return; }
-    setLocLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        setAttLocation(`${lat.toFixed(5)},${lng.toFixed(5)}`);
-        setLocLoading(false);
-      },
-      () => { setAttLocation('Unable to get location'); setLocLoading(false); },
-    );
-  };
-
-  const calcHours = (inT: string, outT: string): number => {
-    if (!inT || !outT) return 0;
-    const [ih, im] = inT.split(':').map(Number);
-    const [oh, om] = outT.split(':').map(Number);
-    return Math.max(0, (oh * 60 + om - (ih * 60 + im)) / 60);
-  };
-
-  const addAttendance = () => {
-    if (!attDate || !attIn) return;
-    const hoursWorked = attOut ? calcHours(attIn, attOut) : undefined;
-    // Parse lat,lng if location looks like coords
-    const isCoords = /^-?\d+\.\d+,-?\d+\.\d+$/.test(attLocation);
-    const log: AttendanceLog = {
-      id: crypto.randomUUID(),
-      date: attDate,
-      checkIn: attIn,
-      checkOut: attOut || undefined,
-      location: isCoords ? attLocation : undefined,
-      locationLabel: attLocation || undefined,
-      hoursWorked,
-    };
-    updateStaffMember(member.id, { attendance: [...member.attendance, log] });
-    setAttDate(''); setAttIn(''); setAttOut(''); setAttLocation('');
-    reload();
-  };
-
-  const deleteAttendance = (logId: string) => {
-    updateStaffMember(member.id, { attendance: member.attendance.filter(a => a.id !== logId) });
-    reload();
-  };
-
-  const sortedAtt = [...member.attendance].sort((a, b) => b.date.localeCompare(a.date));
+  // Removed Attendance Handlers
   const overdueTasks = member.tasks.filter(t => !t.completed && new Date(t.deadline) < new Date());
   const pendingTasks = member.tasks.filter(t => !t.completed && new Date(t.deadline) >= new Date());
   const doneTasks    = member.tasks.filter(t => t.completed);
@@ -173,8 +120,6 @@ export default function StaffDetailPage() {
       {/* Summary strip */}
       <div className={styles.summaryStrip}>
         <SummaryCard Icon={BarChart2} label="Tasks Done" value={`${done}/${member.tasks.length}`} sub={`${pct}%`} color={c.text} />
-        <SummaryCard Icon={Clock} label="Hours Worked" value={`${hrs.toFixed(1)}h`} color="#a1a1aa" />
-        <SummaryCard Icon={Calendar} label="Days Present" value={`${member.attendance.length}`} color="#a1a1aa" />
         <SummaryCard
           Icon={Calendar}
           label="Deadline"
@@ -201,11 +146,10 @@ export default function StaffDetailPage() {
 
       {/* Tabs */}
       <div className={styles.tabs}>
-        {(['overview','tasks','attendance'] as const).map(t => (
+        {(['overview','tasks'] as const).map(t => (
           <button key={t} className={`${styles.tabBtn} ${tab === t ? styles.tabActive : ''}`} onClick={() => setTab(t)}>
-            {t === 'overview' ? <User size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} /> : t === 'tasks' ? <CheckCircle2 size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} /> : <MapPin size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}{t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === 'overview' ? <User size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} /> : <CheckCircle2 size={14} strokeWidth={1.5} style={{ marginRight: 5, verticalAlign: 'middle' }} />}{t.charAt(0).toUpperCase() + t.slice(1)}
             {t === 'tasks' && member.tasks.length > 0 && <span className={styles.tabBadge}>{member.tasks.length}</span>}
-            {t === 'attendance' && member.attendance.length > 0 && <span className={styles.tabBadge}>{member.attendance.length}</span>}
           </button>
         ))}
       </div>
@@ -276,89 +220,7 @@ export default function StaffDetailPage() {
         </div>
       )}
 
-      {/* ── Attendance Tab ─────────────────────────────────────────────────────── */}
-      {tab === 'attendance' && (
-        <div className={styles.tabContent}>
-          {/* Log form */}
-          <div className={`glass-panel ${styles.attForm}`}>
-            <h3 className={styles.attFormTitle}>Log Attendance</h3>
-            <div className={styles.attFormGrid}>
-              <div className={styles.field}>
-                <label className={styles.fieldLabel}>Date</label>
-                <input type="date" value={attDate} onChange={e => setAttDate(e.target.value)} className={styles.fieldInput} id="att-date" />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.fieldLabel}>Check-In Time</label>
-                <input type="time" value={attIn} onChange={e => setAttIn(e.target.value)} className={styles.fieldInput} id="att-in" />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.fieldLabel}>Check-Out Time</label>
-                <input type="time" value={attOut} onChange={e => setAttOut(e.target.value)} className={styles.fieldInput} id="att-out" />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.fieldLabel}>Location</label>
-                <div className={styles.locRow}>
-                  <input
-                    type="text"
-                    value={attLocation}
-                    onChange={e => setAttLocation(e.target.value)}
-                    placeholder="Type location or capture GPS"
-                    className={styles.fieldInput}
-                    id="att-location"
-                  />
-                  <button className={styles.gpsBtn} onClick={captureLocation} title="Capture GPS location" disabled={locLoading}>
-                    {locLoading ? '…' : <Navigation size={15} strokeWidth={1.75} />}
-                  </button>
-                </div>
-              </div>
-            </div>
-            {attIn && attOut && (
-              <p className={styles.hoursCalc}>
-                <Clock size={13} strokeWidth={1.5} style={{ marginRight: 4, verticalAlign: 'middle' }} />{calcHours(attIn, attOut).toFixed(1)} hours worked
-              </p>
-            )}
-            <button className={styles.logBtn} onClick={addAttendance}>Log Attendance</button>
-          </div>
-
-          {/* Attendance logs */}
-          {sortedAtt.length === 0 ? (
-            <div className={styles.empty}>No attendance logged yet.</div>
-          ) : (
-            <div className={styles.attList}>
-              {sortedAtt.map((log, idx) => {
-                const isCoords = log.location && /^-?\d+\.\d+,-?\d+\.\d+$/.test(log.location);
-                const mapsUrl  = isCoords ? `https://maps.google.com?q=${log.location}` : null;
-                return (
-                  <div key={log.id} className={`glass-panel ${styles.attCard}`}>
-                    <div className={styles.attCardLeft}>
-                      <span className={styles.attDay}>#{sortedAtt.length - idx}</span>
-                      <div className={styles.attDetails}>
-                        <span className={styles.attDate}>{new Date(log.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                        <div className={styles.attTimes}>
-                           <span className={styles.attTime}><Check size={11} strokeWidth={2.5} style={{ marginRight: 3, color: '#4ade80', verticalAlign: 'middle' }} />In: {log.checkIn}</span>
-                          {log.checkOut && <span className={styles.attTime}><X size={11} strokeWidth={2.5} style={{ marginRight: 3, color: '#f87171', verticalAlign: 'middle' }} />Out: {log.checkOut}</span>}
-                          {log.hoursWorked !== undefined && (
-                            <span className={styles.attHours}><Clock size={11} strokeWidth={1.75} style={{ marginRight: 3, verticalAlign: 'middle' }} />{log.hoursWorked.toFixed(1)}h</span>
-                          )}
-                        </div>
-                        {log.locationLabel && (
-                          <div className={styles.attLoc}>
-                            <MapPin size={12} strokeWidth={1.5} style={{ marginRight: 3, verticalAlign: 'middle' }} />
-                            {mapsUrl
-                              ? <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className={styles.attLocLink}>{log.locationLabel}</a>
-                              : log.locationLabel}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <button className={styles.attDelete} onClick={() => deleteAttendance(log.id)} title="Remove log"><Trash2 size={14} strokeWidth={1.75} /></button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Removed Attendance Tab content */}
     </div>
   );
 }

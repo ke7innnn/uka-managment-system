@@ -8,7 +8,7 @@ import styles from '@/components/Sidebar.module.css';
 import { CheckCircle2, FolderKanban, Bell, AlertTriangle, User, LogOut, MessageSquare, Sun, Moon, X, Receipt } from 'lucide-react';
 
 const NAV = [
-  { href: '/staff-dashboard',                        label: 'My Tasks & Attendance', Icon: CheckCircle2  },
+  { href: '/staff-dashboard',                        label: 'My Tasks',              Icon: CheckCircle2  },
   { href: '/staff-dashboard/projects',               label: 'Client Projects',       Icon: FolderKanban  },
   { href: '/staff-dashboard/billing',                label: 'Billing',               Icon: Receipt       },
   { href: '/staff-dashboard/inbox',                  label: 'My Inbox',              Icon: Bell          },

@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { 
-  getStaff, getClients, StaffMember, Client, totalHoursWorked 
+  getStaff, getClients, StaffMember, Client 
 } from '@/lib/store';
 import { 
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { 
-  TrendingUp, Building2, Clock, Trophy, AlertTriangle, MinusCircle, Flame, CheckCircle2, Bot, FolderKanban, Rocket, BarChart2
+  TrendingUp, Building2, Trophy, AlertTriangle, MinusCircle, Flame, CheckCircle2, Bot, FolderKanban, Rocket, BarChart2, Users
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -64,11 +64,9 @@ export default function ReportsPage() {
       });
     });
 
-    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-    const hrs = totalHoursWorked(s);
-    const velocity = hrs > 0 ? (done / hrs) : 0;
-    return { ...s, done, total, overdue, pct, hrs, velocity };
-  });
+     const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+     return { ...s, done, total, overdue, pct };
+   });
 
   // --- Performance Data for Chart ---
   // Calculates total tasks (target) and completed tasks (actual) per staff member.
@@ -133,9 +131,9 @@ export default function ReportsPage() {
           <div className={styles.metricLabel}>Total active out of {clients.length}</div>
         </div>
         <div className={`glass-panel ${styles.card}`}>
-          <div className={styles.cardTitle}><Clock size={14} strokeWidth={1.75} style={{ marginRight: 6 }} />Total Staff Hours</div>
-          <div className={styles.metricValue}>{staffWithStats.reduce((sum, s) => sum + s.hrs, 0).toFixed(1)}h</div>
-          <div className={styles.metricLabel}>Tracked via GPS Attendance</div>
+          <div className={styles.cardTitle}><Users size={14} strokeWidth={1.75} style={{ marginRight: 6 }} />Total Team Members</div>
+          <div className={styles.metricValue}>{staff.length}</div>
+          <div className={styles.metricLabel}>Active staff members registered</div>
         </div>
       </div>
 
@@ -219,7 +217,7 @@ export default function ReportsPage() {
                 </div>
                 <div className={styles.itemRight}>
                   <span className={styles.itemStat} style={{ color: '#10b981' }}>{s.pct}% Done</span>
-                  <span className={`${styles.badge} ${styles.bgGreen}`}>{s.velocity.toFixed(1)} /hr</span>
+                  <span className={`${styles.badge} ${styles.bgGreen}`}>{s.done} Done</span>
                 </div>
               </div>
             )) : <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No staff currently on track.</p>}

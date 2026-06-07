@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { 
   getStaffById, isStaffAuthenticated, updateStaffMember, 
-  StaffMember, AttendanceLog, staffCompletionPct, getClients, Client,
+  StaffMember, staffCompletionPct, getClients, Client,
   getClientById, updateClient
 } from '@/lib/store';
 import { processReminders, clearStageReminders } from '@/lib/reminders';
 import Link from 'next/link';
-import { MapPin, CheckCircle2, Clock, Check, ArrowRightCircle, ArrowLeftCircle, FolderOpen } from 'lucide-react';
+import { CheckCircle2, Check, FolderOpen, Clock } from 'lucide-react';
 import styles from '@/app/dashboard/staff/[id]/page.module.css';
 
 interface AssignedStage {
@@ -24,7 +24,6 @@ interface AssignedStage {
 
 export default function StaffDashboardHome() {
   const [member, setMember] = useState<StaffMember | null>(null);
-  const [locLoading, setLocLoading] = useState(false);
   const [notifPerm, setNotifPerm] = useState<string>('granted');
   const [showIOSBanner, setShowIOSBanner] = useState(false);
   const [assignedStages, setAssignedStages] = useState<AssignedStage[]>([]);
@@ -123,85 +122,7 @@ export default function StaffDashboardHome() {
     reload();
   };
 
-  // ── Attendance Actions ──
-  const handleClockIn = () => {
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
-
-    const existing = member.attendance.find(a => a.date === dateStr);
-    if (existing && !existing.checkOut) {
-      alert("You are already checked in for today!");
-      return;
-    }
-
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
-      return;
-    }
-
-    setLocLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        const coordsStr = `${lat.toFixed(5)},${lng.toFixed(5)}`;
-        let placeName = coordsStr;
-
-        try {
-          // Use OpenStreetMap Nominatim for highly precise street-level data
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
-          const data = await res.json();
-          if (data && data.display_name) {
-            // Take the first 3 segments of the highly detailed display name
-            // e.g., "Main Street, Vasai West, Palghar"
-            const segments = data.display_name.split(',');
-            placeName = segments.slice(0, 4).join(',').trim();
-          } else if (data && data.address) {
-             const { road, suburb, city, town, village } = data.address;
-             const locality = suburb || city || town || village || '';
-             placeName = [road, locality].filter(Boolean).join(', ');
-          }
-        } catch (e) {
-          console.error("Geocoding failed", e);
-        }
-
-        const log: AttendanceLog = {
-          id: crypto.randomUUID(),
-          date: dateStr,
-          checkIn: timeStr,
-          location: coordsStr,
-          locationLabel: placeName,
-        };
-        updateStaffMember(member.id, { attendance: [...member.attendance, log] });
-        setLocLoading(false);
-        reload();
-      },
-      (err) => {
-        console.error(err);
-        alert('Unable to get your location. Please enable location permissions to clock in.');
-        setLocLoading(false);
-      },
-      { enableHighAccuracy: true }
-    );
-  };
-
-  const handleClockOut = (logId: string) => {
-    const now = new Date();
-    const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
-    
-    const updated = member.attendance.map(a => {
-      if (a.id === logId) {
-        // calculate hours
-        const [ih, im] = a.checkIn.split(':').map(Number);
-        const [oh, om] = timeStr.split(':').map(Number);
-        const hoursWorked = Math.max(0, (oh * 60 + om - (ih * 60 + im)) / 60);
-        return { ...a, checkOut: timeStr, hoursWorked };
-      }
-      return a;
-    });
-    updateStaffMember(member.id, { attendance: updated });
-    reload();
-  };
+  // Removed Attendance Actions
 
   let totalAssignedTasksCount = 0;
   let completedAssignedTasksCount = 0;
@@ -220,9 +141,7 @@ export default function StaffDashboardHome() {
     ? Math.round((completedAssignedTasksCount / totalAssignedTasksCount) * 100) 
     : 0;
   
-  // Today's log
-  const todayDateStr = new Date().toISOString().split('T')[0];
-  const todaysLog = member.attendance.find(a => a.date === todayDateStr && !a.checkOut);
+  // Today's log definition removed
 
   return (
     <div className={`animate-fade-in ${styles.page}`} style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -262,9 +181,9 @@ export default function StaffDashboardHome() {
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         
-        {/* Left Column: Tasks Hub */}
+        {/* Tasks Hub (Full Width) */}
         <div className={`glass-panel`} style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           <div>
@@ -463,65 +382,7 @@ export default function StaffDashboardHome() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Right Column: Attendance Hub */}
-        <div className={`glass-panel`} style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          
-          <div>
-            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Today's Attendance</h3>
-            {todaysLog ? (
-              <div style={{ textAlign: 'center', padding: '1.5rem', background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '12px' }}>
-                <p style={{ color: '#10b981', fontWeight: 700, fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                  <CheckCircle2 size={20} strokeWidth={2.5} /> Checked in at {todaysLog.checkIn}
-                </p>
-                <button 
-                  style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '0.85rem', width: '100%', borderRadius: '10px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(239,68,68,0.3)', transition: 'transform 0.2s' }}
-                  onClick={() => handleClockOut(todaysLog.id)}
-                >
-                  Clock Out
-                </button>
-              </div>
-            ) : (
-              <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border)', borderRadius: '12px', textAlign: 'center' }}>
-                <button 
-                  style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '0.85rem', width: '100%', borderRadius: '10px', fontWeight: 700, fontSize: '1rem', cursor: locLoading ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(99,102,241,0.3)', transition: 'all 0.2s', opacity: locLoading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} 
-                  onClick={handleClockIn}
-                  disabled={locLoading}
-                >
-                  <MapPin size={18} strokeWidth={2} /> {locLoading ? 'Capturing GPS...' : 'Clock In Now'}
-                </button>
-                <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Location access is strictly required.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Recent Logs</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {[...member.attendance].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map((log) => (
-                <div key={log.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                  <div>
-                    <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', margin: 0, marginBottom: '0.25rem' }}>{new Date(log.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><ArrowRightCircle size={12} color="#4ade80" /> {log.checkIn}</span>
-                      {log.checkOut && <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><ArrowLeftCircle size={12} color="#f87171" /> {log.checkOut}</span>}
-                    </p>
-                  </div>
-                  {log.hoursWorked !== undefined && (
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--primary)', margin: 0 }}>{log.hoursWorked.toFixed(1)}h</p>
-                      <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Logged</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
+        </div>        {/* Attendance Hub Removed */}
       </div>
     </div>
   );

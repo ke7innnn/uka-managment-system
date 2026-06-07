@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   getStaff, deleteStaffMember, StaffMember, updateStaffMember, StaffTask,
-  staffCompletionPct, staffStatusColor, totalHoursWorked,
+  staffCompletionPct, staffStatusColor,
 } from '@/lib/store';
-import { BarChart2, CheckCircle2, AlertTriangle, XCircle, Clock, Calendar, Hourglass, MapPin, User, PlusCircle, Briefcase } from 'lucide-react';
+import { BarChart2, CheckCircle2, AlertTriangle, XCircle, Hourglass, User, PlusCircle, Briefcase, Calendar } from 'lucide-react';
 import styles from './page.module.css';
 
 const COLOR_MAP = {
@@ -230,11 +230,7 @@ export default function StaffPage() {
             const c      = COLOR_MAP[color];
             const pct    = staffCompletionPct(member);
             const done   = member.tasks.filter(t => t.completed).length;
-            const hrs    = totalHoursWorked(member);
             const days   = daysLeft(member.workDeadline);
-            const lastAtt = member.attendance.length > 0
-              ? member.attendance[member.attendance.length - 1]
-              : null;
 
             return (
               <div
@@ -288,14 +284,9 @@ export default function StaffPage() {
                   {/* Meta row */}
                   <div className={styles.metaRow}>
                     <div className={styles.metaItem}>
-                      <span className={styles.metaIcon}><Clock size={13} strokeWidth={1.5} /></span>
-                      <span className={styles.metaVal}>{hrs.toFixed(1)}h</span>
-                      <span className={styles.metaLabel}>Hours</span>
-                    </div>
-                    <div className={styles.metaItem}>
-                      <span className={styles.metaIcon}><Calendar size={13} strokeWidth={1.5} /></span>
-                      <span className={styles.metaVal}>{member.attendance.length}</span>
-                      <span className={styles.metaLabel}>Present</span>
+                      <span className={styles.metaIcon}><Briefcase size={13} strokeWidth={1.5} /></span>
+                      <span className={styles.metaVal}>{member.tasks.length}</span>
+                      <span className={styles.metaLabel}>Tasks</span>
                     </div>
                     <div className={styles.metaItem}>
                       <span className={styles.metaIcon}><Hourglass size={13} strokeWidth={1.5} /></span>
@@ -308,16 +299,6 @@ export default function StaffPage() {
                       <span className={styles.metaLabel}>Deadline</span>
                     </div>
                   </div>
-
-                  {/* Last attendance */}
-                  {lastAtt && (
-                    <div className={styles.lastAtt}>
-                      <span className={styles.lastAttIcon}><MapPin size={12} strokeWidth={1.5} /></span>
-                      <span className={styles.lastAttText}>
-                        Last in: {lastAtt.date} at {lastAtt.checkIn}{lastAtt.locationLabel ? ` · ${lastAtt.locationLabel}` : ''}
-                      </span>
-                    </div>
-                  )}
                   {/* Login credentials */}
                   <div style={{
                     marginTop: '0.75rem',

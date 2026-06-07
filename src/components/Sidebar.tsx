@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { logout, getUnreadWorkspaceCount, getUnreadAlertsCount } from '@/lib/store';
 import styles from './Sidebar.module.css';
-import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, LogOut, CalendarCheck, MessageSquare, Inbox, Bell, Sun, Moon, X, Receipt } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, LogOut, MessageSquare, Inbox, Bell, Sun, Moon, X, Receipt } from 'lucide-react';
 
 const NAV = [
   { href: '/dashboard',                        label: 'Dashboard',          Icon: LayoutDashboard },
@@ -12,7 +12,6 @@ const NAV = [
   { href: '/dashboard/documents',             label: 'Documents',          Icon: FileText         },
   { href: '/dashboard/billing',               label: 'Billing',            Icon: Receipt          },
   { href: '/dashboard/staff',                 label: 'Staff',              Icon: UserCog          },
-  { href: '/dashboard/attendance',            label: 'Attendance',         Icon: CalendarCheck    },
   { href: '/dashboard/workspace',             label: 'Workspace',          Icon: MessageSquare    },
   { href: '/dashboard/inbox',                 label: 'Inbox',              Icon: Inbox            },
   { href: '/dashboard/performance-alerts',    label: 'Performance Alerts', Icon: Bell             },
