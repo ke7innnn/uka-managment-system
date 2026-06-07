@@ -64,11 +64,10 @@ export function processReminders(clients: Client[]): void {
         ? Math.max(...sentAlerts.map(a => new Date(a.createdAt).getTime()))
         : 0;
 
-      // ── STRICT 24-HOUR GATE ──
-      if (lastAlertTime > 0) {
-        const hoursSinceLastAlert = (now.getTime() - lastAlertTime) / (1000 * 60 * 60);
-        if (hoursSinceLastAlert < 23.5) return; // Must wait at least 24h before next alert
-      }
+      // ── THROTTLE GATE ──
+      // Prevents spamming alerts if the user refreshes multiple times.
+      // We require 23.5 hours between general reminders (daily updates, escalating reminders).
+      const canSendGeneral = lastAlertTime === 0 || ((now.getTime() - lastAlertTime) / (1000 * 60 * 60)) >= 23.5;
 
       const startDate = phase.startedAt ? new Date(phase.startedAt) : null;
       const deadlineDate = phase.timeBound ? new Date(phase.timeBound + 'T23:59:59') : null;
@@ -78,6 +77,7 @@ export function processReminders(clients: Client[]): void {
         const hoursUntilDeadline = (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
         if (hoursUntilDeadline <= 24 && !sentTemplates.includes('deadline-24h')) {
+          // Deadline-24h is a critical alert, it bypasses the general 24h throttle
           fireAlert(client, phase, pendingTasks, assignedTo, 'deadline-24h', 'warning');
           return;
         }
@@ -86,7 +86,7 @@ export function processReminders(clients: Client[]): void {
           ? Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
           : 0;
         const dailyKey = `daily-update-${daysRunning}`;
-        if (daysRunning >= 1 && !sentTemplates.includes(dailyKey)) {
+        if (daysRunning >= 1 && !sentTemplates.includes(dailyKey) && canSendGeneral) {
           fireAlert(client, phase, pendingTasks, assignedTo, dailyKey, 'warning');
           return;
         }
@@ -104,7 +104,7 @@ export function processReminders(clients: Client[]): void {
 
         for (let i = 1; i <= required; i++) {
           const tKey = `reminder-${i}`;
-          if (!sentTemplates.includes(tKey)) {
+          if (!sentTemplates.includes(tKey) && canSendGeneral) {
             let sev: 'warning' | 'urgent' | 'critical' = 'warning';
             if (i === 3 || i === 4) sev = 'urgent';
             if (i >= 5) sev = 'critical';

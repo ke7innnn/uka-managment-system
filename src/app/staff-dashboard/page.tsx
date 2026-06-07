@@ -122,7 +122,7 @@ export default function StaffDashboardHome() {
     reload();
   };
 
-  // Removed Attendance Actions
+
 
   let totalAssignedTasksCount = 0;
   let completedAssignedTasksCount = 0;
@@ -382,7 +382,7 @@ export default function StaffDashboardHome() {
               </div>
             </div>
           )}
-        </div>        {/* Attendance Hub Removed */}
+        </div>
       </div>
     </div>
   );

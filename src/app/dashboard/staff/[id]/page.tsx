@@ -79,7 +79,7 @@ export default function StaffDetailPage() {
     reload();
   };
 
-  // Removed Attendance Handlers
+
   const overdueTasks = member.tasks.filter(t => !t.completed && new Date(t.deadline) < new Date());
   const pendingTasks = member.tasks.filter(t => !t.completed && new Date(t.deadline) >= new Date());
   const doneTasks    = member.tasks.filter(t => t.completed);
@@ -220,7 +220,7 @@ export default function StaffDetailPage() {
         </div>
       )}
 
-      {/* Removed Attendance Tab content */}
+
     </div>
   );
 }

@@ -499,31 +499,7 @@
   font-weight: 600;
 }
 
-/* ── Last Attendance ── */
-.lastAtt {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  background: rgba(255,255,255,0.02);
-  padding: 0.55rem 0.85rem;
-  border-radius: 8px;
-  border: 1px dashed var(--border-hover);
-  overflow: hidden;
-}
 
-.lastAttIcon {
-  color: var(--accent-light);
-  flex-shrink: 0;
-  display: flex;
-}
-
-.lastAttText {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 /* ── Card Footer / Actions ── */
 .cardActions {

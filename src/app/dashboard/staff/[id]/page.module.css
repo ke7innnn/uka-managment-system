@@ -193,76 +193,7 @@
 .taskDelete { color: var(--text-muted); font-size: 0.85rem; padding: 0.2rem 0.4rem; border-radius: 4px; transition: all 0.15s; }
 .taskDelete:hover { color: #fca5a5; background: rgba(239,68,68,0.1); }
 
-/* Attendance form */
-.attForm { border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
-.attFormTitle { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1.25rem; }
 
-.attFormGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem; margin-bottom: 1rem;
-}
-
-.field { display: flex; flex-direction: column; gap: 0.45rem; }
-.fieldLabel { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-.fieldInput {
-  background: rgba(0,0,0,0.2); border: 1px solid var(--border);
-  padding: 0.7rem 0.9rem; border-radius: 10px;
-  color: var(--text-main); font-size: 0.875rem; outline: none; font-family: var(--font-sans);
-  transition: border-color 0.2s;
-}
-.fieldInput:focus { border-color: var(--primary); }
-.fieldInput::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
-
-.locRow { display: flex; gap: 0.5rem; }
-.locRow .fieldInput { flex: 1; }
-.gpsBtn {
-  background: rgba(99,102,241,0.15); color: #a5b4fc;
-  border: 1px solid rgba(99,102,241,0.3);
-  padding: 0 0.85rem; border-radius: 10px; font-size: 1rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
-}
-.gpsBtn:hover { background: rgba(99,102,241,0.25); }
-.gpsBtn:disabled { opacity: 0.5; cursor: default; }
-
-.hoursCalc { font-size: 0.82rem; color: #6ee7b7; margin-bottom: 1rem; font-weight: 600; }
-
-.logBtn {
-  background: var(--primary); color: white;
-  padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
-  transition: all 0.2s;
-}
-.logBtn:hover { background: var(--primary-hover); }
-
-/* Attendance list */
-.attList { display: flex; flex-direction: column; gap: 0.75rem; }
-
-.attCard {
-  border-radius: 14px; padding: 1.1rem 1.25rem;
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
-  transition: transform 0.15s;
-}
-.attCard:hover { transform: translateX(3px); }
-
-.attCardLeft { display: flex; align-items: flex-start; gap: 1rem; flex: 1; }
-
-.attDay {
-  background: rgba(99,102,241,0.15); color: #a5b4fc;
-  width: 36px; height: 36px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
-}
-
-.attDetails { flex: 1; min-width: 0; }
-.attDate { font-size: 0.9rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem; }
-.attTimes { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.25rem; }
-.attTime { font-size: 0.8rem; color: var(--text-muted); }
-.attHours { font-size: 0.8rem; color: #6ee7b7; font-weight: 600; }
-.attLoc { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
-.attLocLink { color: #a5b4fc; text-decoration: underline; }
-.attLocLink:hover { color: #818cf8; }
-
-.attDelete { color: var(--text-muted); font-size: 0.85rem; padding: 0.2rem 0.4rem; border-radius: 4px; transition: all 0.15s; flex-shrink: 0; }
-.attDelete:hover { color: #fca5a5; background: rgba(239,68,68,0.1); }
 
 /* Empty */
 .empty {
@@ -368,28 +299,5 @@
     flex: none;
   }
   
-  .attForm {
-    padding: 1.25rem;
-  }
-  
-  .attFormGrid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-  
-  .attCard {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 1rem;
-    gap: 0.75rem;
-  }
-  
-  .attCardLeft {
-    width: 100%;
-  }
-  
-  .attDelete {
-    align-self: flex-end;
-    padding: 0.4rem;
-  }
+
 }

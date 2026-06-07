@@ -33,11 +33,10 @@ export async function POST(req: Request) {
       return obj;
     }
 
-    // Hyper-compress Staff: Convert heavy task objects into simple strings and omit attendance logs
+    // Hyper-compress Staff: Convert heavy task objects into simple strings
     const compressedStaff = (context.staff || []).map((s: any) => {
-      const { attendance, ...rest } = s;
       return {
-        ...rest,
+        ...s,
         tasks: (s.tasks || []).map((t: any) => `${t.completed ? '[DONE]' : '[TODO]'} ${t.title}`)
       };
     });

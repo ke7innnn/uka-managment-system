@@ -24,7 +24,7 @@ export async function pullFromSupabase() {
 
     const { data: staffData, error: staffErr } = await supabase
       .from('staff')
-      .select('*, staff_tasks(*), attendance_logs(*)');
+      .select('*, staff_tasks(*)');
 
     if (staffErr) throw staffErr;
 
@@ -92,11 +92,6 @@ export async function pullFromSupabase() {
       tasks: (s.staff_tasks || []).map((t: any) => ({
         id: t.id, title: t.title, completed: t.completed,
         deadline: t.deadline || '', createdAt: t.created_at, completedAt: t.completed_at || undefined
-      })),
-      attendance: (s.attendance_logs || []).map((a: any) => ({
-        id: a.id, date: a.date, checkIn: a.check_in, checkOut: a.check_out || undefined,
-        location: a.location || undefined, locationLabel: a.location_label || undefined,
-        hoursWorked: a.hours_worked || undefined
       }))
     }));
 
@@ -180,7 +175,6 @@ export async function pullFromSupabase() {
       deletedStaffIds.forEach(async (id) => {
         try {
           await supabase.from('staff_tasks').delete().eq('staff_id', id);
-          await supabase.from('attendance_logs').delete().eq('staff_id', id);
           const staffRes = await supabase.from('staff').delete().eq('id', id);
 
           if (!staffRes.error) {
@@ -475,7 +469,6 @@ export async function pushStaffToSupabase(staff: StaffMember[]) {
   }));
 
   const taskRows: any[] = [];
-  const attendanceRows: any[] = [];
 
   staff.forEach(s => {
     s.tasks.forEach(t => {
@@ -484,20 +477,12 @@ export async function pushStaffToSupabase(staff: StaffMember[]) {
         deadline: t.deadline || null, created_at: t.createdAt, completed_at: t.completedAt || null
       });
     });
-    s.attendance.forEach(a => {
-      attendanceRows.push({
-        id: a.id, staff_id: s.id, date: a.date, check_in: a.checkIn,
-        check_out: a.checkOut || null, location: a.location || null,
-        location_label: a.locationLabel || null, hours_worked: a.hoursWorked || null
-      });
-    });
   });
 
   const { error } = await supabase.from('staff').upsert(staffRows);
   if (error) { console.error('pushStaffToSupabase error:', error.message); return; }
   
   if (taskRows.length > 0) await supabase.from('staff_tasks').upsert(taskRows);
-  if (attendanceRows.length > 0) await supabase.from('attendance_logs').upsert(attendanceRows);
 
   // Clean up orphans
   const staffIds = staff.map(s => s.id);
@@ -507,13 +492,6 @@ export async function pushStaffToSupabase(staff: StaffMember[]) {
       await supabase.from('staff_tasks').delete().in('staff_id', staffIds).not('id', 'in', `(${currentTaskIds.join(',')})`);
     } else {
       await supabase.from('staff_tasks').delete().in('staff_id', staffIds);
-    }
-
-    const currentAttendanceIds = attendanceRows.map(a => a.id);
-    if (currentAttendanceIds.length > 0) {
-      await supabase.from('attendance_logs').delete().in('staff_id', staffIds).not('id', 'in', `(${currentAttendanceIds.join(',')})`);
-    } else {
-      await supabase.from('attendance_logs').delete().in('staff_id', staffIds);
     }
   }
 

@@ -663,15 +663,6 @@ export interface StaffTask {
   completedAt?: string;  // ISO date string when marked done
 }
 
-export interface AttendanceLog {
-  id: string;
-  date: string;          // YYYY-MM-DD
-  checkIn: string;       // HH:MM
-  checkOut?: string;     // HH:MM
-  location?: string;     // "lat,lng" or freetext
-  locationLabel?: string;// human readable
-  hoursWorked?: number;
-}
 
 export interface StaffMember {
   id: string;
@@ -684,7 +675,6 @@ export interface StaffMember {
   joinedAt: string;
   totalTasksTarget: number;       // e.g. 65
   tasks: StaffTask[];
-  attendance: AttendanceLog[];
   workDeadline?: string;          // ISO date - overall project deadline
   notes?: string;
   profilePicture?: string;        // data URL
@@ -752,8 +742,7 @@ export function getStaff(): StaffMember[] {
         phone: s.phone,
         joinedAt: new Date().toISOString(),
         totalTasksTarget: 0,
-        tasks: [],
-        attendance: []
+        tasks: []
       }));
       localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
     }
@@ -833,7 +822,6 @@ export function deleteStaffMember(id: string): void {
   import('./supabase').then(async ({ supabase }) => {
     try {
       await supabase.from('staff_tasks').delete().eq('staff_id', id);
-      await supabase.from('attendance_logs').delete().eq('staff_id', id);
       const staffRes = await supabase.from('staff').delete().eq('id', id);
 
       if (staffRes.error) {
@@ -919,9 +907,6 @@ export async function viewDocumentSafe(url: string) {
 }
 
 
-export function totalHoursWorked(member: StaffMember): number {
-  return member.attendance.reduce((sum, a) => sum + (a.hoursWorked || 0), 0);
-}
 
 // ─── Workspace Chat ────────────────────────────────────────────────────────────
 

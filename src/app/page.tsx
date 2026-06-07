@@ -69,7 +69,7 @@ export default function Login() {
               phone: data.phone || '', department: data.department || '',
               joinedAt: data.joined_at, totalTasksTarget: data.total_tasks_target || 0,
               workDeadline: data.work_deadline, notes: data.notes || '',
-              profilePicture: data.profile_picture || '', tasks: [], attendance: []
+              profilePicture: data.profile_picture || '', tasks: []
             }];
             localStorage.setItem('uka_staff', JSON.stringify(seeded));
           }

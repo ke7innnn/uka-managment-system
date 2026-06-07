@@ -62,7 +62,6 @@ export default function StaffForm({ member, mode }: Props) {
         notes: form.notes.trim() || undefined,
         profilePicture: form.profilePicture || undefined,
         tasks: [],
-        attendance: [],
       });
       router.push('/dashboard/staff');
     } else {
