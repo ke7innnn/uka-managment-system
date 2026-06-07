@@ -300,17 +300,19 @@ function restoreStrippedBase64(localData: any, remoteData: any): any {
 export async function pushClientsToSupabase(clients: Client[]) {
   if (!clients || clients.length === 0) return;
 
-  // 1. Fetch the real KYC data from Supabase to prevent overwriting with [BASE64_STRIPPED]
+  // 1. Fetch the FULL existing data from Supabase to prevent overwriting with stale local data
   const clientIds = clients.map(c => c.id);
   const { data: existingClients } = await supabase
     .from('clients')
-    .select('id, kyc')
+    .select('*')
     .in('id', clientIds);
     
-  const existingMap = new Map(existingClients?.map(c => [c.id, c.kyc]) || []);
+  const existingMap = new Map(existingClients?.map(c => [c.id, c]) || []);
 
   const clientRows = clients.map(c => {
-    const remoteKyc = existingMap.get(c.id);
+    const remoteClient = existingMap.get(c.id);
+    const remoteKyc = remoteClient?.kyc || {};
+    
     const kycWithUin = {
       ...(c.kyc || {}),
       clientUin: c.clientUin || '',
@@ -318,24 +320,43 @@ export async function pushClientsToSupabase(clients: Client[]) {
     };
     const safeKyc = restoreStrippedBase64(kycWithUin, remoteKyc);
 
+    const pending = c.pendingFields || [];
+    const hasPending = pending.length > 0;
+    
+    // Helper to decide whether to use local value or preserve remote master value
+    const val = (localKey: keyof Client, remoteKey: string, localValue: any) => {
+      if (!remoteClient) return localValue; // New client
+      if (!hasPending) return localValue; // Fallback for older offline edits
+      if (pending.includes(localKey)) return localValue; // Field was explicitly edited locally
+      return remoteClient[remoteKey]; // Preserve master database value
+    };
+
+    let finalKyc = safeKyc || {};
+    if (remoteClient && hasPending) {
+       // Only push local KYC if it or its nested fields were explicitly edited
+       if (!pending.includes('kyc') && !pending.includes('clientUin') && !pending.includes('naFolders')) {
+         finalKyc = remoteKyc;
+       }
+    }
+
     return {
       id: c.id,
-      client_id: c.clientId || null,
-      name: c.name,
-      company: c.company,
-      email: c.email,
-      phone: c.phone,
-      place: c.place,
-      address: c.address,
-      notes: c.notes,
-      project_name: c.projectName,
-      project_status: c.projectStatus,
+      client_id: val('clientId', 'client_id', c.clientId || null),
+      name: val('name', 'name', c.name),
+      company: val('company', 'company', c.company),
+      email: val('email', 'email', c.email),
+      phone: val('phone', 'phone', c.phone),
+      place: val('place', 'place', c.place),
+      address: val('address', 'address', c.address),
+      notes: val('notes', 'notes', c.notes),
+      project_name: val('projectName', 'project_name', c.projectName),
+      project_status: val('projectStatus', 'project_status', c.projectStatus),
       created_at: c.createdAt,
-      tags: c.tags,
-      progress_checklist: c.progressChecklist || [],
-      oc_checklist: c.ocChecklist || [],
-      client_password: c.clientPassword || null,
-      kyc: safeKyc || {}
+      tags: val('tags', 'tags', c.tags),
+      progress_checklist: val('progressChecklist', 'progress_checklist', c.progressChecklist || []),
+      oc_checklist: val('ocChecklist', 'oc_checklist', c.ocChecklist || []),
+      client_password: val('clientPassword', 'client_password', c.clientPassword || null),
+      kyc: finalKyc
     };
   });
 
@@ -343,31 +364,39 @@ export async function pushClientsToSupabase(clients: Client[]) {
   const docRows: any[] = [];
 
   clients.forEach(c => {
-    c.phases.forEach(p => {
-      phaseRows.push({ 
-        id: p.id, 
-        client_id: c.id, 
-        name: p.name, 
-        completed: p.status === 'completed' || p.completed, 
-        order: p.order,
-        status: p.status,
-        time_bound: p.timeBound || null,
-        started_at: p.startedAt || null,
-        tasks: JSON.stringify(p.tasks || [])
+    const pending = c.pendingFields || [];
+    const hasPending = pending.length > 0;
+
+    // Only push phases if they were actually edited
+    if (!hasPending || pending.includes('phases')) {
+      c.phases.forEach(p => {
+        phaseRows.push({ 
+          id: p.id, 
+          client_id: c.id, 
+          name: p.name, 
+          completed: p.status === 'completed' || p.completed, 
+          order: p.order,
+          status: p.status,
+          time_bound: p.timeBound || null,
+          started_at: p.startedAt || null,
+          tasks: JSON.stringify(p.tasks || [])
+        });
       });
-    });
+    }
 
     // Load document tombstone — IDs that were explicitly deleted and must never be re-pushed
     const deletedDocRaw = typeof window !== 'undefined' ? localStorage.getItem('uka_deleted_doc_ids') : null;
     const deletedDocIds = new Set<string>(deletedDocRaw ? JSON.parse(deletedDocRaw) : []);
 
-    c.documents.forEach(d => {
-      if (deletedDocIds.has(d.id)) return; // Skip tombstoned (deleted) docs
-      docRows.push({
-        id: d.id,
-        client_id: c.id,
-        name: d.name,
-        url: d.url,
+    // Only push documents if they were actually edited
+    if (!hasPending || pending.includes('documents')) {
+      c.documents.forEach(d => {
+        if (deletedDocIds.has(d.id)) return; // Skip tombstoned (deleted) docs
+        docRows.push({
+          id: d.id,
+          client_id: c.id,
+          name: d.name,
+          url: d.url,
         uploaded_at: d.uploadedAt,
         type: d.type,
         size: d.size,
@@ -396,7 +425,11 @@ export async function pushClientsToSupabase(clients: Client[]) {
     if (localRaw) {
       const local: Client[] = JSON.parse(localRaw);
       const pushedIds = new Set(clients.map(c => c.id));
-      const updated = local.map(c => pushedIds.has(c.id) ? { ...c, syncStatus: 'synced' as const } : c);
+      const updated = local.map(c => 
+        pushedIds.has(c.id) 
+          ? { ...c, syncStatus: 'synced' as const, pendingFields: undefined } 
+          : c
+      );
       localStorage.setItem('uka_clients', JSON.stringify(updated));
     }
   }

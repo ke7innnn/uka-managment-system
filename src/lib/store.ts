@@ -162,6 +162,7 @@ export interface Client {
   ocChecklist?: string[];
   kyc?: KycData;
   naFolders?: string[];   // NEW: subfolder/folder IDs marked as Not Applicable
+  pendingFields?: string[]; // Tracks which specific fields were edited to prevent wiping other fields during push
 }
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
@@ -585,7 +586,18 @@ export function updateClient(id: string, data: Partial<Client>): Client | undefi
   const clients = getClients();
   const idx = clients.findIndex((c) => c.id === id);
   if (idx === -1) return undefined;
-  clients[idx] = { ...clients[idx], ...data, syncStatus: 'pending' };
+  
+  // Track which specific fields are being edited
+  const editedKeys = Object.keys(data).filter(k => k !== 'syncStatus' && k !== 'pendingFields');
+  const existingPending = clients[idx].pendingFields || [];
+  const mergedPending = Array.from(new Set([...existingPending, ...editedKeys]));
+
+  clients[idx] = { 
+    ...clients[idx], 
+    ...data, 
+    syncStatus: 'pending',
+    pendingFields: mergedPending
+  };
   saveClients(clients);
   return clients[idx];
 }
