@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import SupabaseSyncProvider from "@/components/SupabaseSyncProvider";
+import UpdateNotification from "@/components/UpdateNotification";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,7 +32,9 @@ export default function RootLayout({
         <SupabaseSyncProvider>
           {children}
         </SupabaseSyncProvider>
+        <UpdateNotification />
       </body>
     </html>
   );
 }
+
