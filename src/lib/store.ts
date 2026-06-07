@@ -203,7 +203,8 @@ export function getClients(): Client[] {
         p.name === "Stage 2 — Paper Procurement" || 
         p.name === "Stage 3 — Legal / Tree NOC" || 
         p.name === "Stage 3 — Upon Obtaining Permission" ||
-        (!p.name.includes("1a") && !p.name.includes("1b") && !p.name.includes("2c") && !p.name.includes("3d") && !p.name.includes("3e") && !p.name.includes("3f"))
+        // Only trigger migration if it's explicitly an old format missing the Stage 1-6 numbering
+        (!p.name.includes("Stage 1") && !p.name.includes("Stage 2") && !p.name.includes("Stage 3") && !p.name.includes("Stage 4") && !p.name.includes("Stage 5") && !p.name.includes("Stage 6") && !p.name.includes("1a") && !p.name.includes("1b") && !p.name.includes("2c") && !p.name.includes("3d") && !p.name.includes("3e") && !p.name.includes("3f"))
       );
 
       let clientMigrated = false;
