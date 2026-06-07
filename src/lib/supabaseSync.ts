@@ -405,6 +405,7 @@ export async function pushClientsToSupabase(clients: Client[]) {
         subfolder: d.subfolder || null
       });
     });
+    }
   });
 
   const { error } = await supabase.from('clients').upsert(clientRows);
