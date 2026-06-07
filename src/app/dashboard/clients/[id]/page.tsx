@@ -436,8 +436,8 @@ export default function ClientDetailPage() {
               clientPassword: isPending ? (localClient?.clientPassword ?? '') : (data.client_password ?? ''),
               kyc: isPending ? { ...(data.kyc || {}), ...(localClient?.kyc || {}) } : (data.kyc || {}),
               naFolders: isPending ? (localClient?.naFolders ?? []) : (data.kyc?.naFolders || []),
-              // Priority is stored locally only — always prefer local to avoid wipe on Supabase reload
-              priority: localClient?.priority ?? data.priority ?? 'medium',
+              // Use pending local priority if edited offline, otherwise master from Supabase kyc
+              priority: isPending ? (localClient?.priority ?? 'medium') : (data.kyc?.priority ?? 'medium'),
               syncStatus: isPending ? 'pending' : 'synced',
               phases: isPending ? (localClient?.phases ?? []) : (data.phases || []).map((p: any) => ({
                 id: p.id, name: p.name, completed: p.completed, order: p.order,
