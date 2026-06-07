@@ -129,9 +129,9 @@ export default function AdminAssistantChat() {
       <button 
         className="call-bruce-btn"
         onClick={() => setIsBatmanVisible(prev => !prev)}
+        title={isBatmanVisible ? 'Hide Bruce Wayne' : 'Call Bruce Wayne'}
       >
-        <img src="/icon.png" alt="Bat" style={{ width: 16, height: 16, borderRadius: '50%', marginRight: 6 }} />
-        {isBatmanVisible ? 'Hide Bruce Wayne' : 'Call Bruce Wayne'}
+        <img src="/icon.png" alt="Bat" style={{ width: 24, height: 24, borderRadius: '50%' }} />
       </button>
 
       {/* Batman 3D Model */}
@@ -336,6 +336,7 @@ export default function AdminAssistantChat() {
           .call-bruce-btn {
             display: flex;
             align-items: center;
+            justify-content: center;
             position: fixed;
             top: 50%;
             right: 0;
@@ -345,10 +346,8 @@ export default function AdminAssistantChat() {
             color: var(--text-main);
             border: 1px solid var(--border);
             border-right: none;
-            padding: 12px 10px 12px 16px;
-            border-radius: 20px 0 0 20px;
-            font-weight: 700;
-            font-size: 0.8rem;
+            padding: 10px 8px 10px 12px;
+            border-radius: 24px 0 0 24px;
             box-shadow: -4px 4px 15px rgba(0,0,0,0.5);
             cursor: pointer;
             backdrop-filter: blur(10px);
