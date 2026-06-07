@@ -151,9 +151,9 @@ export default function AdminAssistantChat() {
             alt="Bruce Wayne Assistant" 
             scale="6 6 6"
             loading="eager"
-            camera-orbit="0deg 85deg auto"
-            camera-target="0m 2.0m 0m"
-            field-of-view="22deg"
+            min-camera-orbit="auto auto 0m"
+            camera-orbit="0deg 80deg 0.7m"
+            camera-target="0m 1.55m 0m"
             camera-controls
             interaction-prompt="none"
             className="breathe-animation"

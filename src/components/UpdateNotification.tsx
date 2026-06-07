@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, Sparkles } from 'lucide-react';
 
-const CLIENT_VERSION = '1.0.3'; // Matches version.json initially
+const CLIENT_VERSION = '1.0.4'; // Matches version.json initially
 
 export default function UpdateNotification() {
   const [hasUpdate, setHasUpdate] = useState(false);
