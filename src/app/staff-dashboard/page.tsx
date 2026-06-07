@@ -21,6 +21,7 @@ interface AssignedStage {
   status: 'not-started' | 'in-progress';
   assignedTasks: { id: string; title: string; completed: boolean }[];
   tilrStatus?: 'pending' | 'received';
+  priority?: 'low' | 'medium' | 'high';
 }
 
 export default function StaffDashboardHome() {
@@ -61,6 +62,7 @@ export default function StaffDashboardHome() {
                   status: phase.status,
                   assignedTasks: assigned,
                   tilrStatus: client.tilrStatus,
+                  priority: client.priority,
                 });
               }
             }
@@ -250,6 +252,7 @@ export default function StaffDashboardHome() {
                             ) : (
                               <span className="tilr-pending-badge" style={{ padding: '2px 6px', fontSize: '0.65rem' }}>TILR PENDING</span>
                             )}
+                            <span className={`priority-badge-${stage.priority || 'medium'}`} style={{ padding: '2px 6px', fontSize: '0.65rem' }}>{(stage.priority || 'medium').toUpperCase()}</span>
                           </div>
                           <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
                             {stage.clientName}

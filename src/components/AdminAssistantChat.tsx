@@ -130,11 +130,11 @@ export default function AdminAssistantChat() {
         className="floating-assistant-btn"
         style={{
           position: 'fixed',
-          bottom: '-260px',
-          right: '-100px',
+          bottom: '-180px',
+          right: '-70px',
           zIndex: 9999,
-          width: '480px',
-          height: '600px',
+          width: '336px',
+          height: '420px',
           background: 'transparent',
           border: 'none',
           display: 'flex',
@@ -321,8 +321,8 @@ export default function AdminAssistantChat() {
         /* Speech Bubble Wrapper positioned to top-left of Batman */
         .assistant-chat-bubble-wrapper {
           position: fixed;
-          bottom: 250px;
-          right: 210px;
+          bottom: 175px;
+          right: 150px;
           z-index: 9999;
           filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.4));
         }

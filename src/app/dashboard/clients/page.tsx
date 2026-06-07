@@ -122,6 +122,7 @@ export default function ClientsPage() {
                             ) : (
                               <span className="tilr-pending-badge">TILR PENDING</span>
                             )}
+                            <span className={`priority-badge-${client.priority || 'medium'}`} style={{ padding: '4px 10px', fontSize: '0.7rem' }}>{(client.priority || 'medium').toUpperCase()}</span>
                           </div>
                         </div>
                       </div>

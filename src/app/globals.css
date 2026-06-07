@@ -331,3 +331,34 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); }
   animation: tilr-blink 1.2s ease-in-out infinite;
 }
 
+
+/* Priority Badges */
+.priority-badge-high {
+  background: rgba(192, 96, 96, 0.1);
+  color: #c06060;
+  border: 1px solid rgba(192, 96, 96, 0.25);
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.priority-badge-medium {
+  background: rgba(200, 169, 110, 0.1);
+  color: #c8a96e;
+  border: 1px solid rgba(200, 169, 110, 0.25);
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.priority-badge-low {
+  background: rgba(106, 170, 132, 0.1);
+  color: #6aaa84;
+  border: 1px solid rgba(106, 170, 132, 0.25);
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 700;
+  white-space: nowrap;
+}

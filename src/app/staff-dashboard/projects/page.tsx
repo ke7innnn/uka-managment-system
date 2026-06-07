@@ -103,6 +103,7 @@ export default function StaffProjectsPage() {
               ) : (
                 <span className="tilr-pending-badge" style={{ padding: '3px 8px', fontSize: '0.65rem' }}>TILR PENDING</span>
               )}
+              <span className={`priority-badge-${client.priority || 'medium'}`} style={{ padding: '3px 8px', fontSize: '0.65rem' }}>{(client.priority || 'medium').toUpperCase()}</span>
             </div>
             <div className={styles.cardTopHeader}>
               <div className={styles.projAvatarCircle}>{client.name.charAt(0).toUpperCase()}</div>
