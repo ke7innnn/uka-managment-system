@@ -131,7 +131,7 @@ export default function AdminAssistantChat() {
         style={{
           position: 'fixed',
           bottom: '-260px',
-          right: '-40px',
+          right: '-100px',
           zIndex: 9999,
           width: '480px',
           height: '600px',
@@ -322,7 +322,7 @@ export default function AdminAssistantChat() {
         .assistant-chat-bubble-wrapper {
           position: fixed;
           bottom: 250px;
-          right: 270px;
+          right: 210px;
           z-index: 9999;
           filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.4));
         }
