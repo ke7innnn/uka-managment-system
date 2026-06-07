@@ -149,9 +149,11 @@ export default function AdminAssistantChat() {
           <ModelViewer 
             src="/glb/Batman.glb" 
             alt="Bruce Wayne Assistant" 
-            scale="6 6 6"
+            scale="10 10 10"
             loading="eager"
-            camera-orbit="0deg 90deg auto"
+            camera-orbit="0deg 85deg auto"
+            camera-target="0m 1.35m 0m"
+            field-of-view="22deg"
             camera-controls
             interaction-prompt="none"
             className="breathe-animation"
