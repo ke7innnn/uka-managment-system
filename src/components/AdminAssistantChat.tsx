@@ -163,29 +163,6 @@ export default function AdminAssistantChat() {
       {/* Chat Speech Bubble */}
       {isOpen && (
         <div className="assistant-chat-bubble-wrapper animate-fade-in">
-          {/* Speech Bubble Tail pointing to Batman's head */}
-          <svg 
-            className="assistant-chat-bubble-tail" 
-            width="50" 
-            height="35" 
-            viewBox="0 0 50 35" 
-            style={{
-              position: 'absolute',
-              bottom: '-34px',
-              right: '60px',
-              zIndex: 9998,
-              pointerEvents: 'none'
-            }}
-          >
-            <path 
-              d="M 0 0 Q 25 15, 50 35 Q 30 10, 25 0 Z" 
-              fill="var(--bg-raised)" 
-              stroke="var(--border)" 
-              strokeWidth="1.2"
-              strokeLinejoin="round"
-            />
-          </svg>
-          
           {/* Chat Window */}
           <div className="assistant-chat-window">
             {/* Header */}
@@ -299,6 +276,28 @@ export default function AdminAssistantChat() {
               </form>
             </div>
           </div>
+          {/* Speech Bubble Tail */}
+          <svg 
+            className="assistant-chat-bubble-tail" 
+            width="70" 
+            height="45" 
+            viewBox="0 0 70 45" 
+            style={{
+              position: 'absolute',
+              bottom: '-43px',
+              right: '20px',
+              zIndex: 10,
+              pointerEvents: 'none'
+            }}
+          >
+            <path 
+              d="M 0 0 Q 30 15, 65 43 Q 35 15, 25 0 Z" 
+              fill="var(--bg-raised)" 
+              stroke="var(--border)" 
+              strokeWidth="2"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
       )}
 
@@ -323,14 +322,14 @@ export default function AdminAssistantChat() {
         .assistant-chat-bubble-wrapper {
           position: fixed;
           bottom: 250px;
-          right: 230px;
+          right: 270px;
           z-index: 9999;
           filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.4));
         }
         
         /* Modern Rotated Square Speech Bubble Tail */
         .assistant-chat-bubble-tail {
-          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+          filter: drop-shadow(0 8px 16px rgba(0,0,0,0.25));
         }
 
         /* Glassmorphic Chat Window */
@@ -340,8 +339,8 @@ export default function AdminAssistantChat() {
           background: var(--bg-raised);
           backdrop-filter: blur(30px);
           -webkit-backdrop-filter: blur(30px);
-          border: 1px solid var(--border);
-          border-radius: 32px;
+          border: 2px solid var(--border);
+          border-radius: 40px 40px 12px 40px;
           display: flex;
           flex-direction: column;
           overflow: hidden;
