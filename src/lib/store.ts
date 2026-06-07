@@ -451,7 +451,7 @@ export const DEFAULT_PHASES_TEMPLATE = [
     status: "not-started" as const,
     tasks: [
       { title: "Filing with sticker and basic papers (7.12, physical survey with surroundings and gutbook superimposed for D.P, gutbook, site photos, KYC questionnaire, ARCHITECT APPOINTMENT LETTER, give ENTIRE PAPERWORK CHECKLIST of approval to client)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
-      { title: "Place order for 2 sets of TILR/NOCs (mention DATE & whether client is doing it or responsible persons name)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
+      { title: "Place order for 2 sets of TILR/NOCs (mention DATE & whether client is doing it or responsible persons name) with Vijay", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
       { title: "Place order for 2 sets of all revenue papers (mention DATE whether client is doing it or responsible persons name)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
       { title: "Upload project on website", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
       { title: "Give it OFFICE UIN and form WhatsApp group (Vrushali madam)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
