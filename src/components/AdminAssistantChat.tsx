@@ -152,7 +152,7 @@ export default function AdminAssistantChat() {
             scale="6 6 6"
             loading="eager"
             camera-orbit="0deg 85deg 50%"
-            camera-target="0m 1.35m 0m"
+            camera-target="0m 1.8m 0m"
             camera-controls
             interaction-prompt="none"
             className="breathe-animation"
