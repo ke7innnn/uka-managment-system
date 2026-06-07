@@ -119,7 +119,10 @@ export default function AdminAssistantChat() {
       setTimeout(() => {
         setCooldown(false);
       }, 1000); // 1 second forced wait between questions
-      return (
+    }
+  };
+
+  return (
     <>
       {/* Batman 3D Model (Always Visible) */}
       <button 
