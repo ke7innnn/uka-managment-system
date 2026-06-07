@@ -444,7 +444,7 @@ export function getClientById(id: string): Client | undefined {
 
 export const DEFAULT_PHASES_TEMPLATE = [
   {
-    name: "Stage 1a — Sadhana/Uzaid: File Prep & Order Placement (3 Working Days)",
+    name: "Stage 1 — Sadhana/Uzaid: File Prep & Order Placement (3 Working Days)",
     status: "not-started" as const,
     tasks: [
       { title: "Filing with sticker and basic papers (7.12, physical survey with surroundings and gutbook superimposed for D.P, gutbook, site photos, KYC questionnaire, ARCHITECT APPOINTMENT LETTER, give ENTIRE PAPERWORK CHECKLIST of approval to client)", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
@@ -456,7 +456,7 @@ export const DEFAULT_PHASES_TEMPLATE = [
     ]
   },
   {
-    name: "Stage 1b — Vijay/Uzaid: Plot Details & NOC Checks (3 Working Days)",
+    name: "Stage 2 — Vijay/Uzaid: Plot Details & NOC Checks (3 Working Days)",
     status: "not-started" as const,
     tasks: [
       { title: "Upload basic plot on DP marking, CRZ, WETLAND, eco sensitive zone CORRIDOR, HERITAGE, KMZ images on website and give remark.", assignedTo: "Vijay Palkar & Uzaid Khan" },
@@ -465,7 +465,7 @@ export const DEFAULT_PHASES_TEMPLATE = [
     ]
   },
   {
-    name: "Stage 2c — Sadhana/Uzaid: Paper Procurement (5 Working Days)",
+    name: "Stage 3 — Sadhana/Uzaid: Paper Procurement (5 Working Days)",
     status: "not-started" as const,
     tasks: [
       { title: "Ready half CHECKLIST", assignedTo: "Sadhana Kanojiya & Uzaid Khan" },
@@ -480,7 +480,7 @@ export const DEFAULT_PHASES_TEMPLATE = [
     ]
   },
   {
-    name: "Stage 3d — Vijay: Legal/Tree NOC (21 Working Days)",
+    name: "Stage 4 — Vijay: Legal/Tree NOC (21 Working Days)",
     status: "not-started" as const,
     tasks: [
       { title: "Mention compliances of legal department, tree department scrutiny time to time.", assignedTo: "Vijay Palkar" },
@@ -494,7 +494,7 @@ export const DEFAULT_PHASES_TEMPLATE = [
     ]
   },
   {
-    name: "Stage 3e — Uzaid/Vrushali/Nihal: Drawing, Report & Inwarding (14 Days upon TILR/Plans)",
+    name: "Stage 5 — Uzaid/Vrushali/Nihal: Drawing, Report & Inwarding (14 Days upon TILR/Plans)",
     status: "not-started" as const,
     tasks: [
       { title: "Prepare and upload offline drawing", assignedTo: "Uzaid Khan & Vrushali Thakur & Nihal Gharat" },
@@ -512,7 +512,7 @@ export const DEFAULT_PHASES_TEMPLATE = [
     ]
   },
   {
-    name: "Stage 3f — Uzaid/Vrushali: Final Approval & Receipts (Upon obtaining permission)",
+    name: "Stage 6 — Uzaid/Vrushali: Final Approval & Receipts (Upon obtaining permission)",
     status: "not-started" as const,
     tasks: [
       { title: "AUTO PROMPT TO CLIENT AND BOSS- PROJECT HAS BEEN APPROVED VIA OFFLINE MODE BY HON. COMMISSIONER SIR ON………. FURTHER PROCESS FOR ONLINE APPROVAL AND CHALLANS HAS BEEN INITIATED.", assignedTo: "Uzaid Khan & Vrushali Thakur" },
@@ -531,11 +531,12 @@ export const DEFAULT_PHASES_TEMPLATE = [
 
 export function getStageDefaultWorkingDays(stageName: string): number {
   const name = stageName.toLowerCase();
-  if (name.includes("1a")) return 3;
-  if (name.includes("1b")) return 3;
-  if (name.includes("2c")) return 5;
-  if (name.includes("3d")) return 21;
-  if (name.includes("3e")) return 14;
+  // Match by keywords so it works for both old (1a/1b/2c/3d/3e) and new (Stage 1–6) names
+  if (name.includes("file prep") || name.includes("order placement") || name.includes("1a")) return 3;
+  if (name.includes("plot details") || name.includes("noc checks") || name.includes("1b")) return 3;
+  if (name.includes("paper procurement") || name.includes("2c")) return 5;
+  if (name.includes("legal/tree") || name.includes("3d")) return 21;
+  if (name.includes("drawing") || name.includes("inwarding") || name.includes("3e")) return 14;
   return 0;
 }
 

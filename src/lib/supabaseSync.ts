@@ -138,7 +138,14 @@ export async function pullFromSupabase() {
     activeSupabaseStaff.forEach(s => mergedStaffMap.set(s.id, s));
     pendingLocalStaff.forEach(s => mergedStaffMap.set(s.id, s));
 
-    const mergedClients = Array.from(mergedClientsMap.values());
+    const mergedClients = Array.from(mergedClientsMap.values()).map(c => {
+      // Priority is stored only in localStorage (not Supabase schema) — restore it from local cache
+      const localVersion = localClients.find(lc => lc.id === c.id);
+      if (localVersion?.priority && !c.priority) {
+        return { ...c, priority: localVersion.priority };
+      }
+      return c;
+    });
     const mergedStaff = Array.from(mergedStaffMap.values());
 
     localStorage.setItem('uka_clients', JSON.stringify(stripLargeBase64(mergedClients)));

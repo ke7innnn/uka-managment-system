@@ -435,6 +435,8 @@ export default function ClientDetailPage() {
               clientPassword: isPending ? (localClient?.clientPassword ?? '') : (data.client_password ?? ''),
               kyc: isPending ? { ...(data.kyc || {}), ...(localClient?.kyc || {}) } : (data.kyc || {}),
               naFolders: isPending ? (localClient?.naFolders ?? []) : (data.kyc?.naFolders || []),
+              // Priority is stored locally only — always prefer local to avoid wipe on Supabase reload
+              priority: localClient?.priority ?? data.priority ?? 'medium',
               syncStatus: isPending ? 'pending' : 'synced',
               phases: isPending ? (localClient?.phases ?? []) : (data.phases || []).map((p: any) => ({
                 id: p.id, name: p.name, completed: p.completed, order: p.order,
@@ -571,6 +573,44 @@ export default function ClientDetailPage() {
     );
     updateClient(client.id, { phases: updated });
     clearStageReminders(phaseId, client.id);
+    reload();
+  };
+
+  const reassignStage = (phaseId: string) => {
+    const phase = client.phases.find(p => p.id === phaseId);
+    if (!phase) return;
+    // Reset entire stage back to brand-new not-started state
+    const updated = client.phases.map((p) =>
+      p.id === phaseId
+        ? {
+            ...p,
+            status: 'not-started' as const,
+            startedAt: undefined,
+            timeBound: undefined,
+            completed: false,
+            tasks: p.tasks.map(t => ({ ...t, completed: false }))
+          }
+        : p
+    );
+    updateClient(client.id, { phases: updated });
+    clearStageReminders(phaseId, client.id);
+    // Send inbox alert to all assigned staff members
+    const assignees = new Set<string>();
+    phase.tasks.forEach(t => { if (t.assignedTo) assignees.add(t.assignedTo); });
+    assignees.forEach(assignee => {
+      import('@/lib/store').then(({ addAlert }) => {
+        addAlert({
+          clientId: client.id,
+          clientName: client.name,
+          stageName: phase.name,
+          severity: 'info',
+          templateKey: 'task-reassigned',
+          message: `Stage "${phase.name}" for client ${client.name} has been reset and reassigned by the admin. Please await further instructions to restart this stage.`,
+          assignedTo: assignee,
+          pendingTasks: phase.tasks.map(t => t.title),
+        });
+      });
+    });
     reload();
   };
 
@@ -1859,6 +1899,20 @@ export default function ClientDetailPage() {
                           )}
                           {phase.status === 'in-progress' && (
                             <button className={styles.completeStageBtn} onClick={() => markStageComplete(phase.id)}><CheckCircle2 size={14} /> Mark Stage Complete</button>
+                          )}
+                          {(phase.status === 'in-progress' || phase.status === 'completed') && (
+                            <button
+                              className={styles.reassignStageBtn}
+                              onClick={() => {
+                                if (window.confirm(`Reset "${phase.name}" back to beginning? All tasks will be unchecked and the stage timer will be cleared. Staff will be notified.`)) {
+                                  reassignStage(phase.id);
+                                }
+                              }}
+                              title="Reset this entire stage back to not-started"
+                              style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 500, cursor: 'pointer', border: '1px solid rgba(250,180,80,0.3)', background: 'rgba(250,180,80,0.08)', color: '#fab450', transition: 'all 0.2s ease' }}
+                            >
+                              ↺ Reassign Stage
+                            </button>
                           )}
                           {phase.startedAt && (
                             <span className={styles.startedAtText}>Started: {new Date(phase.startedAt).toLocaleDateString()}</span>
