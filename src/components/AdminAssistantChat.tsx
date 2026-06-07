@@ -151,8 +151,9 @@ export default function AdminAssistantChat() {
             alt="Bruce Wayne Assistant" 
             scale="6 6 6"
             loading="eager"
-            camera-orbit="0deg 85deg 25%"
-            camera-target="0m 1.6m 0m"
+            camera-orbit="0deg 85deg auto"
+            camera-target="0m 2.0m 0m"
+            field-of-view="22deg"
             camera-controls
             interaction-prompt="none"
             className="breathe-animation"
@@ -250,7 +251,8 @@ export default function AdminAssistantChat() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ 
             width: '36px', height: '36px', borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)'
           }}>
             {/* @ts-ignore */}
             <ModelViewer 
@@ -258,12 +260,13 @@ export default function AdminAssistantChat() {
               alt="Bruce Wayne" 
               scale="3 3 3"
               loading="eager"
-              camera-orbit="0deg 90deg 25%"
-              camera-target="0m 1.6m 0m"
+              camera-orbit="0deg 90deg auto"
+              camera-target="0m 2.0m 0m"
+              field-of-view="22deg"
               camera-controls
               interaction-prompt="none"
               className="breathe-animation"
-              style={{ width: '120%', height: '120%' }}
+              style={{ width: '100%', height: '100%' }}
             ></ModelViewer>
           </div>
           <div>
