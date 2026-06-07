@@ -15,80 +15,395 @@
 /* Hero */
 .hero {
   border-radius: 20px;
-  padding: 2rem;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.5rem;
-}
-
-.heroLeft { display: flex; align-items: flex-start; gap: 1.5rem; }
-
-.heroAvatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), #a5b4fc);
+  padding: 2.25rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: 800;
-  color: white;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(145deg, rgba(15, 15, 15, 0.6) 0%, rgba(8, 8, 8, 0.8) 100%);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(200, 169, 110, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.heroLeft {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex: 1;
+}
+
+/* Avatar container with modern glow */
+.heroAvatarContainer {
+  position: relative;
   flex-shrink: 0;
 }
 
-.heroInfo { display: flex; flex-direction: column; gap: 0.35rem; }
+.heroAvatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent) 0%, #1e1b15 100%);
+  border: 2px solid rgba(200, 169, 110, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.heroAvatarContainer:hover .heroAvatar {
+  transform: scale(1.05);
+}
+
+.avatarGlow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 169, 110, 0.3) 0%, transparent 75%);
+  filter: blur(8px);
+  z-index: 1;
+  opacity: 0.8;
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.08); }
+}
+
+.heroInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.heroNameRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
 
 .heroName {
-  font-size: 1.5rem;
+  font-family: var(--font) !important;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.primaryBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.idBadge, .uinBadge {
+  font-family: var(--font);
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--text-main);
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.idBadge {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+}
+
+.uinBadge {
+  background: rgba(200, 169, 110, 0.08);
+  border: 1px solid rgba(200, 169, 110, 0.25);
+  color: var(--accent);
 }
 
 .heroCompany {
+  font-family: var(--font);
   font-size: 1rem;
-  color: var(--text-muted);
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
+.companyIcon {
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+/* Contact Pills */
 .heroMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  gap: 0.75rem;
   margin-top: 0.25rem;
 }
 
+.contactPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.85rem;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  cursor: default;
+}
+
+a.contactPill {
+  cursor: pointer;
+}
+
+a.contactPill:hover {
+  background: rgba(200, 169, 110, 0.08);
+  border-color: rgba(200, 169, 110, 0.3);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pillIcon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* Right side badges & actions */
 .heroRight {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 1rem;
+  gap: 1.25rem;
+  flex-shrink: 0;
 }
 
-.statusBadge {
-  display: inline-block;
-  padding: 0.35rem 1rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
+.statusGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.statusBadgeWrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 30px;
+  font-size: 0.75rem;
   font-weight: 700;
-  text-transform: capitalize;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.02);
+  white-space: nowrap;
 }
 
-.editBtn {
-  background: rgba(99, 102, 241, 0.15);
-  color: #a5b4fc;
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  padding: 0.55rem 1.1rem;
-  border-radius: 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
-.editBtn:hover { background: rgba(99, 102, 241, 0.25); }
+
+/* TILR Statuses */
+.tilrReceived {
+  background: rgba(106, 170, 132, 0.08);
+  color: #6aaa84;
+  border-color: rgba(106, 170, 132, 0.2);
+}
+.tilrReceived .badgeDot {
+  background-color: #6aaa84;
+  box-shadow: 0 0 8px #6aaa84;
+}
+
+.tilrPending {
+  background: rgba(200, 169, 110, 0.08);
+  color: #c8a96e;
+  border-color: rgba(200, 169, 110, 0.2);
+}
+.tilrPending .badgeDot {
+  background-color: #c8a96e;
+  box-shadow: 0 0 8px #c8a96e;
+}
+
+/* Priorities */
+.priority_high {
+  background: rgba(192, 96, 96, 0.08);
+  color: #c06060;
+  border-color: rgba(192, 96, 96, 0.25);
+}
+.priority_high .badgeDot {
+  background-color: #c06060;
+  box-shadow: 0 0 8px #c06060;
+}
+
+.priority_medium {
+  background: rgba(200, 169, 110, 0.08);
+  color: #c8a96e;
+  border-color: rgba(200, 169, 110, 0.25);
+}
+.priority_medium .badgeDot {
+  background-color: #c8a96e;
+  box-shadow: 0 0 8px #c8a96e;
+}
+
+.priority_low {
+  background: rgba(106, 170, 132, 0.08);
+  color: #6aaa84;
+  border-color: rgba(106, 170, 132, 0.25);
+}
+.priority_low .badgeDot {
+  background-color: #6aaa84;
+  box-shadow: 0 0 8px #6aaa84;
+}
+
+/* Edit button */
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, rgba(200, 169, 110, 0.15) 0%, rgba(200, 169, 110, 0.05) 100%);
+  color: var(--accent);
+  border: 1px solid rgba(200, 169, 110, 0.35);
+  padding: 0.6rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.editBtn:hover {
+  background: linear-gradient(135deg, rgba(200, 169, 110, 0.25) 0%, rgba(200, 169, 110, 0.1) 100%);
+  border-color: rgba(200, 169, 110, 0.6);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(200, 169, 110, 0.15);
+}
+
+.editBtn:active {
+  transform: translateY(0);
+}
+
+/* Mobile responsive override for hero */
+@media (max-width: 768px) {
+  .hero {
+    padding: 1.5rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+  
+  .heroLeft {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+  }
+  
+  .heroAvatar {
+    width: 76px;
+    height: 76px;
+    font-size: 2.2rem;
+  }
+  
+  .heroInfo {
+    align-items: center;
+    width: 100%;
+  }
+  
+  .heroNameRow {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .heroName {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  .primaryBadges {
+    justify-content: center;
+  }
+  
+  .heroCompany {
+    justify-content: center;
+  }
+  
+  .heroMeta {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .contactPill {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+  }
+  
+  .heroRight {
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 1.25rem;
+    width: 100%;
+    gap: 1rem;
+  }
+  
+  .statusGroup {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .statusBadgeWrapper {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+  }
+  
+  .editBtn {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+  }
+}
 
 /* Progress */
 .progressSection {

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, downloadDocumentSafe, getStaff, StaffMember, getClients, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, CC_RDP_FOLDERS, OC_DOCUMENT_FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
-import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare, AlertCircle } from 'lucide-react';
+import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, MapPin, Phone, Building2, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare, AlertCircle } from 'lucide-react';
 import styles from './page.module.css';
 
 const STATUS_COLORS: Record<Client['projectStatus'], string> = {
@@ -1062,82 +1062,97 @@ export default function ClientDetailPage() {
       {/* Hero header */}
       <div className={`glass-panel ${styles.hero}`}>
         <div className={styles.heroLeft}>
-          <div className={styles.heroAvatar}>
-            {client.name.charAt(0).toUpperCase()}
+          <div className={styles.heroAvatarContainer}>
+            <div className={styles.heroAvatar}>
+              {client.name.charAt(0).toUpperCase()}
+            </div>
+            <div className={styles.avatarGlow} />
           </div>
           <div className={styles.heroInfo}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div className={styles.heroNameRow}>
               <h1 className={styles.heroName}>{client.name}</h1>
-              {client.clientId && (
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '4px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    color: 'var(--text-secondary)',
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  ID: {client.clientId}
-                </span>
-              )}
-              {client.clientUin && (
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '4px',
-                    backgroundColor: 'rgba(200, 169, 110, 0.1)',
-                    border: '1px solid rgba(200, 169, 110, 0.2)',
-                    color: 'var(--accent)',
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  UIN: {client.clientUin}
-                </span>
-              )}
+              <div className={styles.primaryBadges}>
+                {client.clientId && (
+                  <span className={styles.idBadge}>
+                    ID: {client.clientId}
+                  </span>
+                )}
+                {client.clientUin && (
+                  <span className={styles.uinBadge}>
+                    UIN: {client.clientUin}
+                  </span>
+                )}
+              </div>
             </div>
-            {client.company && <p className={styles.heroCompany}>{client.company}</p>}
+            
+            {client.company && (
+              <p className={styles.heroCompany}>
+                <Building2 size={16} className={styles.companyIcon} />
+                {client.company}
+              </p>
+            )}
+            
             <div className={styles.heroMeta}>
-              {client.place && <span>📍 {client.place}</span>}
-              {client.email && <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}><Mail size={14} strokeWidth={1.5} />{client.email}</span>}
-              {client.phone && <span>📞 {client.phone}</span>}
+              {client.place && (
+                <div className={styles.contactPill}>
+                  <MapPin size={14} className={styles.pillIcon} />
+                  <span>{client.place}</span>
+                </div>
+              )}
+              {client.email && (
+                <a href={`mailto:${client.email}`} className={styles.contactPill}>
+                  <Mail size={14} className={styles.pillIcon} />
+                  <span>{client.email}</span>
+                </a>
+              )}
+              {client.phone && (
+                <a href={`tel:${client.phone}`} className={styles.contactPill}>
+                  <Phone size={14} className={styles.pillIcon} />
+                  <span>{client.phone}</span>
+                </a>
+              )}
             </div>
           </div>
         </div>
-        <div className={styles.heroRight} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {client.tilrStatus === 'received' ? (
-            <span className="tilr-received-badge" style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', fontWeight: 700 }}>TILR RECEIVED</span>
-          ) : (
-            <span className="tilr-pending-badge" style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', fontWeight: 700 }}>TILR PENDING</span>
-          )}
-          <span
-            className={styles.statusBadge}
-            style={{
-              background: `${STATUS_COLORS[client.projectStatus]}22`,
-              color: STATUS_COLORS[client.projectStatus],
-              border: `1px solid ${STATUS_COLORS[client.projectStatus]}44`,
-            }}
-          >
-            {client.projectStatus.charAt(0).toUpperCase() + client.projectStatus.slice(1).replace('-', ' ')}
-          </span>
-          <span
-            className={styles.statusBadge}
-            style={{
-              background: client.priority === 'high' ? 'rgba(192, 96, 96, 0.1)' : client.priority === 'low' ? 'rgba(106, 170, 132, 0.1)' : 'rgba(200, 169, 110, 0.1)',
-              color: client.priority === 'high' ? '#c06060' : client.priority === 'low' ? '#6aaa84' : '#c8a96e',
-              border: client.priority === 'high' ? '1px solid rgba(192, 96, 96, 0.25)' : client.priority === 'low' ? '1px solid rgba(106, 170, 132, 0.25)' : '1px solid rgba(200, 169, 110, 0.25)',
-            }}
-          >
-            {(client.priority || 'medium').charAt(0).toUpperCase() + (client.priority || 'medium').slice(1)} Priority
-          </span>
+        
+        <div className={styles.heroRight}>
+          <div className={styles.statusGroup}>
+            <div className={`${styles.statusBadgeWrapper} ${client.tilrStatus === 'received' ? styles.tilrReceived : styles.tilrPending}`}>
+              <span className={styles.badgeDot} />
+              <span className={styles.badgeText}>
+                TILR {client.tilrStatus === 'received' ? 'RECEIVED' : 'PENDING'}
+              </span>
+            </div>
+            
+            <div
+              className={styles.statusBadgeWrapper}
+              style={{
+                borderColor: `${STATUS_COLORS[client.projectStatus]}33`,
+                color: STATUS_COLORS[client.projectStatus]
+              }}
+            >
+              <span 
+                className={styles.badgeDot} 
+                style={{ backgroundColor: STATUS_COLORS[client.projectStatus] }}
+              />
+              <span className={styles.badgeText}>
+                {client.projectStatus.replace('-', ' ')}
+              </span>
+            </div>
+            
+            <div
+              className={`${styles.statusBadgeWrapper} ${styles[`priority_${client.priority}`]}`}
+            >
+              <span className={styles.badgeDot} />
+              <span className={styles.badgeText}>
+                {client.priority || 'medium'} Priority
+              </span>
+            </div>
+          </div>
+          
           <Link href={`/dashboard/clients/${client.id}/edit`} className={styles.editBtn}>
-            Edit Client
+            <Pencil size={14} />
+            <span>Edit Client</span>
           </Link>
         </div>
       </div>
