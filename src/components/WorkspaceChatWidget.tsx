@@ -20,7 +20,7 @@ export default function WorkspaceChatWidget() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const initialY = window.innerHeight - 92; // 60px height + 32px (2rem) bottom spacing
-      const initialX = 288; // 18rem
+      const initialX = 20; // 20px from left edge instead of right
       setPosition({ x: initialX, y: initialY });
     }
   }, []);

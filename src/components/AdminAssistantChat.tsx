@@ -29,6 +29,7 @@ export default function AdminAssistantChat() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [cooldown, setCooldown] = useState(false);
+  const [isBatmanVisible, setIsBatmanVisible] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load chat history from localStorage
@@ -124,10 +125,19 @@ export default function AdminAssistantChat() {
 
   return (
     <>
-      {/* Batman 3D Model (Always Visible) */}
+      {/* Call Bruce Wayne Mobile Button */}
+      <button 
+        className="call-bruce-btn"
+        onClick={() => setIsBatmanVisible(prev => !prev)}
+      >
+        <img src="/icon.png" alt="Bat" style={{ width: 16, height: 16, borderRadius: '50%', marginRight: 6 }} />
+        {isBatmanVisible ? 'Hide Bruce Wayne' : 'Call Bruce Wayne'}
+      </button>
+
+      {/* Batman 3D Model */}
       <button 
         onClick={() => setIsOpen(prev => !prev)}
-        className="floating-assistant-btn"
+        className={`floating-assistant-btn ${isBatmanVisible ? 'batman-visible' : ''}`}
         style={{
           position: 'fixed',
           bottom: '-180px',
@@ -148,7 +158,7 @@ export default function AdminAssistantChat() {
         <ModelViewer 
           src="/glb/Batman.glb" 
           alt="Bruce Wayne Assistant" 
-          scale="6 6 6"
+          scale="3 3 3"
           loading="eager"
           min-camera-orbit="auto auto 10%"
           camera-orbit="0deg 85deg 62%"
@@ -316,6 +326,40 @@ export default function AdminAssistantChat() {
           background: transparent;
           border: none;
           box-shadow: none;
+        }
+
+        .call-bruce-btn {
+          display: none;
+        }
+
+        @media (max-width: 768px) {
+          .call-bruce-btn {
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 85px; /* Just below the mobile header */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            background: rgba(10, 10, 10, 0.9);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+          }
+          .floating-assistant-btn {
+            display: none !important;
+          }
+          .floating-assistant-btn.batman-visible {
+            display: flex !important;
+          }
         }
         
         /* Speech Bubble Wrapper positioned to top-left of Batman */
