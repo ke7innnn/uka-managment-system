@@ -188,33 +188,44 @@ export default function DashboardHome() {
               <div className={styles.clientList}>
                 {recentClients.map(client => (
                   <Link key={client.id} href={`/dashboard/clients/${client.id}`} className={styles.clientRow}>
-                    <div className={styles.clientAvatar}>
-                      {client.name.charAt(0).toUpperCase()}
+                    <div className={styles.clientLeftSec}>
+                      <div className={`${styles.clientAvatar} ${styles[`avatarPriority-${client.priority || 'medium'}`]}`}>
+                        {client.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className={styles.clientInfo}>
+                        <div className={styles.clientNameRow}>
+                          <span className={styles.clientName}>{client.name}</span>
+                          <div className={styles.clientIds}>
+                            {client.clientId && (
+                              <span className={styles.clientIdBadge}>
+                                ID: {client.clientId}
+                              </span>
+                            )}
+                            {client.clientUin && (
+                              <span className={styles.clientUinBadge}>
+                                UIN: {client.clientUin}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <span className={styles.clientMeta}>{client.company || client.place || 'Direct'}</span>
+                      </div>
                     </div>
-                    <div className={styles.clientInfo}>
-                      <span className={styles.clientName}>
-                        {client.name}
-                        {client.clientId && (
-                          <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 600, marginLeft: '0.5rem', background: 'rgba(255, 255, 255, 0.08)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                            ID: {client.clientId}
-                          </span>
+                    <div className={styles.clientRightSec}>
+                      <div className={styles.badgeRow}>
+                        <StatusBadge status={client.projectStatus} />
+                        {client.tilrStatus === 'received' ? (
+                          <span className="tilr-received-badge">TILR RECEIVED</span>
+                        ) : (
+                          <span className="tilr-pending-badge">TILR PENDING</span>
                         )}
-                        {client.clientUin && (
-                          <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontWeight: 700, marginLeft: '0.5rem', background: 'rgba(200, 169, 110, 0.08)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(200, 169, 110, 0.2)' }}>
-                            UIN: {client.clientUin}
-                          </span>
-                        )}
-                      </span>
-                      <span className={styles.clientMeta}>{client.company || client.place || 'Direct'}</span>
-                    </div>
-                    <div className={styles.clientRight}>
-                      <StatusBadge status={client.projectStatus} />
-                      {client.tilrStatus === 'received' ? (
-                        <span className="tilr-received-badge">TILR RECEIVED</span>
-                      ) : (
-                        <span className="tilr-pending-badge">TILR PENDING</span>
-                      )}
-                      <span className={`priority-badge-${client.priority || 'medium'}`} style={{ padding: '4px 10px', fontSize: '0.7rem' }}>{(client.priority || 'medium').toUpperCase()}</span>
+                        <span className={`priority-badge-${client.priority || 'medium'} ${styles.priorityBadgeCompact}`}>
+                          {(client.priority || 'medium').toUpperCase()}
+                        </span>
+                      </div>
+                      <div className={styles.viewIndicator}>
+                        <ArrowUpRight size={14} />
+                      </div>
                     </div>
                   </Link>
                 ))}

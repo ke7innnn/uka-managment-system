@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             alt="UKA Logo"
             className={styles.mobileLogo}
           />
-          <span className={styles.mobileBrandText}>UKA Admin</span>
+          <span className={styles.mobileBrandText}>UKA BOSS</span>
         </div>
         <button
           className={styles.refreshButton}

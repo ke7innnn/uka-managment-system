@@ -155,8 +155,7 @@
 }
 
 .chartContainer {
-  flex: 1;
-  min-height: 300px;
+  height: 300px;
   width: 100%;
 }
 
@@ -216,54 +215,162 @@
 
 .clientRow {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
-  border-radius: var(--radius-sm);
-  transition: background 0.2s;
+  padding: 0.9rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.015);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
-  gap: 0.75rem;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .clientRow:hover {
   background: var(--bg-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.clientLeftSec {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.clientRightSec {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: flex-end;
 }
 
 .clientAvatar {
-  width: 36px;
-  height: 36px;
-  background: var(--bg-hover);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  font-weight: 750;
+  font-size: 1.05rem;
+  color: var(--text);
+  background: var(--bg-raised);
+  border: 1.5px solid var(--border);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.avatarPriority-high {
+  border-color: rgba(192, 96, 96, 0.45);
+  background: rgba(192, 96, 96, 0.06);
+  color: #ef8a8a;
+}
+.avatarPriority-medium {
+  border-color: rgba(200, 169, 110, 0.45);
+  background: rgba(200, 169, 110, 0.06);
+  color: #e2c97e;
+}
+.avatarPriority-low {
+  border-color: rgba(106, 170, 132, 0.45);
+  background: rgba(106, 170, 132, 0.06);
+  color: #92c4a5;
 }
 
 .clientInfo {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.clientNameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .clientName {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
   color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.clientIds {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.clientIdBadge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.clientUinBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent);
+  background: rgba(200, 169, 110, 0.05);
+  border: 1px solid rgba(200, 169, 110, 0.2);
 }
 
 .clientMeta {
-  font-size: 0.7rem;
-  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
 }
 
-.clientRight {
+.badgeRow {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.priorityBadgeCompact {
+  padding: 2px 6px !important;
+  font-size: 0.65rem !important;
+  border-radius: 4px !important;
+}
+
+.viewIndicator {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  transition: all 0.25s ease;
+  opacity: 0;
+  transform: translateX(-4px);
+  flex-shrink: 0;
+}
+
+.clientRow:hover .viewIndicator {
+  opacity: 1;
+  transform: translateX(0);
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
 }
 
 .badge {
@@ -351,32 +458,48 @@
     padding: 1.15rem;
   }
   .chartContainer {
-    min-height: 260px;
+    height: 260px;
   }
   .actionGrid { grid-template-columns: 1fr; }
   
   .clientRow {
-    position: relative;
-    padding-right: 5.5rem;
-    align-items: flex-start;
-    gap: 0.5rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
   }
-  
-  .clientRight {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+
+  .clientRow:hover {
+    transform: none;
   }
-  
+
+  .clientLeftSec {
+    width: 100%;
+  }
+
+  .clientRightSec {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+    margin-top: 0.25rem;
+  }
+
+  .badgeRow {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .viewIndicator {
+    display: none;
+  }
+
   .clientName {
-    word-break: break-word;
-    line-height: 1.35;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
-  
+
   .clientMeta {
-    font-size: 0.65rem;
-    word-break: break-all;
-    margin-top: 0.15rem;
+    font-size: 0.7rem;
   }
 }
