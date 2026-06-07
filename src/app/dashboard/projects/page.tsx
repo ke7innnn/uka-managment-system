@@ -25,18 +25,20 @@ function ProjectsContent() {
   }, []);
 
   const withProjects = clients.filter((c) => {
-    const hasProject = c.projectName || c.phases.length > 0;
+    const hasProject = c.projectName || (c.phases && c.phases.length > 0);
     const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
                         (c.projectName || '').toLowerCase().includes(search.toLowerCase()) ||
                         (c.clientUin || '').toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter ? c.projectStatus === statusFilter : true;
+    const matchStatus = statusFilter ? (c.projectStatus || 'pending') === statusFilter : true;
     return hasProject && matchSearch && matchStatus;
   });
 
   // Sort active projects on top
   const sortedProjects = [...withProjects].sort((a, b) => {
-    if (a.projectStatus === 'active' && b.projectStatus !== 'active') return -1;
-    if (a.projectStatus !== 'active' && b.projectStatus === 'active') return 1;
+    const statusA = a.projectStatus || 'pending';
+    const statusB = b.projectStatus || 'pending';
+    if (statusA === 'active' && statusB !== 'active') return -1;
+    if (statusA !== 'active' && statusB === 'active') return 1;
     return 0;
   });
 
@@ -102,10 +104,15 @@ function ProjectsContent() {
       ) : (
         <div className={styles.projectGrid}>
           {sortedProjects.map((client) => {
-            const allTasks = client.phases.flatMap(p => p.tasks || []);
+            const phases = client.phases || [];
+            const documents = client.documents || [];
+            const allTasks = phases.flatMap(p => p.tasks || []);
             const doneTasks = allTasks.filter(t => t.completed).length;
             const totalTasks = allTasks.length;
             const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+            const status = client.projectStatus || 'pending';
+            const statusColor = STATUS_COLORS[status] || '#9ca3af';
+
             return (
               <Link key={client.id} href={`/dashboard/clients/${client.id}?tab=phases`} className={`glass-panel ${styles.projectCard}`}>
                 <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -148,12 +155,12 @@ function ProjectsContent() {
                   <span
                     className={styles.projStatusBadge}
                     style={{
-                      background: `${STATUS_COLORS[client.projectStatus]}22`,
-                      color: STATUS_COLORS[client.projectStatus],
-                      border: `1px solid ${STATUS_COLORS[client.projectStatus]}44`,
+                      background: `${statusColor}22`,
+                      color: statusColor,
+                      border: `1px solid ${statusColor}44`,
                     }}
                   >
-                    {client.projectStatus.replace('-', ' ')}
+                    {status.replace('-', ' ')}
                   </span>
                 </div>
 
@@ -166,9 +173,9 @@ function ProjectsContent() {
                 </div>
 
                 {/* Phases */}
-                {client.phases.length > 0 ? (
+                {phases.length > 0 ? (
                   <div className={styles.phasesRow}>
-                    {client.phases.map((phase) => (
+                    {phases.map((phase) => (
                       <div
                         key={phase.id}
                         className={`${styles.phaseChip} ${(phase.status === 'completed' || phase.completed) ? styles.phaseChipDone : ''}`}
@@ -184,7 +191,7 @@ function ProjectsContent() {
                 )}
 
                 <div className={styles.projCardFooter}>
-                  <span className={styles.docCount} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><FileText size={13} strokeWidth={1.5} />{client.documents.length} doc{client.documents.length !== 1 ? 's' : ''}</span>
+                  <span className={styles.docCount} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><FileText size={13} strokeWidth={1.5} />{documents.length} doc{documents.length !== 1 ? 's' : ''}</span>
                   <span className={styles.viewLink}>View Details →</span>
                 </div>
               </Link>

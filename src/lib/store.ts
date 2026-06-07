@@ -176,6 +176,25 @@ const PERMANENTLY_DELETED_CLIENT_IDS = new Set<string>([
 ]);
 // ────────────────────────────────────────────────────────────────────────────
 
+export function safeUUID(): string {
+  if (typeof crypto !== 'undefined') {
+    if (typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    if (typeof crypto.getRandomValues === 'function') {
+      // @ts-ignore
+      return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+      );
+    }
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 const STORAGE_KEY = 'uka_clients';
 
 export function getClients(): Client[] {
@@ -242,7 +261,7 @@ export function getClients(): Client[] {
               }
             }
             return {
-              id: crypto.randomUUID(),
+              id: safeUUID(),
               title: t.title,
               completed,
               assignedTo: t.assignedTo
@@ -250,7 +269,7 @@ export function getClients(): Client[] {
           });
 
           return {
-            id: crypto.randomUUID(),
+            id: safeUUID(),
             name: stage.name,
             status,
             order: idx,
@@ -406,7 +425,8 @@ export function getClients(): Client[] {
 
       return {
         ...client,
-        phases: newPhases,
+        phases: newPhases || [],
+        documents: client.documents || [],
         progressChecklist: uniqueMigratedChecklist,
         syncStatus: clientMigrated ? ('pending' as const) : client.syncStatus
       };
@@ -565,17 +585,17 @@ export function addClient(data: Omit<Client, 'id' | 'createdAt'>): Client {
   const clients = getClients();
   const client: Client = {
     ...data,
-    id: crypto.randomUUID(),
+    id: safeUUID(),
     createdAt: new Date().toISOString(),
     priority: data.priority || 'medium',
     syncStatus: 'pending',
     phases: data.phases && data.phases.length > 0 ? data.phases : DEFAULT_PHASES_TEMPLATE.map((stage, idx) => ({
-      id: crypto.randomUUID(),
+      id: safeUUID(),
       name: stage.name,
       status: stage.status,
       order: idx,
       tasks: stage.tasks.map(t => ({
-        id: crypto.randomUUID(),
+        id: safeUUID(),
         title: t.title,
         completed: false,
         assignedTo: t.assignedTo
@@ -702,7 +722,7 @@ export function getStaff(): StaffMember[] {
       // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(s.id)) {
         needsSave = true;
-        s.id = crypto.randomUUID();
+        s.id = safeUUID();
       }
       // Reset dummy targets (50 or 10) back to 0
       if (s.totalTasksTarget === 50 || s.totalTasksTarget === 10) {
@@ -739,7 +759,7 @@ export function getStaff(): StaffMember[] {
       ];
       
       staff = initial.map(s => ({
-        id: crypto.randomUUID(),
+        id: safeUUID(),
         name: s.name,
         role: "Staff",
         password: s.phone,
@@ -790,7 +810,7 @@ export function addStaffMember(data: Omit<StaffMember, 'id' | 'joinedAt'>): Staf
   const staff = getStaff();
   const member: StaffMember = {
     ...data,
-    id: crypto.randomUUID(),
+    id: safeUUID(),
     joinedAt: new Date().toISOString(),
     syncStatus: 'pending',
   };
@@ -958,7 +978,7 @@ export function saveWorkspaceMessages(messages: WorkspaceMessage[]): void {
 export function addWorkspaceMessage(senderId: string, senderName: string, senderRole: string, content: string): WorkspaceMessage {
   const messages = getWorkspaceMessages();
   const msg: WorkspaceMessage = {
-    id: crypto.randomUUID(),
+    id: safeUUID(),
     senderId,
     senderName,
     senderRole,
@@ -1031,7 +1051,7 @@ export function addAlert(alert: Omit<PerformanceAlert, 'id' | 'createdAt' | 'rea
   const alerts = getAlerts();
   const newAlert: PerformanceAlert = {
     ...alert,
-    id: crypto.randomUUID(),
+    id: safeUUID(),
     createdAt: new Date().toISOString(),
     readBy: []
   };
