@@ -337,18 +337,19 @@ export default function AdminAssistantChat() {
             display: flex;
             align-items: center;
             position: fixed;
-            top: 85px; /* Just below the mobile header */
-            left: 50%;
-            transform: translateX(-50%);
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
             z-index: 9999;
             background: rgba(10, 10, 10, 0.9);
             color: var(--text-main);
             border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 20px;
+            border-right: none;
+            padding: 12px 10px 12px 16px;
+            border-radius: 20px 0 0 20px;
             font-weight: 700;
-            font-size: 0.85rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            font-size: 0.8rem;
+            box-shadow: -4px 4px 15px rgba(0,0,0,0.5);
             cursor: pointer;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
