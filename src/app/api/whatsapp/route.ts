@@ -9,35 +9,52 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
     }
 
-    // Securely hold the AiSensy API Key
-    const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMWQ1MWU5MzNkODVkMGYyMzk4YjlhNSIsIm5hbWUiOiJQaW5uYWNsZSBTdHVkaW9zIiwiYXBwTmFtZSI6IkFpU2Vuc3kiLCJjbGllbnRJZCI6IjZhMWQ1MWU5MzNkODVkMGYyMzk4YjlhMCIsImFjdGl2ZVBsYW4iOiJGUkVFX0ZPUkVWRVIiLCJpYXQiOjE3ODAzMDY0MDl9.ooiJnLqoID1ht-qHfuUAG0vHCtohvzi5wRubyVBSQ7k";
+    // Meta Cloud API Credentials
+    const META_PHONE_NUMBER_ID = "1163664470159303";
+    const META_ACCESS_TOKEN = "EAAOjDBxScxUBRmsKtxNkMvu62PJiVJRymrIROqQNQawJVwVYRKcpi9htA88tGMgSHNGYSyUguCnYVn02XAYNJOEhyiLbo0E46R2ZBo5sRKMKfw7sug8n2YuHizSCZAzFgYn755jHjSatQAipeR4cFgo5KZBkhIiIvuPEdP1M81MQknMcX1TOitKCcygEEZBDqAZDZD";
     
-    // Format destination number (AiSensy requires country code without '+', default to 91 for India)
+    // Format destination number (Meta requires country code without '+', default to 91 for India)
     const cleanDestination = destination.replace(/\D/g, '');
     const finalDest = cleanDestination.startsWith('91') ? cleanDestination : `91${cleanDestination}`;
 
+    // Map the params array to Meta's expected parameters format
+    const templateParameters = params.map((paramValue: string) => ({
+      type: "text",
+      text: paramValue || " " // Meta API fails if text is empty
+    }));
+
     const payload = {
-      apiKey: apiKey,
-      campaignName: "progress_update_uka", // The exact Campaign Name created in AiSensy Dashboard
-      destination: finalDest,
-      userName: userName || "Client",
-      templateParams: params
+      messaging_product: "whatsapp",
+      to: finalDest,
+      type: "template",
+      template: {
+        name: "progress_update_uka",
+        language: {
+          code: "en"
+        },
+        components: [
+          {
+            type: "body",
+            parameters: templateParameters
+          }
+        ]
+      }
     };
 
-    console.log("Sending AiSensy Payload:", JSON.stringify(payload, null, 2));
+    console.log("Sending Meta Cloud API Payload:", JSON.stringify(payload, null, 2));
 
-    const res = await fetch("https://backend.aisensy.com/campaign/t1/api/v2", {
+    const res = await fetch(`https://graph.facebook.com/v19.0/${META_PHONE_NUMBER_ID}/messages`, {
       method: "POST",
       headers: {
+        "Authorization": `Bearer ${META_ACCESS_TOKEN}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(payload)
     });
 
     const data = await res.json();
-    console.log("AiSensy Response:", data);
+    console.log("Meta API Response:", data);
 
-    // AiSensy typically returns 200 OK but the internal payload might show error status
     if (!res.ok) {
       return NextResponse.json({ success: false, error: data }, { status: res.status });
     }
