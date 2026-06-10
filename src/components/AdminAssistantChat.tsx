@@ -125,6 +125,11 @@ export default function AdminAssistantChat() {
 
   return (
     <>
+      {/* Preload the 3D model so the browser fetches it instantly in the background */}
+      <link rel="preload" href="/glb/Batman.glb" as="fetch" crossOrigin="anonymous" />
+      {/* Load the model-viewer script reliably */}
+      <Script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js" strategy="afterInteractive" />
+
       {/* Call Bruce Wayne Mobile Button */}
       <button 
         className="call-bruce-btn"
@@ -153,7 +158,6 @@ export default function AdminAssistantChat() {
           cursor: 'pointer'
         }}
       >
-        <Script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js" strategy="beforeInteractive" />
         {/* @ts-ignore */}
         <ModelViewer 
           src="/glb/Batman.glb" 
