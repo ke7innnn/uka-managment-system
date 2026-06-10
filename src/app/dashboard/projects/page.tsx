@@ -22,6 +22,13 @@ export default function ProjectsPage() {
   useEffect(() => {
     setClients(getClients());
     setMounted(true);
+    
+    // Safely parse URL params on the client side only
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('status');
+      if (status) setStatusFilter(status);
+    }
   }, []);
 
   if (!mounted) {

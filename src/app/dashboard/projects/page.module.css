@@ -57,6 +57,8 @@
   border-radius: var(--radius-lg);
   background: rgba(20, 20, 20, 0.45);
   border: 1px solid var(--border);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* Desktop backdrop-filter */
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -266,4 +268,14 @@
   .grid { grid-template-columns: 1fr; }
   .phaseGrid { grid-template-columns: 1fr; }
   .projectGrid { grid-template-columns: 1fr; }
+  
+  /* CRITICAL MOBILE FIX: Disable backdrop-filter to prevent Safari memory crash */
+  .projectCard {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(20, 20, 20, 0.95);
+  }
+  .projectCard::after {
+    display: none;
+  }
 }
