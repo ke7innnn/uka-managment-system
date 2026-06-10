@@ -8,7 +8,7 @@ import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, Log
 const NAV = [
   { href: '/dashboard',                        label: 'Dashboard',          Icon: LayoutDashboard },
   { href: '/dashboard/clients',               label: 'Clients',            Icon: Users            },
-  { href: '/dashboard/clients',               label: 'Projects',           Icon: FolderKanban     },
+  { href: '/dashboard/projects',              label: 'Projects',           Icon: FolderKanban     },
   { href: '/dashboard/documents',             label: 'Documents',          Icon: FileText         },
   { href: '/dashboard/billing',               label: 'Billing',            Icon: Receipt          },
   { href: '/dashboard/staff',                 label: 'Staff',              Icon: UserCog          },
