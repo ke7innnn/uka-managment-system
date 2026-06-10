@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, downloadDocumentSafe, getStaff, StaffMember, getClients, isStaffAuthenticated, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, CC_RDP_FOLDERS, OC_DOCUMENT_FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
@@ -14,6 +15,14 @@ const STATUS_COLORS: Record<Client['projectStatus'], string> = {
   completed: '#3b82f6',
   'on-hold': '#f59e0b',
   pending: '#9ca3af',
+};
+
+type WhatsappRecipient = {
+  id: string;
+  phone: string;
+  name: string;
+  role: 'Admin' | 'Client' | 'Owner' | 'Reference';
+  selected: boolean;
 };
 
 export default function ClientDetailPage() {
@@ -31,9 +40,128 @@ export default function ClientDetailPage() {
   const [progressFilter, setProgressFilter] = useState<'all' | 'completed' | 'pending'>('all');
   const [showSendSuccess, setShowSendSuccess] = useState(false);
 
+  // WhatsApp Integration State
+  const [showWhatsappModal, setShowWhatsappModal] = useState(false);
+  const [whatsappRecipients, setWhatsappRecipients] = useState<WhatsappRecipient[]>([]);
+  const [whatsappPreviewText, setWhatsappPreviewText] = useState('');
+  const [whatsappSending, setWhatsappSending] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const getProgressString = (startId: number, endId: number) => {
+    if (!client) return "";
+    const items = PROGRESS_CHECKLIST_ITEMS.filter(item => {
+      const num = parseInt(item.id, 10);
+      return num >= startId && num <= endId;
+    });
+
+    const current = client.progressChecklist || [];
+    
+    const SHORT_LABEL_MAP: Record<string, string> = {
+      "1": "7/12 Extract", "2": "6/12 Mutation", "3": "Pikpani", "4": "8A Extract", "5": "Title Search",
+      "6": "No Claim", "7": "Paper Notice", "8": "Sale Permit", "9": "NA Order", "10": "Gaon Nakasha",
+      "11": "Gavthan Cert", "12": "Site Survey", "13": "Site Photos", "14": "RR Rate Copy", "15": "Gut Book",
+      "16": "TLR", "17": "Soc Reg Cert", "18": "Mem Consents", "19": "Gharpatti", "20": "Assessment",
+      "21": "Share Cert", "22": "Light Bill", "23": "Pan Cards", "24": "Aadhar Cards", "25": "Member List",
+      "26": "79A Reso", "27": "79A NOC", "28": "Soc Officer Reso", "29": "C1 Notice", "30": "Dev Agreement",
+      "31": "Power of Atty", "32": "Partner Deed", "33": "Firm PAN", "34": "Ward No Dues", "35": "Old Approval",
+      "36": "As-Built Survey", "37": "Joint Soc Reso", "38": "Affidavits", "39": "DA/POA Auth", "40": "Xerox True Copy",
+      "41": "Arch Appt", "42": "Stamp Papers", "43": "Zone Remark", "44": "Client Photos", "45": "Client KYC",
+      "46": "Client ID/Pass", "47": "Client DSC", "48": "OTP Mobile", "49": "Permit Type", "50": "Scheme Type",
+      "51": "Appendix A1", "52": "Appendix B", "53": "Railway NOC", "54": "Arch/Eng Appt", "55": "Struct Appt",
+      "56": "Struct Stability", "57": "Receipt", "58": "EE Report", "59": "DP", "60": "Tree NOC",
+      "61": "Fire NOC", "62": "Level Survey", "63": "Physical Survey", "64": "Report & Dwg", "65": "Blue Board",
+      "66": "Hardship Report", "67": "Layout", "68": "Specific NOC", "69": "Work Status", "70": "MOEF Clear",
+      "71": "RR Rate CC/RDP", "72": "Right of Way", "73": "EC Dwg NOC", "74": "TDR Form"
+    };
+
+    return items.map(item => {
+      let icon = "❌";
+      if (current.includes(item.id)) icon = "✅";
+      if (current.includes(`${item.id}-NA`)) icon = "➖";
+      const shortName = SHORT_LABEL_MAP[item.id] || item.label;
+      return `${shortName}: ${icon}`;
+    }).join(", ");
+  };
+
   const handleSendProgress = () => {
-    setShowSendSuccess(true);
-    setTimeout(() => setShowSendSuccess(false), 4000);
+    if (!client) return;
+    
+    // 1. Generate preview
+    const p1 = client.name || "Client";
+    const p2 = getProgressString(1, 16);
+    const p3 = getProgressString(17, 74);
+    
+    setWhatsappPreviewText(
+      `Hi ${p1},\n\n` +
+      `This is your progress and pending documents:\n\n` +
+      `Revenue and Land Documents:\n` +
+      `[${p2}]\n\n` +
+      `Society, Personal and Approvals:\n` +
+      `[${p3}]\n\n` +
+      `Thankyou`
+    );
+
+    // 2. Build Recipients
+    const recs: WhatsappRecipient[] = [
+      { id: 'admin1', phone: '8698930978', name: 'Kevin (testing)', role: 'Admin', selected: true },
+      { id: 'admin2', phone: '9860146006', name: 'Umesh', role: 'Admin', selected: true }
+    ];
+    
+    if (client.phone) {
+      recs.push({ id: 'client_main', phone: client.phone.replace(/[^0-9]/g, ''), name: client.name || 'Main Client', role: 'Client', selected: true });
+    }
+    
+    if (client.kyc?.otherOwners) {
+      client.kyc.otherOwners.forEach((o, i) => {
+        if (o.phone) recs.push({ id: `owner_${i}`, phone: o.phone.replace(/[^0-9]/g, ''), name: o.name || `Owner ${i+1}`, role: 'Owner', selected: true });
+      });
+    }
+    
+    if (client.kyc?.references) {
+      client.kyc.references.forEach((r, i) => {
+        if (r.phone) recs.push({ id: `ref_${i}`, phone: r.phone.replace(/[^0-9]/g, ''), name: r.name || `Ref ${i+1}`, role: 'Reference', selected: true });
+      });
+    }
+
+    setWhatsappRecipients(recs);
+    setShowWhatsappModal(true);
+  };
+
+  const handleConfirmSendWhatsapp = async () => {
+    if (!client) return;
+    setWhatsappSending(true);
+    try {
+      const p1 = client.name || "Client";
+      const p2 = getProgressString(1, 16);
+      const p3 = getProgressString(17, 74);
+      
+      const selected = whatsappRecipients.filter(r => r.selected);
+      
+      for (const rec of selected) {
+        if (!rec.phone || rec.phone.trim() === '') continue;
+        await fetch('/api/whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            destination: rec.phone,
+            userName: p1,
+            params: [p1, p2, p3]
+          })
+        });
+      }
+
+      setShowWhatsappModal(false);
+      setShowSendSuccess(true);
+      setTimeout(() => setShowSendSuccess(false), 4000);
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setWhatsappSending(false);
+    }
   };
 
   const handleToggleChecklist = (itemId: string) => {
@@ -2613,6 +2741,75 @@ export default function ClientDetailPage() {
             })}
           </div>
         </div>
+      )}
+
+      {/* WhatsApp Preview & Multi-Recipient Modal */}
+      {showWhatsappModal && mounted && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--card)', padding: '24px', borderRadius: '12px', width: '90%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <MessageSquare size={20} color="#25D366" /> Send WhatsApp Progress Update
+            </h3>
+            
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+              Review the automated message below and select which recipients should receive it.
+            </p>
+
+            <div style={{ background: 'var(--background)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '20px', maxHeight: '200px', overflowY: 'auto' }}>
+              <strong style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Message Preview:</strong>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text)', marginTop: '8px', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
+                {whatsappPreviewText}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text)', marginBottom: '12px' }}>Select Recipients:</strong>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {whatsappRecipients.length === 0 && (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No phone numbers found for this client.</span>
+                )}
+                {whatsappRecipients.map(rec => (
+                  <label key={rec.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: rec.selected ? 'rgba(37, 211, 102, 0.05)' : 'var(--background)', border: `1px solid ${rec.selected ? 'rgba(37, 211, 102, 0.3)' : 'var(--border)'}`, borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={rec.selected} 
+                      onChange={() => {
+                        setWhatsappRecipients(prev => prev.map(r => r.id === rec.id ? { ...r, selected: !r.selected } : r));
+                      }}
+                      style={{ width: '18px', height: '18px', accentColor: '#25D366', cursor: 'pointer' }}
+                    />
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text)' }}>{rec.name}</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{rec.phone}</span>
+                    </div>
+                    <div style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 600, background: rec.role === 'Admin' ? 'var(--primary)' : 'var(--surface)', color: rec.role === 'Admin' ? '#fff' : 'var(--text-secondary)' }}>
+                      {rec.role}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+              <button 
+                onClick={() => setShowWhatsappModal(false)}
+                style={{ padding: '10px 20px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', cursor: 'pointer', fontWeight: 500 }}
+                disabled={whatsappSending}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleConfirmSendWhatsapp}
+                style={{ padding: '10px 20px', background: '#25D366', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, cursor: whatsappRecipients.some(r => r.selected) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px', opacity: whatsappRecipients.some(r => r.selected) ? 1 : 0.5 }}
+                disabled={whatsappSending || !whatsappRecipients.some(r => r.selected)}
+              >
+                {whatsappSending ? <Loader2 size={18} className="animate-spin" /> : <MessageSquare size={18} />}
+                {whatsappSending ? 'Sending Messages...' : `Confirm & Send (${whatsappRecipients.filter(r => r.selected).length})`}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );
