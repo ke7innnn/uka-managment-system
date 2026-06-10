@@ -155,6 +155,7 @@ export interface Client {
   createdAt: string;
   phases: Phase[];
   documents: Document[];
+  deletedDocuments?: Document[];
   projectName?: string;
   projectStatus: 'active' | 'completed' | 'on-hold' | 'pending';
   priority?: 'low' | 'medium' | 'high';

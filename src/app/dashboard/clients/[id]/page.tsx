@@ -854,27 +854,22 @@ export default function ClientDetailPage() {
 
   const deleteDocument = async (docId: string) => {
     const doc = client.documents.find(d => d.id === docId);
-    if (confirm(`Are you sure you want to delete "${doc?.name || 'this document'}"? This cannot be undone.`)) {
-      // 1. Delete from local JSON state to update UI immediately
+    if (!doc) return;
+    
+    if (confirm(`Are you sure you want to delete "${doc.name}"?`)) {
+      // 1. Move to deletedDocuments array
       const updated = client.documents.filter((d) => d.id !== docId);
-      updateClient(client.id, { documents: updated });
-      reload();
-
-      // 2. Permanently delete from Supabase Storage Bucket to free up data
-      if (doc?.url && doc.url.includes('uka-storage/')) {
-        try {
-          const filePath = doc.url.split('uka-storage/')[1];
-          if (filePath) {
-            const { error } = await supabase.storage.from('uka-storage').remove([filePath]);
-            if (error) console.error("Failed to delete file from Supabase Bucket:", error);
-          }
-        } catch (err) {
-          console.error("Error extracting file path:", err);
-        }
-      }
+      const deletedDocWithTimestamp = { ...doc, deletedAt: new Date().toISOString() };
+      const newDeletedDocs = client.deletedDocuments ? [...client.deletedDocuments, deletedDocWithTimestamp] : [deletedDocWithTimestamp];
       
-      // 3. Delete from Supabase Database to prevent ghost document reappearing
-      await supabase.from('documents').delete().eq('id', docId);
+      updateClient(client.id, { 
+        documents: updated,
+        deletedDocuments: newDeletedDocs
+      });
+      reload();
+      
+      // Note: We deliberately do NOT delete the file from Supabase Storage or the Supabase `documents` table
+      // to ensure the data is recoverable in the future as per user request.
     }
   };
 
