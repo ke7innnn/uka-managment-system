@@ -274,10 +274,10 @@ export function getClients(): Client[] {
             };
           });
 
-          return {
-            id: safeUUID(),
-            name: stage.name,
-            status,
+            return {
+              id: matchingOld ? matchingOld.id : safeUUID(),
+              name: stage.name,
+              status,
             order: idx,
             tasks,
             startedAt,
@@ -428,10 +428,30 @@ export function getClients(): Client[] {
       if (clientMigrated) {
         migrated = true;
       }
+      
+      // Post-migration cleanup: remove duplicate phases caused by earlier bugs
+      // We keep the LAST phase created for each name (to ensure we keep the ones with highest ID or latest edit if they match name)
+      // Actually, since we want to keep the one that matches our template exactly, we just re-run deduplication based on exact template names.
+      let finalPhases = newPhases || [];
+      if (finalPhases.length > DEFAULT_PHASES_TEMPLATE.length) {
+         // Deduplicate by name, keeping the one that has tasks/progress
+         const uniquePhases = new Map<string, any>();
+         finalPhases.forEach(p => {
+           const existing = uniquePhases.get(p.name);
+           if (!existing || (p.status !== 'not-started' && existing.status === 'not-started')) {
+             uniquePhases.set(p.name, p);
+           }
+         });
+         finalPhases = Array.from(uniquePhases.values());
+         // Sort them back to standard order
+         finalPhases.sort((a, b) => a.name.localeCompare(b.name));
+         migrated = true;
+         clientMigrated = true;
+      }
 
       return {
         ...client,
-        phases: newPhases || [],
+        phases: finalPhases,
         documents: client.documents || [],
         progressChecklist: uniqueMigratedChecklist,
         syncStatus: clientMigrated ? ('pending' as const) : client.syncStatus
