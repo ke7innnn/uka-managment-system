@@ -14,9 +14,10 @@ export async function POST(req: Request) {
       if (typeof obj === 'object' && obj !== null) {
         const res: any = {};
         for (const [k, v] of Object.entries(obj)) {
-          // Skip expensive or useless keys (base64 images, internal IDs, timestamps, empty values)
+          // Skip expensive or useless keys (base64 images, internal IDs, empty values)
+          // Note: We KEEP 'createdAt' and 'uploadedAt' so the AI knows dates/times.
           if (
-            ['id', 'password', 'createdAt', 'uploadedAt', 'url'].includes(k) || 
+            ['id', 'password', 'url', 'clientPassword'].includes(k) || 
             k.endsWith('Photo') || 
             k.endsWith('Certificate') || 
             k.endsWith('Signature')
@@ -44,14 +45,20 @@ export async function POST(req: Request) {
     // Hyper-compress Clients: Drop tasks for inactive phases entirely. Convert active tasks to simple strings.
     const compressedClients = (context.clients || []).map((c: any) => {
       const compressedPhases = (c.phases || []).map((p: any) => {
+        // We include time limits and start dates for professional admin queries
+        const basePhase = { 
+          name: p.name, 
+          status: p.status, 
+          timeBound: p.timeBound, 
+          startedAt: p.startedAt 
+        };
         // If a phase is completed or not started, the AI can infer that all tasks inside are either all done or all pending.
         // Sending them wastes massive tokens. We only send the detailed task list for the 'in-progress' phase.
         if (p.status !== 'in-progress') {
-          return { name: p.name, status: p.status };
+          return basePhase;
         }
         return {
-          name: p.name,
-          status: p.status,
+          ...basePhase,
           tasks: (p.tasks || []).map((t: any) => `${t.completed ? '[DONE]' : '[TODO]'} ${t.title} (@${t.assignedTo || 'Unassigned'})`)
         };
       });
