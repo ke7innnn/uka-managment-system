@@ -661,27 +661,17 @@ export default function ClientDetailPage() {
   const deleteDocument = async (docId: string) => {
     const doc = client.documents.find(d => d.id === docId);
     if (!doc) return;
-    if (confirm(`Are you sure you want to delete "${doc.name}"? This cannot be undone.`)) {
-      // 1. Delete from local JSON state to update UI immediately
-      const updated = client.documents.filter((d) => d.id !== docId);
-      updateClient(client.id, { documents: updated });
-      reload();
-
-      // 2. Permanently delete from Supabase Storage Bucket to free up data
-      if (doc?.url && doc.url.includes('uka-storage/')) {
-        try {
-          const filePath = doc.url.split('uka-storage/')[1];
-          if (filePath) {
-            const { error } = await supabase.storage.from('uka-storage').remove([filePath]);
-            if (error) console.error("Failed to delete file from Supabase Bucket:", error);
-          }
-        } catch (err) {
-          console.error("Error extracting file path:", err);
-        }
-      }
+    if (confirm(`Are you sure you want to delete "${doc.name}"?`)) {
+      // Soft-delete by prefixing the folder with 'trash-'. 
+      // This hides it from the UI but keeps it in the database and local state.
+      const updatedDocs = client.documents.map(d => 
+        d.id === docId 
+          ? { ...d, folder: `trash-${d.folder || 'unassigned'}` }
+          : d
+      );
       
-      // 3. Delete from Supabase Database to prevent ghost document reappearing
-      await supabase.from('documents').delete().eq('id', docId);
+      updateClient(client.id, { documents: updatedDocs });
+      reload();
     }
   };
 

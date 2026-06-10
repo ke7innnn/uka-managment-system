@@ -857,19 +857,16 @@ export default function ClientDetailPage() {
     if (!doc) return;
     
     if (confirm(`Are you sure you want to delete "${doc.name}"?`)) {
-      // 1. Move to deletedDocuments array
-      const updated = client.documents.filter((d) => d.id !== docId);
-      const deletedDocWithTimestamp = { ...doc, deletedAt: new Date().toISOString() };
-      const newDeletedDocs = client.deletedDocuments ? [...client.deletedDocuments, deletedDocWithTimestamp] : [deletedDocWithTimestamp];
+      // Soft-delete by prefixing the folder with 'trash-'. 
+      // This hides it from the UI but keeps it in the database and local state.
+      const updatedDocs = client.documents.map(d => 
+        d.id === docId 
+          ? { ...d, folder: `trash-${d.folder || 'unassigned'}` }
+          : d
+      );
       
-      updateClient(client.id, { 
-        documents: updated,
-        deletedDocuments: newDeletedDocs
-      });
+      updateClient(client.id, { documents: updatedDocs });
       reload();
-      
-      // Note: We deliberately do NOT delete the file from Supabase Storage or the Supabase `documents` table
-      // to ensure the data is recoverable in the future as per user request.
     }
   };
 
