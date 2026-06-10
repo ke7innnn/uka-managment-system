@@ -1679,24 +1679,32 @@ export default function ClientDetailPage() {
                                   fontWeight: 600,
                                   borderRadius: '4px',
                                   background: 'rgba(255, 255, 255, 0.05)',
-                                  color: 'var(--text-secondary)',
+                                  color: uploadingFolders[`cp-${item.id}`] ? 'var(--accent)' : 'var(--text-secondary)',
                                   border: '1px solid var(--border)',
-                                  cursor: 'pointer',
+                                  cursor: uploadingFolders[`cp-${item.id}`] ? 'wait' : 'pointer',
                                   display: 'flex',
                                   alignItems: 'center',
                                   gap: '0.25rem',
-                                  transition: 'all 0.15s ease'
+                                  transition: 'all 0.15s ease',
+                                  opacity: uploadingFolders[`cp-${item.id}`] ? 0.8 : 1
                                 }}
+                                disabled={uploadingFolders[`cp-${item.id}`]}
                                 onMouseOver={e => {
+                                  if (uploadingFolders[`cp-${item.id}`]) return;
                                   e.currentTarget.style.color = 'var(--text-main)';
                                   e.currentTarget.style.borderColor = 'var(--text-muted)';
                                 }}
                                 onMouseOut={e => {
+                                  if (uploadingFolders[`cp-${item.id}`]) return;
                                   e.currentTarget.style.color = 'var(--text-secondary)';
                                   e.currentTarget.style.borderColor = 'var(--border)';
                                 }}
                               >
-                                <CloudUpload size={14} /> Upload
+                                {uploadingFolders[`cp-${item.id}`] ? (
+                                  <><Loader2 size={14} className="animate-spin" /> Uploading...</>
+                                ) : (
+                                  <><CloudUpload size={14} /> Upload</>
+                                )}
                               </button>
                               
                               <button
@@ -1961,7 +1969,7 @@ export default function ClientDetailPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setUploadTarget({ folderId: `oc-${item.id}` });
+                              setUploadTarget({ folderId: `ocl-${item.id}` });
                               fileInputRef.current?.click();
                             }}
                             style={{
@@ -1970,24 +1978,32 @@ export default function ClientDetailPage() {
                               fontWeight: 600,
                               borderRadius: '4px',
                               background: 'rgba(255, 255, 255, 0.05)',
-                              color: 'var(--text-secondary)',
+                              color: uploadingFolders[`ocl-${item.id}`] ? 'var(--accent)' : 'var(--text-secondary)',
                               border: '1px solid var(--border)',
-                              cursor: 'pointer',
+                              cursor: uploadingFolders[`ocl-${item.id}`] ? 'wait' : 'pointer',
                               display: 'flex',
                               alignItems: 'center',
                               gap: '0.25rem',
-                              transition: 'all 0.15s ease'
+                              transition: 'all 0.15s ease',
+                              opacity: uploadingFolders[`ocl-${item.id}`] ? 0.8 : 1
                             }}
+                            disabled={uploadingFolders[`ocl-${item.id}`]}
                             onMouseOver={e => {
+                              if (uploadingFolders[`ocl-${item.id}`]) return;
                               e.currentTarget.style.color = 'var(--text-main)';
                               e.currentTarget.style.borderColor = 'var(--text-muted)';
                             }}
                             onMouseOut={e => {
+                              if (uploadingFolders[`ocl-${item.id}`]) return;
                               e.currentTarget.style.color = 'var(--text-secondary)';
                               e.currentTarget.style.borderColor = 'var(--border)';
                             }}
                           >
-                            <CloudUpload size={14} /> Upload
+                            {uploadingFolders[`ocl-${item.id}`] ? (
+                              <><Loader2 size={14} className="animate-spin" /> Uploading...</>
+                            ) : (
+                              <><CloudUpload size={14} /> Upload</>
+                            )}
                           </button>
                           
                           <button

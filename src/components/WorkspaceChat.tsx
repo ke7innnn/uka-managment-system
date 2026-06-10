@@ -195,7 +195,7 @@ export default function WorkspaceChat({ currentUserId, currentUserName, currentU
                       <span className={styles.time}>
                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      {(isMe || currentUserRole === 'Admin') && (
+                      {(isMe || currentUserRole.toLowerCase().includes('admin')) && (
                         <button 
                           style={{ background: 'none', border: 'none', color: '#ff4d4f', cursor: 'pointer', marginLeft: 'auto', padding: '0 5px' }}
                           onClick={() => {

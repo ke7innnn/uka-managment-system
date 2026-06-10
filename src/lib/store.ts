@@ -1034,6 +1034,12 @@ export function deleteWorkspaceMessage(id: string): void {
   const newMessages = messages.filter(m => m.id !== id);
   saveWorkspaceMessages(newMessages);
   
+  import('./supabase').then(({ supabase }) => {
+    supabase.from('workspace_messages').delete().eq('id', id).then(({error}) => {
+      if (error) console.error("Error deleting workspace message from DB:", error);
+    });
+  });
+  
   // Dispatch event for UI
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('uka-workspace-sync-complete'));
