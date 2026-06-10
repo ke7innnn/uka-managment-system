@@ -234,16 +234,18 @@ export function getClients(): Client[] {
       if (hasOldPhases) {
         clientMigrated = true;
         
-        const oldStage1 = client.phases?.find(p => p.name.includes("File Preparation"));
-        const oldStage2 = client.phases?.find(p => p.name.includes("Paper Procurement"));
-        const oldStage3 = client.phases?.find(p => p.name.includes("Legal / Tree NOC"));
-        const oldStage4 = client.phases?.find(p => p.name.includes("Obtaining Permission"));
-
         newPhases = DEFAULT_PHASES_TEMPLATE.map((stage, idx) => {
-          let matchingOld = oldStage1;
-          if (stage.name.includes("2c")) matchingOld = oldStage2;
-          else if (stage.name.includes("3d") || stage.name.includes("3e")) matchingOld = oldStage3;
-          else if (stage.name.includes("3f")) matchingOld = oldStage4;
+          let matchingOld = client.phases?.find(p => {
+             const stageLower = stage.name.toLowerCase();
+             const pLower = p.name.toLowerCase();
+             if (stageLower.includes("file prep")) return pLower.includes("file prep") || pLower.includes("file preparation") || pLower.includes("1a");
+             if (stageLower.includes("plot details")) return pLower.includes("plot details") || pLower.includes("1b");
+             if (stageLower.includes("paper procurement")) return pLower.includes("paper procurement") || pLower.includes("2c");
+             if (stageLower.includes("legal") && stageLower.includes("tree")) return pLower.includes("legal") || pLower.includes("tree") || pLower.includes("3d");
+             if (stageLower.includes("drawing")) return pLower.includes("drawing") || pLower.includes("3e");
+             if (stageLower.includes("permission")) return pLower.includes("permission") || pLower.includes("3f");
+             return false;
+          });
 
           const status = matchingOld ? matchingOld.status : ("not-started" as const);
           const startedAt = matchingOld ? matchingOld.startedAt : undefined;
@@ -252,11 +254,14 @@ export function getClients(): Client[] {
           // Map completed tasks where possible
           const tasks = stage.tasks.map(t => {
             let completed = false;
-            if (matchingOld) {
-              const matchedTask = matchingOld.tasks?.find(ot => 
-                ot.title.toLowerCase().substring(0, 15) === t.title.toLowerCase().substring(0, 15) ||
-                ot.title.toLowerCase().includes(t.title.toLowerCase().split(' ')[0])
-              );
+            if (matchingOld && matchingOld.tasks) {
+              const tLow = t.title.toLowerCase();
+              const matchedTask = matchingOld.tasks.find(ot => {
+                const otLow = ot.title.toLowerCase();
+                // Match by first 15 characters, or first 3 words
+                const firstWords = tLow.split(' ').slice(0, 3).join(' ');
+                return otLow.substring(0, 15) === tLow.substring(0, 15) || (firstWords.length > 5 && otLow.includes(firstWords));
+              });
               if (matchedTask) {
                 completed = matchedTask.completed;
               }
