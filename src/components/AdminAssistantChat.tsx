@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bot, X, MessageSquare, Trash2, Send, Loader2 } from 'lucide-react';
 import Script from 'next/script';
-import { getStaff, getClients } from '@/lib/store';
+import { getStaff, getClients, getWorkspaceMessages, getAlerts } from '@/lib/store';
 
 const ModelViewer = 'model-viewer' as any;
 
@@ -91,6 +91,8 @@ export default function AdminAssistantChat() {
       // 1. Fetch real-time database exactly at the moment of asking
       const staff = getStaff();
       const clients = getClients();
+      const workspaceMessages = getWorkspaceMessages();
+      const alerts = getAlerts();
 
       // 2. Send to our API route
       const response = await fetch('/api/chat', {
@@ -98,7 +100,7 @@ export default function AdminAssistantChat() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: newMessages,
-          context: { staff, clients }
+          context: { staff, clients, workspaceMessages, alerts }
         })
       });
 

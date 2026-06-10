@@ -67,6 +67,9 @@ export async function POST(req: Request) {
 
     const prunedStaff = pruneDeep(compressedStaff);
     const prunedClients = pruneDeep(compressedClients);
+    // Limit workspace messages to the last 20 to prevent token explosion
+    const prunedWorkspace = pruneDeep((context.workspaceMessages || []).slice(-20));
+    const prunedAlerts = pruneDeep(context.alerts || []);
 
     const primaryKey = process.env.GEMINI_API_KEY;
     const secondaryKey = process.env.GEMINI_API_KEY_SECONDARY;
@@ -91,6 +94,12 @@ export async function POST(req: Request) {
       
       --- CLIENTS & ACTIVE PROJECTS ---
       ${JSON.stringify(prunedClients)}
+
+      --- RECENT TEAM WORKSPACE MESSAGES ---
+      ${JSON.stringify(prunedWorkspace)}
+
+      --- STAFF PERFORMANCE ALERTS ---
+      ${JSON.stringify(prunedAlerts)}
       
       CRITICAL INSTRUCTIONS FOR ACCURACY:
       1. Your answers MUST be 100% accurate and based STRICTLY on the real-time JSON data provided above.
