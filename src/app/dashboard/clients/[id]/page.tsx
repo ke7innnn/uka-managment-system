@@ -1070,7 +1070,7 @@ export default function ClientDetailPage() {
           </div>
           <div className={styles.heroInfo}>
             <div className={styles.heroNameRow}>
-              <h1 className={styles.heroName}>{client.company || client.projectName || client.name}</h1>
+              <h1 className={styles.heroName}>{client.projectName || client.company || client.name}</h1>
               <div className={styles.primaryBadges}>
                 {client.clientId && (
                   <span className={styles.idBadge}>
@@ -1084,8 +1084,7 @@ export default function ClientDetailPage() {
                 )}
               </div>
             </div>
-            
-            {(client.company || client.projectName) && client.name !== (client.company || client.projectName) && (
+            {(client.projectName || client.company) && client.name !== (client.projectName || client.company) && (
               <p className={styles.heroCompany}>
                 <User size={16} className={styles.companyIcon} />
                 {client.name}
