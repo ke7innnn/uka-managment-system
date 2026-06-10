@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { getClients, Client } from '@/lib/store';
 import { FileText } from 'lucide-react';
 import styles from './page.module.css';
@@ -14,20 +13,17 @@ const STATUS_COLORS: Record<Client['projectStatus'], string> = {
   pending: '#9ca3af',
 };
 
-function ProjectsContent() {
+export default function ProjectsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('');
   const [mounted, setMounted] = useState(false);
-  const searchParams = useSearchParams();
-  const statusFilter = searchParams.get('status'); // 'active', 'completed', etc.
 
   useEffect(() => {
     setClients(getClients());
     setMounted(true);
   }, []);
 
-  // Prevent hydration mismatch — do not render localStorage data until we're in the browser.
-  // This is the same guard used in dashboard/page.tsx and is critical for mobile Safari.
   if (!mounted) {
     return (
       <div style={{ color: 'var(--text-secondary)', padding: '3rem', textAlign: 'center' }}>
@@ -38,14 +34,14 @@ function ProjectsContent() {
 
   const withProjects = clients.filter((c) => {
     const hasProject = c.projectName || (c.phases && c.phases.length > 0);
-    const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
-                        (c.projectName || '').toLowerCase().includes(search.toLowerCase()) ||
-                        (c.clientUin || '').toLowerCase().includes(search.toLowerCase());
+    const matchSearch =
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      (c.projectName || '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.clientUin || '').toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter ? (c.projectStatus || 'pending') === statusFilter : true;
     return hasProject && matchSearch && matchStatus;
   });
 
-  // Sort active projects on top
   const sortedProjects = [...withProjects].sort((a, b) => {
     const statusA = a.projectStatus || 'pending';
     const statusB = b.projectStatus || 'pending';
@@ -58,54 +54,52 @@ function ProjectsContent() {
     <div className={`animate-fade-in ${styles.page}`}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>
-            {statusFilter ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Projects` : 'Projects'}
-          </h1>
-          <p className={styles.subtitle}>
-            {statusFilter ? `Viewing only ${statusFilter} projects` : 'Track phase progress across all clients'}
-          </p>
+          <h1 className={styles.title}>Projects</h1>
+          <p className={styles.subtitle}>Track phase progress across all clients</p>
         </div>
         <Link href="/dashboard/clients/new" className={styles.newBtn}>+ New Client</Link>
       </div>
 
-      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+      {/* Search + Filter — all done via local state, no URL params */}
+      <div style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
         <input
           type="text"
           placeholder="Search by client, project name, or UIN..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{
-            width: '100%',
-            maxWidth: '400px',
+            flex: '1 1 220px',
             padding: '0.75rem 1rem',
             borderRadius: '10px',
             border: '1px solid var(--border)',
             background: 'var(--bg-elevated)',
             color: 'var(--text)',
             fontSize: '0.9rem',
-            outline: 'none'
+            outline: 'none',
           }}
         />
-        {statusFilter && (
-          <Link 
-            href="/dashboard/projects" 
-            style={{ 
-              fontSize: '0.8rem', 
-              color: 'var(--accent)', 
-              textDecoration: 'none',
-              background: 'rgba(200, 169, 110, 0.08)',
-              border: '1px solid rgba(200, 169, 110, 0.2)',
-              borderRadius: '8px',
-              padding: '0.5rem 1rem',
-              fontWeight: 600,
-              transition: 'background 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(200, 169, 110, 0.15)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(200, 169, 110, 0.08)'}
-          >
-            Clear Filter (Show All)
-          </Link>
-        )}
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {(['', 'active', 'completed', 'on-hold', 'pending'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                border: '1px solid',
+                borderColor: statusFilter === s ? 'var(--accent)' : 'var(--border)',
+                background: statusFilter === s ? 'rgba(200, 169, 110, 0.12)' : 'var(--bg-elevated)',
+                color: statusFilter === s ? 'var(--accent)' : 'var(--text-secondary)',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {s === '' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1).replace('-', ' ')}
+            </button>
+          ))}
+        </div>
       </div>
 
       {sortedProjects.length === 0 ? (
@@ -118,28 +112,26 @@ function ProjectsContent() {
           {sortedProjects.map((client) => {
             const phases = client.phases || [];
             const documents = client.documents || [];
-            const allTasks = phases.flatMap(p => p.tasks || []);
-            const doneTasks = allTasks.filter(t => t.completed).length;
+            const allTasks = phases.flatMap((p) => p.tasks || []);
+            const doneTasks = allTasks.filter((t) => t.completed).length;
             const totalTasks = allTasks.length;
             const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
             const status = client.projectStatus || 'pending';
             const statusColor = STATUS_COLORS[status] || '#9ca3af';
 
             return (
-              <Link key={client.id} href={`/dashboard/clients/${client.id}?tab=phases`} className={`glass-panel ${styles.projectCard}`}>
+              <Link
+                key={client.id}
+                href={`/dashboard/clients/${client.id}?tab=phases`}
+                className={`glass-panel ${styles.projectCard}`}
+              >
                 <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   {client.clientUin && (
                     <div style={{
-                      fontSize: '0.65rem',
-                      fontWeight: 800,
-                      color: 'var(--accent)',
-                      backgroundColor: 'rgba(200, 169, 110, 0.08)',
-                      border: '1px solid rgba(200, 169, 110, 0.2)',
-                      borderRadius: '4px',
-                      padding: '3px 8px',
-                      width: 'fit-content',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
+                      fontSize: '0.65rem', fontWeight: 800, color: 'var(--accent)',
+                      backgroundColor: 'rgba(200, 169, 110, 0.08)', border: '1px solid rgba(200, 169, 110, 0.2)',
+                      borderRadius: '4px', padding: '3px 8px', width: 'fit-content',
+                      textTransform: 'uppercase', letterSpacing: '0.05em',
                     }}>
                       UIN: {client.clientUin}
                     </div>
@@ -149,8 +141,11 @@ function ProjectsContent() {
                   ) : (
                     <span className="tilr-pending-badge" style={{ padding: '3px 8px', fontSize: '0.65rem' }}>TILR PENDING</span>
                   )}
-                  <span className={`priority-badge-${client.priority || 'medium'}`} style={{ padding: '3px 8px', fontSize: '0.65rem' }}>{(client.priority || 'medium').toUpperCase()}</span>
+                  <span className={`priority-badge-${client.priority || 'medium'}`} style={{ padding: '3px 8px', fontSize: '0.65rem' }}>
+                    {(client.priority || 'medium').toUpperCase()}
+                  </span>
                 </div>
+
                 <div className={styles.cardTopHeader}>
                   <div className={styles.projAvatarCircle}>{client.name.charAt(0).toUpperCase()}</div>
                   <div className={styles.projCardInfo}>
@@ -166,17 +161,12 @@ function ProjectsContent() {
                   </div>
                   <span
                     className={styles.projStatusBadge}
-                    style={{
-                      background: `${statusColor}22`,
-                      color: statusColor,
-                      border: `1px solid ${statusColor}44`,
-                    }}
+                    style={{ background: `${statusColor}22`, color: statusColor, border: `1px solid ${statusColor}44` }}
                   >
                     {status.replace('-', ' ')}
                   </span>
                 </div>
 
-                {/* Progress */}
                 <div className={styles.progressWrap}>
                   <div className={styles.progressBar}>
                     <div className={styles.progressFill} style={{ width: `${pct}%` }} />
@@ -184,7 +174,6 @@ function ProjectsContent() {
                   <span className={styles.progressPct}>{pct}%</span>
                 </div>
 
-                {/* Phases */}
                 {phases.length > 0 ? (
                   <div className={styles.phasesRow}>
                     {phases.map((phase) => (
@@ -203,7 +192,10 @@ function ProjectsContent() {
                 )}
 
                 <div className={styles.projCardFooter}>
-                  <span className={styles.docCount} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><FileText size={13} strokeWidth={1.5} />{documents.length} doc{documents.length !== 1 ? 's' : ''}</span>
+                  <span className={styles.docCount} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <FileText size={13} strokeWidth={1.5} />
+                    {documents.length} doc{documents.length !== 1 ? 's' : ''}
+                  </span>
                   <span className={styles.viewLink}>View Details →</span>
                 </div>
               </Link>
@@ -214,12 +206,3 @@ function ProjectsContent() {
     </div>
   );
 }
-
-export default function ProjectsPage() {
-  return (
-    <Suspense fallback={<div style={{ color: 'var(--text-secondary)', padding: '2rem', textAlign: 'center' }}>Loading projects...</div>}>
-      <ProjectsContent />
-    </Suspense>
-  );
-}
-
