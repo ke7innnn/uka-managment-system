@@ -165,6 +165,7 @@ export default function ClientDetailPage() {
   const [ocDocUploadFolderId, setOcDocUploadFolderId] = useState<string | null>(null);
   const [uploadingOcDocFolders, setUploadingOcDocFolders] = useState<Record<string, boolean>>({});
   const [showOcDocsSendSuccess, setShowOcDocsSendSuccess] = useState(false);
+  const [expandedDocRows, setExpandedDocRows] = useState<Record<string, boolean>>({});
 
   const handleSendOcDocs = () => {
     setShowOcDocsSendSuccess(true);
@@ -1161,6 +1162,11 @@ export default function ClientDetailPage() {
         </div>
       )}
 
+      {/* ── Global Hidden File Inputs ────────────────────────────────── */}
+      <input type="file" multiple ref={fileInputRef} className={styles.hiddenInput} onChange={handleFileUpload} />
+      <input type="file" multiple ref={ocDocFileInputRef} className={styles.hiddenInput} onChange={handleOcDocFileUpload} />
+      <input type="file" multiple ref={ccrdpFileInputRef} className={styles.hiddenInput} onChange={handleCcrdpFileUpload} />
+
       {/* ── Client Progress Tab ────────────────────────────────────────────────── */}
       {activeTab === 'progress' && (
         <div className={`animate-fade-in ${styles.progressContainer}`}>
@@ -1317,8 +1323,7 @@ export default function ClientDetailPage() {
                           className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''} ${isNA ? styles.checkItemNA : ''}`}
                           style={{
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
+                            flexDirection: 'column',
                             padding: '0.85rem 1.25rem',
                             background: isChecked ? 'rgba(37, 211, 102, 0.04)' : isNA ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.01)',
                             border: '1px solid var(--border)',
@@ -1329,20 +1334,21 @@ export default function ClientDetailPage() {
                             opacity: isNA ? 0.6 : 1
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                            <div style={{
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '4px',
-                              border: '2px solid',
-                              borderColor: isChecked ? '#25d366' : isNA ? 'var(--text-muted)' : 'var(--text-tertiary)',
-                              background: isChecked ? '#25d366' : 'transparent',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: '#fff',
-                              flexShrink: 0
-                            }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                              <div style={{
+                                width: '20px',
+                                height: '20px',
+                                borderRadius: '4px',
+                                border: '2px solid',
+                                borderColor: isChecked ? '#25d366' : isNA ? 'var(--text-muted)' : 'var(--text-tertiary)',
+                                background: isChecked ? '#25d366' : 'transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#fff',
+                                flexShrink: 0
+                              }}>
                               {isChecked && <Check size={14} strokeWidth={3} />}
                               {isNA && <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 800 }}>-</span>}
                             </div>
@@ -1361,24 +1367,159 @@ export default function ClientDetailPage() {
                             </div>
                           </div>
                           
-                          <button
-                            onClick={(e) => handleToggleNA(e, item.id)}
-                            style={{
-                              padding: '0.25rem 0.5rem',
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
-                              borderRadius: '4px',
-                              background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
-                              color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
-                              border: '1px solid',
-                              borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
-                              cursor: 'pointer',
-                              transition: 'all 0.15s ease'
-                            }}
-                          >
-                            NA
-                          </button>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            {(() => {
+                              const folderId = `cp-${item.id}`;
+                              const uploadedDocs = client.documents.filter(d => d.folder === folderId);
+                              if (uploadedDocs.length > 0) {
+                                return (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setExpandedDocRows(prev => ({...prev, [`cp-${item.id}`]: !prev[`cp-${item.id}`]})); }}
+                                    style={{
+                                      padding: '0.25rem 0.5rem',
+                                      fontSize: '0.7rem',
+                                      fontWeight: 600,
+                                      borderRadius: '4px',
+                                      background: expandedDocRows[item.id] ? 'rgba(255, 255, 255, 0.05)' : 'rgba(37, 211, 102, 0.1)',
+                                      color: expandedDocRows[item.id] ? 'var(--text-main)' : '#25d366',
+                                      border: expandedDocRows[`cp-${item.id}`] ? '1px solid var(--border)' : '1px solid rgba(37, 211, 102, 0.2)',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '0.25rem',
+                                      transition: 'all 0.15s ease'
+                                    }}
+                                  >
+                                    📁 {uploadedDocs.length} {expandedDocRows[`cp-${item.id}`] ? <ChevronDown size={12} /> : ''}
+                                  </button>
+                                );
+                              }
+                              return null;
+                            })()}
+                            
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setUploadTarget({ folderId: `cp-${item.id}` });
+                                fileInputRef.current?.click();
+                              }}
+                              style={{
+                                padding: '0.25rem 0.5rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                borderRadius: '4px',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                color: uploadingFolders[`cp-${item.id}`] ? 'var(--accent)' : 'var(--text-secondary)',
+                                border: '1px solid var(--border)',
+                                cursor: uploadingFolders[`cp-${item.id}`] ? 'wait' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                transition: 'all 0.15s ease',
+                                opacity: uploadingFolders[`cp-${item.id}`] ? 0.8 : 1
+                              }}
+                              disabled={uploadingFolders[`cp-${item.id}`]}
+                              onMouseOver={e => {
+                                if (uploadingFolders[`cp-${item.id}`]) return;
+                                e.currentTarget.style.color = 'var(--text-main)';
+                                e.currentTarget.style.borderColor = 'var(--text-muted)';
+                              }}
+                              onMouseOut={e => {
+                                if (uploadingFolders[`cp-${item.id}`]) return;
+                                e.currentTarget.style.color = 'var(--text-secondary)';
+                                e.currentTarget.style.borderColor = 'var(--border)';
+                              }}
+                            >
+                              {uploadingFolders[`cp-${item.id}`] ? (
+                                <><Loader2 size={14} className="animate-spin" /> Uploading...</>
+                              ) : (
+                                <><CloudUpload size={14} /> Upload</>
+                              )}
+                            </button>
+                            
+                            <button
+                              onClick={(e) => handleToggleNA(e, item.id)}
+                              style={{
+                                padding: '0.25rem 0.5rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                borderRadius: '4px',
+                                background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                                color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                                border: '1px solid',
+                                borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              NA
+                            </button>
+                          </div>
                         </div>
+
+                        {/* Inline Document Viewer */}
+                        {expandedDocRows[`cp-${item.id}`] && (() => {
+                          const folderId = `cp-${item.id}`;
+                          const uploadedDocs = client.documents.filter(d => d.folder === folderId);
+                          if (uploadedDocs.length === 0) return null;
+                          return (
+                            <div style={{
+                              marginTop: '1rem',
+                              paddingTop: '0.75rem',
+                              borderTop: '1px solid var(--border)',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.35rem'
+                            }}>
+                              {uploadedDocs.map(doc => (
+                                <div key={doc.id} className={styles.fileRow} style={{ background: 'rgba(0,0,0,0.15)', margin: 0, padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                                  {renamingId === doc.id ? (
+                                    <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
+                                      <input
+                                        type="text"
+                                        ref={renameInputRef}
+                                        value={renameDraft}
+                                        onChange={(e) => setRenameDraft(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') commitRename();
+                                          if (e.key === 'Escape') cancelRename();
+                                        }}
+                                        className={styles.renameInput}
+                                        style={{ height: 26, fontSize: 11, borderRadius: 14 }}
+                                      />
+                                      <button className={styles.renameSave} onClick={commitRename} style={{ width: 22, height: 22, borderRadius: 11 }} title="Save">
+                                        <Check size={12} />
+                                      </button>
+                                      <button className={styles.renameCancel} onClick={cancelRename} style={{ width: 22, height: 22, borderRadius: 11 }} title="Cancel">
+                                        <X size={12} />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <div className={styles.fileRowLeft}>
+                                        <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                                        <span className={styles.fileRowName} title={doc.name} style={{ fontSize: '0.8rem' }}>{renderHealthStatus(doc.id)}{doc.name}</span>
+                                      </div>
+                                      <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                                        <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                          <Pencil size={13} />
+                                        </button>
+                                        <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                          <Eye size={13} />
+                                        </button>
+                                        <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
+                                          <Download size={13} />
+                                        </button>
+                                        {/* No Delete Button for Staff */}
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </div>
                       );
                     })}
                   </div>
@@ -1508,8 +1649,7 @@ export default function ClientDetailPage() {
                       className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''} ${isNA ? styles.checkItemNA : ''}`}
                       style={{
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
+                        flexDirection: 'column',
                         padding: '0.85rem 1.25rem',
                         background: isChecked ? 'rgba(37, 211, 102, 0.04)' : isNA ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.01)',
                         border: '1px solid var(--border)',
@@ -1520,7 +1660,8 @@ export default function ClientDetailPage() {
                         opacity: isNA ? 0.6 : 1
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
                         <div style={{
                           width: '20px',
                           height: '20px',
@@ -1552,23 +1693,158 @@ export default function ClientDetailPage() {
                         </div>
                       </div>
                       
-                      <button
-                        onClick={(e) => handleToggleOcNA(e, item.id)}
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          borderRadius: '4px',
-                          background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
-                          color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
-                          border: '1px solid',
-                          borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        NA
-                      </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          {(() => {
+                            const folderId = `ocl-${item.id}`;
+                            const uploadedDocs = client.documents.filter(d => d.folder === folderId);
+                            if (uploadedDocs.length > 0) {
+                              return (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setExpandedDocRows(prev => ({...prev, [folderId]: !prev[folderId]})); }}
+                                  style={{
+                                    padding: '0.25rem 0.5rem',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                    borderRadius: '4px',
+                                    background: expandedDocRows[folderId] ? 'rgba(255, 255, 255, 0.05)' : 'rgba(37, 211, 102, 0.1)',
+                                    color: expandedDocRows[folderId] ? 'var(--text-main)' : '#25d366',
+                                    border: expandedDocRows[folderId] ? '1px solid var(--border)' : '1px solid rgba(37, 211, 102, 0.2)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                >
+                                  📁 {uploadedDocs.length} {expandedDocRows[folderId] ? <ChevronDown size={12} /> : ''}
+                                </button>
+                              );
+                            }
+                            return null;
+                          })()}
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setUploadTarget({ folderId: `ocl-${item.id}` });
+                              fileInputRef.current?.click();
+                            }}
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              borderRadius: '4px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              color: uploadingFolders[`ocl-${item.id}`] ? 'var(--accent)' : 'var(--text-secondary)',
+                              border: '1px solid var(--border)',
+                              cursor: uploadingFolders[`ocl-${item.id}`] ? 'wait' : 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              transition: 'all 0.15s ease',
+                              opacity: uploadingFolders[`ocl-${item.id}`] ? 0.8 : 1
+                            }}
+                            disabled={uploadingFolders[`ocl-${item.id}`]}
+                            onMouseOver={e => {
+                              if (uploadingFolders[`ocl-${item.id}`]) return;
+                              e.currentTarget.style.color = 'var(--text-main)';
+                              e.currentTarget.style.borderColor = 'var(--text-muted)';
+                            }}
+                            onMouseOut={e => {
+                              if (uploadingFolders[`ocl-${item.id}`]) return;
+                              e.currentTarget.style.color = 'var(--text-secondary)';
+                              e.currentTarget.style.borderColor = 'var(--border)';
+                            }}
+                          >
+                            {uploadingFolders[`ocl-${item.id}`] ? (
+                              <><Loader2 size={14} className="animate-spin" /> Uploading...</>
+                            ) : (
+                              <><CloudUpload size={14} /> Upload</>
+                            )}
+                          </button>
+                          
+                          <button
+                            onClick={(e) => handleToggleOcNA(e, item.id)}
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              borderRadius: '4px',
+                              background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                              color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                              border: '1px solid',
+                              borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            NA
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Inline Document Viewer */}
+                      {expandedDocRows[`ocl-${item.id}`] && (() => {
+                        const folderId = `ocl-${item.id}`;
+                        const uploadedDocs = client.documents.filter(d => d.folder === folderId);
+                        if (uploadedDocs.length === 0) return null;
+                        return (
+                          <div style={{
+                            marginTop: '1rem',
+                            paddingTop: '0.75rem',
+                            borderTop: '1px solid var(--border)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.35rem'
+                          }}>
+                            {uploadedDocs.map(doc => (
+                              <div key={doc.id} className={styles.fileRow} style={{ background: 'rgba(0,0,0,0.15)', margin: 0, padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                                {renamingId === doc.id ? (
+                                  <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
+                                    <input
+                                      type="text"
+                                      ref={renameInputRef}
+                                      value={renameDraft}
+                                      onChange={(e) => setRenameDraft(e.target.value)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') commitRename();
+                                        if (e.key === 'Escape') cancelRename();
+                                      }}
+                                      className={styles.renameInput}
+                                      style={{ height: 26, fontSize: 11, borderRadius: 14 }}
+                                    />
+                                    <button className={styles.renameSave} onClick={commitRename} style={{ width: 22, height: 22, borderRadius: 11 }} title="Save">
+                                      <Check size={12} />
+                                    </button>
+                                    <button className={styles.renameCancel} onClick={cancelRename} style={{ width: 22, height: 22, borderRadius: 11 }} title="Cancel">
+                                      <X size={12} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className={styles.fileRowLeft}>
+                                      <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                                      <span className={styles.fileRowName} title={doc.name} style={{ fontSize: '0.8rem' }}>{renderHealthStatus(doc.id)}{doc.name}</span>
+                                    </div>
+                                    <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                                      <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                        <Pencil size={13} />
+                                      </button>
+                                      <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                        <Eye size={13} />
+                                      </button>
+                                      <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
+                                        <Download size={13} />
+                                      </button>
+                                      {/* No Delete Button for Staff */}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })}
