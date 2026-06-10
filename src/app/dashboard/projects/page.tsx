@@ -17,12 +17,24 @@ const STATUS_COLORS: Record<Client['projectStatus'], string> = {
 function ProjectsContent() {
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
+  const [mounted, setMounted] = useState(false);
   const searchParams = useSearchParams();
   const statusFilter = searchParams.get('status'); // 'active', 'completed', etc.
 
   useEffect(() => {
     setClients(getClients());
+    setMounted(true);
   }, []);
+
+  // Prevent hydration mismatch — do not render localStorage data until we're in the browser.
+  // This is the same guard used in dashboard/page.tsx and is critical for mobile Safari.
+  if (!mounted) {
+    return (
+      <div style={{ color: 'var(--text-secondary)', padding: '3rem', textAlign: 'center' }}>
+        Loading projects...
+      </div>
+    );
+  }
 
   const withProjects = clients.filter((c) => {
     const hasProject = c.projectName || (c.phases && c.phases.length > 0);
