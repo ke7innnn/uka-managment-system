@@ -188,7 +188,7 @@ export async function POST(req: Request) {
       if (rateLimitError) {
         const match = rateLimitError.message.match(/retry in ([\d\.]+)s/);
         const seconds = match ? Math.ceil(parseFloat(match[1])) : 60;
-        finalErrorMsg = `You are asking questions a bit too quickly. Please wait ${seconds} seconds before asking another question!`;
+        finalErrorMsg = `You are asking questions a bit too quickly. Please wait ${seconds} seconds before asking another question!\n\n(Detailed API Error: ${rateLimitError.message})`;
       } else {
         // If all keys had fatal errors, show the error of the primary key first, otherwise the last error.
         const primaryError = errors.find(e => e.keyIndex === 1);
