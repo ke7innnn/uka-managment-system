@@ -68,8 +68,8 @@ export default function ClientDetailPage() {
 
     // 2. Build Recipients
     const recs: WhatsappRecipient[] = [
-      { id: 'admin1', phone: '8698930978', name: 'Umesh / Kevin', role: 'Admin', selected: true },
-      { id: 'admin2', phone: '9860146006', name: 'Admin Partner', role: 'Admin', selected: true }
+      { id: 'admin1', phone: '8698930978', name: 'Kevin (testing)', role: 'Admin', selected: true },
+      { id: 'admin2', phone: '9860146006', name: 'Umesh', role: 'Admin', selected: true }
     ];
     
     if (client.phone) {
