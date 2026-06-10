@@ -1743,21 +1743,49 @@ export default function ClientDetailPage() {
                               }}>
                                 {uploadedDocs.map(doc => (
                                   <div key={doc.id} className={styles.fileRow} style={{ background: 'rgba(0,0,0,0.15)', margin: 0, padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.03)' }}>
-                                    <div className={styles.fileRowLeft}>
-                                      <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
-                                      <span className={styles.fileRowName} title={doc.name} style={{ fontSize: '0.8rem' }}>{renderHealthStatus(doc.id)}{doc.name}</span>
-                                    </div>
-                                    <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
-                                      <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
-                                        <Eye size={13} />
-                                      </button>
-                                      <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
-                                        <Download size={13} />
-                                      </button>
-                                      <button className={styles.actionBtnDelete} onClick={() => deleteDocument(doc.id)} title="Delete">
-                                        <Trash2 size={13} />
-                                      </button>
-                                    </div>
+                                    {renamingId === doc.id ? (
+                                      <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
+                                        <input
+                                          type="text"
+                                          ref={renameInputRef}
+                                          value={renameDraft}
+                                          onChange={(e) => setRenameDraft(e.target.value)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') commitRename();
+                                            if (e.key === 'Escape') cancelRename();
+                                          }}
+                                          className={styles.renameInput}
+                                          style={{ height: 26, fontSize: 11, borderRadius: 14 }}
+                                        />
+                                        <button className={styles.renameSave} onClick={commitRename} style={{ width: 22, height: 22, borderRadius: 11 }} title="Save">
+                                          <Check size={12} />
+                                        </button>
+                                        <button className={styles.renameCancel} onClick={cancelRename} style={{ width: 22, height: 22, borderRadius: 11 }} title="Cancel">
+                                          <X size={12} />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <div className={styles.fileRowLeft}>
+                                          <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                                          <span className={styles.fileRowName} title={doc.name} style={{ fontSize: '0.8rem' }}>{renderHealthStatus(doc.id)}{doc.name}</span>
+                                        </div>
+                                        <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                                          <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                            <Pencil size={13} />
+                                          </button>
+                                          <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                            <Eye size={13} />
+                                          </button>
+                                          <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
+                                            <Download size={13} />
+                                          </button>
+                                          <button className={styles.actionBtnDelete} onClick={() => deleteDocument(doc.id)} title="Delete">
+                                            <Trash2 size={13} />
+                                          </button>
+                                        </div>
+                                      </>
+                                    )}
                                   </div>
                                 ))}
                               </div>
@@ -2042,21 +2070,49 @@ export default function ClientDetailPage() {
                           }}>
                             {uploadedDocs.map(doc => (
                               <div key={doc.id} className={styles.fileRow} style={{ background: 'rgba(0,0,0,0.15)', margin: 0, padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.03)' }}>
-                                <div className={styles.fileRowLeft}>
-                                  <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
-                                  <span className={styles.fileRowName} title={doc.name} style={{ fontSize: '0.8rem' }}>{renderHealthStatus(doc.id)}{doc.name}</span>
-                                </div>
-                                <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
-                                  <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
-                                    <Eye size={13} />
-                                  </button>
-                                  <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
-                                    <Download size={13} />
-                                  </button>
-                                  <button className={styles.actionBtnDelete} onClick={() => deleteDocument(doc.id)} title="Delete">
-                                    <Trash2 size={13} />
-                                  </button>
-                                </div>
+                                {renamingId === doc.id ? (
+                                  <div className={styles.renameRow} onClick={(e) => e.stopPropagation()}>
+                                    <input
+                                      type="text"
+                                      ref={renameInputRef}
+                                      value={renameDraft}
+                                      onChange={(e) => setRenameDraft(e.target.value)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') commitRename();
+                                        if (e.key === 'Escape') cancelRename();
+                                      }}
+                                      className={styles.renameInput}
+                                      style={{ height: 26, fontSize: 11, borderRadius: 14 }}
+                                    />
+                                    <button className={styles.renameSave} onClick={commitRename} style={{ width: 22, height: 22, borderRadius: 11 }} title="Save">
+                                      <Check size={12} />
+                                    </button>
+                                    <button className={styles.renameCancel} onClick={cancelRename} style={{ width: 22, height: 22, borderRadius: 11 }} title="Cancel">
+                                      <X size={12} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className={styles.fileRowLeft}>
+                                      <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                                      <span className={styles.fileRowName} title={doc.name} style={{ fontSize: '0.8rem' }}>{renderHealthStatus(doc.id)}{doc.name}</span>
+                                    </div>
+                                    <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                                      <button className={styles.actionBtn} onClick={() => startRename(doc)} title="Rename">
+                                        <Pencil size={13} />
+                                      </button>
+                                      <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                        <Eye size={13} />
+                                      </button>
+                                      <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
+                                        <Download size={13} />
+                                      </button>
+                                      <button className={styles.actionBtnDelete} onClick={() => deleteDocument(doc.id)} title="Delete">
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
                               </div>
                             ))}
                           </div>
