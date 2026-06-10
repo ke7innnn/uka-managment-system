@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     }).join('\n');
 
     const alertsText = (context.alerts || []).map((a: any) => {
-      return `[${a.type.toUpperCase()}] ${a.title} - ${a.message}`;
+      return `[${(a.type || 'info').toUpperCase()}] ${a.title} - ${a.message}`;
     }).join('\n');
 
     const primaryKey = process.env.GEMINI_API_KEY;
