@@ -45,6 +45,8 @@ export default function ClientDetailPage() {
   const [whatsappRecipients, setWhatsappRecipients] = useState<WhatsappRecipient[]>([]);
   const [whatsappPreviewText, setWhatsappPreviewText] = useState('');
   const [whatsappSending, setWhatsappSending] = useState(false);
+  const [customPhone, setCustomPhone] = useState('');
+  const [customName, setCustomName] = useState('');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -2787,6 +2789,36 @@ export default function ClientDetailPage() {
                     </div>
                   </label>
                 ))}
+              </div>
+              
+              <div style={{ marginTop: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input 
+                  type="text" 
+                  placeholder="Extra Name" 
+                  value={customName} 
+                  onChange={e => setCustomName(e.target.value)} 
+                  style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--text)', flex: 1, fontSize: '0.85rem' }} 
+                />
+                <input 
+                  type="text" 
+                  placeholder="Extra Phone Number" 
+                  value={customPhone} 
+                  onChange={e => setCustomPhone(e.target.value)} 
+                  style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--text)', flex: 1, fontSize: '0.85rem' }} 
+                />
+                <button 
+                  onClick={() => {
+                    if (customPhone) {
+                      setWhatsappRecipients(prev => [...prev, { id: `custom_${Date.now()}`, name: customName || 'Extra Contact', phone: customPhone, role: 'Client', selected: true }]);
+                      setCustomPhone('');
+                      setCustomName('');
+                    }
+                  }} 
+                  style={{ padding: '8px 16px', borderRadius: '6px', background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                  disabled={!customPhone}
+                >
+                  Add
+                </button>
               </div>
             </div>
 
