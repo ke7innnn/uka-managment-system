@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
     // Meta Cloud API Credentials
     const META_PHONE_NUMBER_ID = "1163664470159303";
-    const META_ACCESS_TOKEN = "EAAOjDBxScxUBRmsKtxNkMvu62PJiVJRymrIROqQNQawJVwVYRKcpi9htA88tGMgSHNGYSyUguCnYVn02XAYNJOEhyiLbo0E46R2ZBo5sRKMKfw7sug8n2YuHizSCZAzFgYn755jHjSatQAipeR4cFgo5KZBkhIiIvuPEdP1M81MQknMcX1TOitKCcygEEZBDqAZDZD";
+    const META_ACCESS_TOKEN = "EAAOjDBxScxUBRn0wXTB4DPyak7OmAaoSLcDHtzoEFrHmkeoICrbm1tgmD34HeHwkxXf8OqUJOiw34ZBasXOqREosyOvAkoUmAuCl9KKIoPJciJLsV15kOif2uuD5rIPOkVJxovK21dyUGdBVKhZAamB6vW6qOd0ctJsIvMZCQfZBfPdhIAMTIRkLWW8uQm6UwQZDZD";
     
     // Format destination number (Meta requires country code without '+', default to 91 for India)
     const cleanDestination = destination.replace(/\D/g, '');

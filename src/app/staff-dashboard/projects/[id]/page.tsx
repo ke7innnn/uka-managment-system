@@ -1310,7 +1310,7 @@ export default function ClientDetailPage() {
                   Track receipt and filing of core property mutations, NOCs, and structural approvals.
                 </p>
               </div>
-              <button className={styles.sendBtn} onClick={handleSendProgress}>
+              <button className={styles.sendBtn} onClick={() => alert("WhatsApp messaging is temporarily under maintenance for upgrades. Please try again later.")}>
                 <MessageSquare size={16} /> Send Progress (WhatsApp)
               </button>
             </div>
@@ -1673,7 +1673,7 @@ export default function ClientDetailPage() {
                   Track receipt and filing of mandatory and optional documents required for Occupancy Certificate.
                 </p>
               </div>
-              <button className={styles.sendBtn} onClick={handleSendOc}>
+              <button className={styles.sendBtn} onClick={() => alert("WhatsApp messaging is temporarily under maintenance for upgrades. Please try again later.")}>
                 <MessageSquare size={16} /> Send OC Progress (WhatsApp)
               </button>
             </div>
@@ -2525,7 +2525,7 @@ export default function ClientDetailPage() {
                   Manage and share OC Documents aligned with the Occupancy Certificate checklist.
                 </p>
               </div>
-              <button className={styles.sendBtn} onClick={handleSendOcDocs}>
+              <button className={styles.sendBtn} onClick={() => alert("WhatsApp messaging is temporarily under maintenance for upgrades. Please try again later.")}>
                 <MessageSquare size={16} /> Send OC Documents (WhatsApp)
               </button>
             </div>
@@ -2831,7 +2831,7 @@ export default function ClientDetailPage() {
                 Cancel
               </button>
               <button 
-                onClick={handleConfirmSendWhatsapp}
+                onClick={() => alert("WhatsApp messaging is temporarily under maintenance for upgrades. Please try again later.")}
                 style={{ padding: '10px 20px', background: '#25D366', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, cursor: whatsappRecipients.some(r => r.selected) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px', opacity: whatsappRecipients.some(r => r.selected) ? 1 : 0.5 }}
                 disabled={whatsappSending || !whatsappRecipients.some(r => r.selected)}
               >
