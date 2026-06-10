@@ -60,11 +60,13 @@ export default function ClientDetailPage() {
     const p3 = getProgressString(17, 74);
     
     setWhatsappPreviewText(
-      `Hello ${p1},\n\n` +
-      `Here is the latest progress update for your project:\n\n` +
-      `${p2}\n\n` +
-      `${p3}\n\n` +
-      `Regards,\nUKA Management`
+      `Hi ${p1},\n\n` +
+      `This is your progress and pending documents:\n\n` +
+      `Revenue and Land Documents:\n` +
+      `[${p2}]\n\n` +
+      `Society, Personal and Approvals:\n` +
+      `[${p3}]\n\n` +
+      `Thankyou`
     );
 
     // 2. Build Recipients
