@@ -338,7 +338,7 @@ export default function AdminAssistantChat() {
       )}
 
       {/* CSS Styles */}
-      <style jsx global>{`
+      <style>{`
         @keyframes breatheEffect {
           0% { transform: scale(1) translateY(0px); }
           50% { transform: scale(1.03) translateY(-6px); }
