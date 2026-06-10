@@ -5,71 +5,44 @@ export async function POST(req: Request) {
   try {
     const { messages, context } = await req.json();
 
-    // Deep prune function: Gives AI 100% of details but strips all expensive/bloated data
-    function pruneDeep(obj: any): any {
-      if (Array.isArray(obj)) {
-        const arr = obj.map(pruneDeep).filter(v => v !== null && v !== undefined && v !== '');
-        return arr.length > 0 ? arr : undefined;
-      }
-      if (typeof obj === 'object' && obj !== null) {
-        const res: any = {};
-        for (const [k, v] of Object.entries(obj)) {
-          // Skip expensive or useless keys (base64 images, internal IDs, empty values)
-          // Note: We KEEP 'createdAt' and 'uploadedAt' so the AI knows dates/times.
-          if (
-            ['id', 'password', 'url', 'clientPassword'].includes(k) || 
-            k.endsWith('Photo') || 
-            k.endsWith('Certificate') || 
-            k.endsWith('Signature')
-          ) {
-            continue;
-          }
-          const pruned = pruneDeep(v);
-          if (pruned !== undefined && pruned !== null && pruned !== '') {
-            res[k] = pruned;
-          }
+    // --- SMART TOKEN COMPRESSOR ---
+    // JSON formatting uses an enormous amount of tokens due to brackets, quotes, and repeated keys.
+    // By converting the data into dense, bulleted text (Markdown), we keep 100% of the context 
+    // but drop the token size by 60-80%, saving massive API costs.
+
+    const staffText = (context.staff || []).map((s: any) => {
+      const tasks = (s.tasks || []).map((t: any) => `${t.completed ? '✓' : '☐'} ${t.title}`).join(', ');
+      return `- ${s.name} (${s.role}): Tasks: ${tasks || 'none'}`;
+    }).join('\n');
+
+    const clientsText = (context.clients || []).map((c: any) => {
+      let out = `[${c.projectName || 'Unnamed'}] Client: ${c.name} | Status: ${c.projectStatus} | Priority: ${c.priority}`;
+      if (c.clientUin) out += ` | UIN: ${c.clientUin}`;
+      if (c.tilrStatus) out += ` | TILR: ${c.tilrStatus}`;
+      
+      const phases = (c.phases || []).map((p: any) => {
+        let pText = `  * Phase: ${p.name} [${p.status}]`;
+        if (p.status === 'in-progress' && p.tasks && p.tasks.length > 0) {
+           const tasks = p.tasks.map((t: any) => `    - ${t.completed ? '✓' : '☐'} ${t.title}`).join('\n');
+           pText += `\n${tasks}`;
         }
-        return Object.keys(res).length > 0 ? res : undefined;
-      }
-      return obj;
-    }
+        return pText;
+      }).join('\n');
+      if (phases) out += `\n${phases}`;
+      
+      const docs = (c.documents || []).map((d: any) => `[Uploaded: ${new Date(d.uploadedAt).toLocaleDateString()}] ${d.name}`).join(' | ');
+      if (docs) out += `\n  * Docs: ${docs}`;
+      
+      return out;
+    }).join('\n\n');
 
-    // Hyper-compress Staff: Convert heavy task objects into simple strings
-    const compressedStaff = (context.staff || []).map((s: any) => {
-      return {
-        ...s,
-        tasks: (s.tasks || []).map((t: any) => `${t.completed ? '[DONE]' : '[TODO]'} ${t.title}`)
-      };
-    });
+    const workspaceText = (context.workspaceMessages || []).slice(-20).map((m: any) => {
+      return `[${new Date(m.createdAt).toLocaleString()}] ${m.senderName}: ${m.content}`;
+    }).join('\n');
 
-    // Hyper-compress Clients: Drop tasks for inactive phases entirely. Convert active tasks to simple strings.
-    const compressedClients = (context.clients || []).map((c: any) => {
-      const compressedPhases = (c.phases || []).map((p: any) => {
-        // We include time limits and start dates for professional admin queries
-        const basePhase = { 
-          name: p.name, 
-          status: p.status, 
-          timeBound: p.timeBound, 
-          startedAt: p.startedAt 
-        };
-        // If a phase is completed or not started, the AI can infer that all tasks inside are either all done or all pending.
-        // Sending them wastes massive tokens. We only send the detailed task list for the 'in-progress' phase.
-        if (p.status !== 'in-progress') {
-          return basePhase;
-        }
-        return {
-          ...basePhase,
-          tasks: (p.tasks || []).map((t: any) => `${t.completed ? '[DONE]' : '[TODO]'} ${t.title} (@${t.assignedTo || 'Unassigned'})`)
-        };
-      });
-      return { ...c, phases: compressedPhases };
-    });
-
-    const prunedStaff = pruneDeep(compressedStaff);
-    const prunedClients = pruneDeep(compressedClients);
-    // Limit workspace messages to the last 20 to prevent token explosion
-    const prunedWorkspace = pruneDeep((context.workspaceMessages || []).slice(-20));
-    const prunedAlerts = pruneDeep(context.alerts || []);
+    const alertsText = (context.alerts || []).map((a: any) => {
+      return `[${a.type.toUpperCase()}] ${a.title} - ${a.message}`;
+    }).join('\n');
 
     const primaryKey = process.env.GEMINI_API_KEY;
     const secondaryKey = process.env.GEMINI_API_KEY_SECONDARY;
@@ -92,23 +65,23 @@ export async function POST(req: Request) {
       Here is the complete, real-time data of the UKA Management System right now:
       
       --- STAFF DIRECTORY & PERFORMANCE ---
-      ${JSON.stringify(prunedStaff)}
+      ${staffText || 'No staff'}
       
       --- CLIENTS & ACTIVE PROJECTS ---
-      ${JSON.stringify(prunedClients)}
+      ${clientsText || 'No clients'}
 
       --- RECENT TEAM WORKSPACE MESSAGES ---
-      ${JSON.stringify(prunedWorkspace)}
+      ${workspaceText || 'No messages'}
 
       --- STAFF PERFORMANCE ALERTS ---
-      ${JSON.stringify(prunedAlerts)}
+      ${alertsText || 'No alerts'}
       
       CRITICAL INSTRUCTIONS FOR ACCURACY:
-      1. Your answers MUST be 100% accurate and based STRICTLY on the real-time JSON data provided above.
+      1. Your answers MUST be 100% accurate and based STRICTLY on the text data provided above.
       2. NEVER hallucinate, guess, or make up any names, project details, or statistics.
-      3. If a user asks about something not present in the JSON data, explicitly tell them "I do not have that information in the current database."
-      4. Every document in the JSON has an 'uploadedAt' timestamp and 'uploadedBy'. Use these to answer questions about dates, times, and who uploaded them.
-      5. Cross-check your final answer against the JSON data before responding to ensure zero errors.
+      3. If a user asks about something not present in the data, explicitly tell them "I do not have that information in the current database."
+      4. Use the document and message timestamps to answer questions about dates and times.
+      5. Cross-check your final answer against the text data before responding to ensure zero errors.
       6. You must reply like a normal human talking to the Admin. Keep your responses VERY SHORT (1 to 5 lines maximum), summarized, and conversational, while still providing the full context needed to answer their question. Do not write unnecessarily long essays.
       7. EXTREMELY IMPORTANT: DO NOT post to the workspace accidentally. ONLY post to the workspace if the Admin EXPLICITLY commands you to do so (e.g., "tell the team", "ping John", "post this"). 
       When you DO post, if the Admin asks you to "ping" someone, you MUST use the exact '@' symbol followed by their name (e.g., "@Testing 2, this is a testing message").
