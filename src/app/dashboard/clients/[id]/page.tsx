@@ -299,6 +299,7 @@ export default function ClientDetailPage() {
   const [draggedDocId, setDraggedDocId] = useState<string | null>(null);
   const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
   const [uploadTarget, setUploadTarget] = useState<{ folderId?: string; subfolderId?: string } | null>(null);
+  const [expandedDocRows, setExpandedDocRows] = useState<Record<string, boolean>>({});
   const [uploadingFolders, setUploadingFolders] = useState<Record<string, boolean>>({});
   const [uploadingSubfolders, setUploadingSubfolders] = useState<Record<string, boolean>>({});
   const [isUploadingGeneral, setIsUploadingGeneral] = useState(false);
@@ -1565,132 +1566,169 @@ export default function ClientDetailPage() {
                       return (
                         <div
                           key={item.id}
-                          onClick={() => handleToggleChecklist(item.id)}
                           className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''} ${isNA ? styles.checkItemNA : ''}`}
                           style={{
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
+                            flexDirection: 'column',
                             padding: '0.85rem 1.25rem',
                             background: isChecked ? 'rgba(37, 211, 102, 0.04)' : isNA ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.01)',
                             border: '1px solid var(--border)',
                             borderColor: isChecked ? 'rgba(37, 211, 102, 0.2)' : isNA ? 'transparent' : 'var(--border)',
                             borderRadius: '8px',
-                            cursor: 'pointer',
                             transition: 'all 0.15s ease',
                             opacity: isNA ? 0.6 : 1
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                            <div style={{
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '4px',
-                              border: '2px solid',
-                              borderColor: isChecked ? '#25d366' : isNA ? 'var(--text-muted)' : 'var(--text-tertiary)',
-                              background: isChecked ? '#25d366' : 'transparent',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: '#fff',
-                              flexShrink: 0
-                            }}>
-                              {isChecked && <Check size={14} strokeWidth={3} />}
-                              {isNA && <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 800 }}>-</span>}
-                            </div>
-
-                            <div style={{
-                              fontSize: '0.9rem',
-                              color: isChecked ? 'var(--text-main)' : isNA ? 'var(--text-muted)' : 'var(--text-secondary)',
-                              fontWeight: 500,
-                              lineHeight: 1.4,
-                              textDecoration: isNA ? 'line-through' : 'none'
-                            }}>
-                              <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
-                                {item.id}.
-                              </span>
-                              {item.label}
-                            </div>
-                          </div>
-                          
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            {(() => {
-                              const uploadedDocs = client.documents.filter(d => d.folder === item.id);
-                              if (uploadedDocs.length > 0) {
-                                return (
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setActiveTab('documents'); }}
-                                    style={{
-                                      padding: '0.25rem 0.5rem',
-                                      fontSize: '0.7rem',
-                                      fontWeight: 600,
-                                      borderRadius: '4px',
-                                      background: 'rgba(37, 211, 102, 0.1)',
-                                      color: '#25d366',
-                                      border: '1px solid rgba(37, 211, 102, 0.2)',
-                                      cursor: 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '0.25rem'
-                                    }}
-                                  >
-                                    📁 {uploadedDocs.length}
-                                  </button>
-                                );
-                              }
-                              return null;
-                            })()}
-                            
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setUploadTarget({ folderId: item.id });
-                                fileInputRef.current?.click();
-                              }}
-                              style={{
-                                padding: '0.25rem 0.5rem',
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
+                          {/* Main Row */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, cursor: 'pointer' }} onClick={() => handleToggleChecklist(item.id)}>
+                              <div style={{
+                                width: '20px',
+                                height: '20px',
                                 borderRadius: '4px',
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                color: 'var(--text-secondary)',
-                                border: '1px solid var(--border)',
-                                cursor: 'pointer',
+                                border: '2px solid',
+                                borderColor: isChecked ? '#25d366' : isNA ? 'var(--text-muted)' : 'var(--text-tertiary)',
+                                background: isChecked ? '#25d366' : 'transparent',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '0.25rem',
-                                transition: 'all 0.15s ease'
-                              }}
-                              onMouseOver={e => {
-                                e.currentTarget.style.color = 'var(--text-main)';
-                                e.currentTarget.style.borderColor = 'var(--text-muted)';
-                              }}
-                              onMouseOut={e => {
-                                e.currentTarget.style.color = 'var(--text-secondary)';
-                                e.currentTarget.style.borderColor = 'var(--border)';
-                              }}
-                            >
-                              <CloudUpload size={14} /> Upload
-                            </button>
+                                justifyContent: 'center',
+                                color: '#fff',
+                                flexShrink: 0
+                              }}>
+                                {isChecked && <Check size={14} strokeWidth={3} />}
+                                {isNA && <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 800 }}>-</span>}
+                              </div>
+
+                              <div style={{
+                                fontSize: '0.9rem',
+                                color: isChecked ? 'var(--text-main)' : isNA ? 'var(--text-muted)' : 'var(--text-secondary)',
+                                fontWeight: 500,
+                                lineHeight: 1.4,
+                                textDecoration: isNA ? 'line-through' : 'none'
+                              }}>
+                                <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
+                                  {item.id}.
+                                </span>
+                                {item.label}
+                              </div>
+                            </div>
                             
-                            <button
-                              onClick={(e) => handleToggleNA(e, item.id)}
-                              style={{
-                                padding: '0.25rem 0.5rem',
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
-                                borderRadius: '4px',
-                                background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
-                                color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
-                                border: '1px solid',
-                                borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
-                                cursor: 'pointer',
-                                transition: 'all 0.15s ease'
-                              }}
-                            >
-                              NA
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              {(() => {
+                                const uploadedDocs = client.documents.filter(d => d.folder === item.id);
+                                if (uploadedDocs.length > 0) {
+                                  return (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); setExpandedDocRows(prev => ({...prev, [item.id]: !prev[item.id]})); }}
+                                      style={{
+                                        padding: '0.25rem 0.5rem',
+                                        fontSize: '0.7rem',
+                                        fontWeight: 600,
+                                        borderRadius: '4px',
+                                        background: expandedDocRows[item.id] ? 'rgba(255, 255, 255, 0.05)' : 'rgba(37, 211, 102, 0.1)',
+                                        color: expandedDocRows[item.id] ? 'var(--text-main)' : '#25d366',
+                                        border: expandedDocRows[item.id] ? '1px solid var(--border)' : '1px solid rgba(37, 211, 102, 0.2)',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.25rem',
+                                        transition: 'all 0.15s ease'
+                                      }}
+                                    >
+                                      📁 {uploadedDocs.length} {expandedDocRows[item.id] ? <ChevronDown size={12} /> : ''}
+                                    </button>
+                                  );
+                                }
+                                return null;
+                              })()}
+                              
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setUploadTarget({ folderId: item.id });
+                                  fileInputRef.current?.click();
+                                }}
+                                style={{
+                                  padding: '0.25rem 0.5rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600,
+                                  borderRadius: '4px',
+                                  background: 'rgba(255, 255, 255, 0.05)',
+                                  color: 'var(--text-secondary)',
+                                  border: '1px solid var(--border)',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  transition: 'all 0.15s ease'
+                                }}
+                                onMouseOver={e => {
+                                  e.currentTarget.style.color = 'var(--text-main)';
+                                  e.currentTarget.style.borderColor = 'var(--text-muted)';
+                                }}
+                                onMouseOut={e => {
+                                  e.currentTarget.style.color = 'var(--text-secondary)';
+                                  e.currentTarget.style.borderColor = 'var(--border)';
+                                }}
+                              >
+                                <CloudUpload size={14} /> Upload
+                              </button>
+                              
+                              <button
+                                onClick={(e) => handleToggleNA(e, item.id)}
+                                style={{
+                                  padding: '0.25rem 0.5rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600,
+                                  borderRadius: '4px',
+                                  background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                                  color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                                  border: '1px solid',
+                                  borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.15s ease'
+                                }}
+                              >
+                                NA
+                              </button>
+                            </div>
                           </div>
+
+                          {/* Inline Document Viewer */}
+                          {expandedDocRows[item.id] && (() => {
+                            const uploadedDocs = client.documents.filter(d => d.folder === item.id);
+                            if (uploadedDocs.length === 0) return null;
+                            return (
+                              <div style={{
+                                marginTop: '1rem',
+                                paddingTop: '0.75rem',
+                                borderTop: '1px solid var(--border)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.35rem'
+                              }}>
+                                {uploadedDocs.map(doc => (
+                                  <div key={doc.id} className={styles.fileRow} style={{ background: 'rgba(0,0,0,0.15)', margin: 0, padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                                    <div className={styles.fileRowLeft}>
+                                      <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                                      <span className={styles.fileRowName} title={doc.name} style={{ fontSize: '0.8rem' }}>{renderHealthStatus(doc.id)}{doc.name}</span>
+                                    </div>
+                                    <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                                      <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                        <Eye size={13} />
+                                      </button>
+                                      <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
+                                        <Download size={13} />
+                                      </button>
+                                      <button className={styles.actionBtnDelete} onClick={() => deleteDocument(doc.id)} title="Delete">
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
                         </div>
                       );
                     })}
@@ -1817,133 +1855,171 @@ export default function ClientDetailPage() {
                   return (
                     <div
                       key={item.id}
-                      onClick={() => handleToggleOcChecklist(item.id)}
                       className={`${styles.checkItem} ${isChecked ? styles.checkItemActive : ''} ${isNA ? styles.checkItemNA : ''}`}
                       style={{
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
+                        flexDirection: 'column',
                         padding: '0.85rem 1.25rem',
                         background: isChecked ? 'rgba(37, 211, 102, 0.04)' : isNA ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.01)',
                         border: '1px solid var(--border)',
                         borderColor: isChecked ? 'rgba(37, 211, 102, 0.2)' : isNA ? 'transparent' : 'var(--border)',
                         borderRadius: '8px',
-                        cursor: 'pointer',
                         transition: 'all 0.15s ease',
                         opacity: isNA ? 0.6 : 1
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                        <div style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '4px',
-                          border: '2px solid',
-                          borderColor: isChecked ? '#25d366' : isNA ? 'var(--text-muted)' : 'var(--text-tertiary)',
-                          background: isChecked ? '#25d366' : 'transparent',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#fff',
-                          flexShrink: 0
-                        }}>
-                          {isChecked && <Check size={14} strokeWidth={3} />}
-                          {isNA && <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 800 }}>-</span>}
-                        </div>
-
-                        <div style={{
-                          fontSize: '0.9rem',
-                          color: isChecked ? 'var(--text-main)' : isNA ? 'var(--text-muted)' : 'var(--text-secondary)',
-                          fontWeight: 500,
-                          lineHeight: 1.4,
-                          textDecoration: isNA ? 'line-through' : 'none'
-                        }}>
-                          <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
-                            {item.id}.
-                          </span>
-                          {item.label}
-                        </div>
-                      </div>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        {(() => {
-                          const folderId = `oc-${item.id}`;
-                          const uploadedDocs = client.documents.filter(d => d.folder === folderId);
-                          if (uploadedDocs.length > 0) {
-                            return (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setActiveTab('oc_docs'); }}
-                                style={{
-                                  padding: '0.25rem 0.5rem',
-                                  fontSize: '0.7rem',
-                                  fontWeight: 600,
-                                  borderRadius: '4px',
-                                  background: 'rgba(37, 211, 102, 0.1)',
-                                  color: '#25d366',
-                                  border: '1px solid rgba(37, 211, 102, 0.2)',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '0.25rem'
-                                }}
-                              >
-                                📁 {uploadedDocs.length}
-                              </button>
-                            );
-                          }
-                          return null;
-                        })()}
-                        
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setUploadTarget({ folderId: `oc-${item.id}` });
-                            fileInputRef.current?.click();
-                          }}
-                          style={{
-                            padding: '0.25rem 0.5rem',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
+                      {/* Main Row */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, cursor: 'pointer' }} onClick={() => handleToggleOcChecklist(item.id)}>
+                          <div style={{
+                            width: '20px',
+                            height: '20px',
                             borderRadius: '4px',
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            color: 'var(--text-secondary)',
-                            border: '1px solid var(--border)',
-                            cursor: 'pointer',
+                            border: '2px solid',
+                            borderColor: isChecked ? '#25d366' : isNA ? 'var(--text-muted)' : 'var(--text-tertiary)',
+                            background: isChecked ? '#25d366' : 'transparent',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '0.25rem',
-                            transition: 'all 0.15s ease'
-                          }}
-                          onMouseOver={e => {
-                            e.currentTarget.style.color = 'var(--text-main)';
-                            e.currentTarget.style.borderColor = 'var(--text-muted)';
-                          }}
-                          onMouseOut={e => {
-                            e.currentTarget.style.color = 'var(--text-secondary)';
-                            e.currentTarget.style.borderColor = 'var(--border)';
-                          }}
-                        >
-                          <CloudUpload size={14} /> Upload
-                        </button>
+                            justifyContent: 'center',
+                            color: '#fff',
+                            flexShrink: 0
+                          }}>
+                            {isChecked && <Check size={14} strokeWidth={3} />}
+                            {isNA && <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 800 }}>-</span>}
+                          </div>
+
+                          <div style={{
+                            fontSize: '0.9rem',
+                            color: isChecked ? 'var(--text-main)' : isNA ? 'var(--text-muted)' : 'var(--text-secondary)',
+                            fontWeight: 500,
+                            lineHeight: 1.4,
+                            textDecoration: isNA ? 'line-through' : 'none'
+                          }}>
+                            <span style={{ fontWeight: 700, marginRight: '0.75rem', color: isChecked ? '#25d366' : 'var(--text-muted)' }}>
+                              {item.id}.
+                            </span>
+                            {item.label}
+                          </div>
+                        </div>
                         
-                        <button
-                          onClick={(e) => handleToggleOcNA(e, item.id)}
-                          style={{
-                            padding: '0.25rem 0.5rem',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            borderRadius: '4px',
-                            background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
-                            color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
-                            border: '1px solid',
-                            borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease'
-                          }}
-                        >
-                          NA
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          {(() => {
+                            const folderId = `oc-${item.id}`;
+                            const uploadedDocs = client.documents.filter(d => d.folder === folderId);
+                            if (uploadedDocs.length > 0) {
+                              return (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setExpandedDocRows(prev => ({...prev, [folderId]: !prev[folderId]})); }}
+                                  style={{
+                                    padding: '0.25rem 0.5rem',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                    borderRadius: '4px',
+                                    background: expandedDocRows[folderId] ? 'rgba(255, 255, 255, 0.05)' : 'rgba(37, 211, 102, 0.1)',
+                                    color: expandedDocRows[folderId] ? 'var(--text-main)' : '#25d366',
+                                    border: expandedDocRows[folderId] ? '1px solid var(--border)' : '1px solid rgba(37, 211, 102, 0.2)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                >
+                                  📁 {uploadedDocs.length} {expandedDocRows[folderId] ? <ChevronDown size={12} /> : ''}
+                                </button>
+                              );
+                            }
+                            return null;
+                          })()}
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setUploadTarget({ folderId: `oc-${item.id}` });
+                              fileInputRef.current?.click();
+                            }}
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              borderRadius: '4px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              color: 'var(--text-secondary)',
+                              border: '1px solid var(--border)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              transition: 'all 0.15s ease'
+                            }}
+                            onMouseOver={e => {
+                              e.currentTarget.style.color = 'var(--text-main)';
+                              e.currentTarget.style.borderColor = 'var(--text-muted)';
+                            }}
+                            onMouseOut={e => {
+                              e.currentTarget.style.color = 'var(--text-secondary)';
+                              e.currentTarget.style.borderColor = 'var(--border)';
+                            }}
+                          >
+                            <CloudUpload size={14} /> Upload
+                          </button>
+                          
+                          <button
+                            onClick={(e) => handleToggleOcNA(e, item.id)}
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              borderRadius: '4px',
+                              background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                              color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                              border: '1px solid',
+                              borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            NA
+                          </button>
+                        </div>
                       </div>
+
+                      {/* Inline Document Viewer */}
+                      {expandedDocRows[`oc-${item.id}`] && (() => {
+                        const folderId = `oc-${item.id}`;
+                        const uploadedDocs = client.documents.filter(d => d.folder === folderId);
+                        if (uploadedDocs.length === 0) return null;
+                        return (
+                          <div style={{
+                            marginTop: '1rem',
+                            paddingTop: '0.75rem',
+                            borderTop: '1px solid var(--border)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.35rem'
+                          }}>
+                            {uploadedDocs.map(doc => (
+                              <div key={doc.id} className={styles.fileRow} style={{ background: 'rgba(0,0,0,0.15)', margin: 0, padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                                <div className={styles.fileRowLeft}>
+                                  <span className={styles.fileRowIcon}>{fileIcon(doc.type, 14)}</span>
+                                  <span className={styles.fileRowName} title={doc.name} style={{ fontSize: '0.8rem' }}>{renderHealthStatus(doc.id)}{doc.name}</span>
+                                </div>
+                                <div className={styles.fileRowActions} onClick={(e) => e.stopPropagation()}>
+                                  <button className={styles.actionBtn} onClick={() => viewDocumentSafe(doc.url)} title="View">
+                                    <Eye size={13} />
+                                  </button>
+                                  <button onClick={(e) => { e.stopPropagation(); downloadDocumentSafe(doc.url, doc.name); }} className={styles.actionBtn} title="Download">
+                                    <Download size={13} />
+                                  </button>
+                                  <button className={styles.actionBtnDelete} onClick={() => deleteDocument(doc.id)} title="Delete">
+                                    <Trash2 size={13} />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })}
