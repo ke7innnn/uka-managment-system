@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bot, X, MessageSquare, Trash2, Send, Loader2 } from 'lucide-react';
 import Script from 'next/script';
-import { getStaff, getClients, getWorkspaceMessages, getAlerts } from '@/lib/store';
+import { getStaff, getClients, getWorkspaceMessages, getAlerts, addWorkspaceMessage } from '@/lib/store';
 
 const ModelViewer = 'model-viewer' as any;
 
@@ -109,7 +109,27 @@ export default function AdminAssistantChat() {
       // Removed artificial delay since we have paid tier
 
       if (response.ok) {
-        setMessages(prev => [...prev, { role: 'model', content: data.message }]);
+        let aiMessage = data.message;
+        
+        // Parse custom actions from AI
+        const actionRegex = /\[ACTION:\s*ADD_WORKSPACE_MESSAGE\]\s*"([^"]+)"/g;
+        let match;
+        let actionsTaken = 0;
+        while ((match = actionRegex.exec(aiMessage)) !== null) {
+          const workspaceMsg = match[1];
+          addWorkspaceMessage('bruce_wayne', 'Bruce Wayne', 'Admin AI', workspaceMsg);
+          actionsTaken++;
+        }
+        
+        // Remove the action string from the message shown to the admin so it looks clean
+        aiMessage = aiMessage.replace(/\[ACTION:\s*ADD_WORKSPACE_MESSAGE\]\s*"[^"]+"/g, '').trim();
+        
+        // If the AI *only* output the action without any text, let's provide a fallback message
+        if (!aiMessage && actionsTaken > 0) {
+          aiMessage = "I have posted the message to the team workspace as requested, sir.";
+        }
+
+        setMessages(prev => [...prev, { role: 'model', content: aiMessage }]);
       } else {
         setMessages(prev => [...prev, { role: 'model', content: `⚠️ Error: ${data.error || 'Failed to connect to AI.'}` }]);
       }

@@ -107,6 +107,9 @@ export async function POST(req: Request) {
       3. If a user asks about something not present in the JSON data, explicitly tell them "I do not have that information in the current database."
       4. Cross-check your final answer against the JSON data before responding to ensure zero errors.
       5. Summarize your responses and give very short, concise answers, but ensure the complete context of the answer is still provided. Do not write unnecessarily long responses.
+      6. IF you want to post a message to the team's internal workspace chat (e.g. to notify staff, make an announcement, or ping someone), you MUST include this exact string anywhere in your response: 
+      [ACTION: ADD_WORKSPACE_MESSAGE] "your message here"
+      The system will automatically extract it and post it to the workspace. You can still talk to the Admin normally in the rest of your response.
     `;
 
     // Format messages for Gemini API - strictly limit to the last 3 messages for context memory
