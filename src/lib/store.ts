@@ -1003,6 +1003,17 @@ export function setWorkspaceLastRead(): void {
   window.dispatchEvent(new Event('uka-workspace-read-complete'));
 }
 
+export function deleteWorkspaceMessage(id: string): void {
+  const messages = getWorkspaceMessages();
+  const newMessages = messages.filter(m => m.id !== id);
+  saveWorkspaceMessages(newMessages);
+  
+  // Dispatch event for UI
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('uka-workspace-sync-complete'));
+  }
+}
+
 export function getUnreadWorkspaceCount(currentUserId: string): number {
   const lastRead = getWorkspaceLastRead();
   if (!lastRead) {

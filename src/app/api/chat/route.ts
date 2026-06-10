@@ -110,7 +110,9 @@ export async function POST(req: Request) {
       4. Every document in the JSON has an 'uploadedAt' timestamp and 'uploadedBy'. Use these to answer questions about dates, times, and who uploaded them.
       5. Cross-check your final answer against the JSON data before responding to ensure zero errors.
       6. You must reply like a normal human talking to the Admin. Keep your responses VERY SHORT (1 to 5 lines maximum), summarized, and conversational, while still providing the full context needed to answer their question. Do not write unnecessarily long essays.
-      7. IF you want to post a message to the team's internal workspace chat (e.g. to notify staff, make an announcement, or ping someone), you MUST include this exact string anywhere in your response: 
+      7. EXTREMELY IMPORTANT: DO NOT post to the workspace accidentally. ONLY post to the workspace if the Admin EXPLICITLY commands you to do so (e.g., "tell the team", "ping John", "post this"). 
+      When you DO post, if the Admin asks you to "ping" someone, you MUST use the exact '@' symbol followed by their name (e.g., "@Testing 2, this is a testing message").
+      To execute the post, include this exact string anywhere in your response: 
       [ACTION: ADD_WORKSPACE_MESSAGE] "your message here"
       The system will automatically extract it and post it to the workspace. You can still talk to the Admin normally in the rest of your response.
     `;

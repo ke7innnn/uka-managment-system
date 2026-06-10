@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
-import { WorkspaceMessage, getWorkspaceMessages, addWorkspaceMessage, getStaff, setWorkspaceLastRead } from '@/lib/store';
-import { Send, Hash, Info, User } from 'lucide-react';
+import { WorkspaceMessage, getWorkspaceMessages, addWorkspaceMessage, deleteWorkspaceMessage, getStaff, setWorkspaceLastRead } from '@/lib/store';
+import { Send, Hash, Info, User, Trash2 } from 'lucide-react';
 import styles from './WorkspaceChat.module.css';
 
 interface WorkspaceChatProps {
@@ -195,6 +195,20 @@ export default function WorkspaceChat({ currentUserId, currentUserName, currentU
                       <span className={styles.time}>
                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
+                      {(isMe || currentUserRole === 'Admin') && (
+                        <button 
+                          style={{ background: 'none', border: 'none', color: '#ff4d4f', cursor: 'pointer', marginLeft: 'auto', padding: '0 5px' }}
+                          onClick={() => {
+                            if (window.confirm('Delete this message for everyone?')) {
+                              deleteWorkspaceMessage(msg.id);
+                              loadMessages();
+                            }
+                          }}
+                          title="Delete message for everyone"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
                     </div>
                   )}
                   <div className={`${styles.bubble} ${isMe ? styles.myBubble : styles.theirBubble}`}>
