@@ -1615,11 +1615,12 @@ export default function ClientDetailPage() {
                             
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                               {(() => {
-                                const uploadedDocs = client.documents.filter(d => d.folder === item.id);
+                                const folderId = `cp-${item.id}`;
+                                const uploadedDocs = client.documents.filter(d => d.folder === folderId);
                                 if (uploadedDocs.length > 0) {
                                   return (
                                     <button
-                                      onClick={(e) => { e.stopPropagation(); setExpandedDocRows(prev => ({...prev, [item.id]: !prev[item.id]})); }}
+                                      onClick={(e) => { e.stopPropagation(); setExpandedDocRows(prev => ({...prev, [`cp-${item.id}`]: !prev[`cp-${item.id}`]})); }}
                                       style={{
                                         padding: '0.25rem 0.5rem',
                                         fontSize: '0.7rem',
@@ -1627,7 +1628,7 @@ export default function ClientDetailPage() {
                                         borderRadius: '4px',
                                         background: expandedDocRows[item.id] ? 'rgba(255, 255, 255, 0.05)' : 'rgba(37, 211, 102, 0.1)',
                                         color: expandedDocRows[item.id] ? 'var(--text-main)' : '#25d366',
-                                        border: expandedDocRows[item.id] ? '1px solid var(--border)' : '1px solid rgba(37, 211, 102, 0.2)',
+                                        border: expandedDocRows[`cp-${item.id}`] ? '1px solid var(--border)' : '1px solid rgba(37, 211, 102, 0.2)',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -1635,7 +1636,7 @@ export default function ClientDetailPage() {
                                         transition: 'all 0.15s ease'
                                       }}
                                     >
-                                      📁 {uploadedDocs.length} {expandedDocRows[item.id] ? <ChevronDown size={12} /> : ''}
+                                      📁 {uploadedDocs.length} {expandedDocRows[`cp-${item.id}`] ? <ChevronDown size={12} /> : ''}
                                     </button>
                                   );
                                 }
@@ -1645,7 +1646,7 @@ export default function ClientDetailPage() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setUploadTarget({ folderId: item.id });
+                                  setUploadTarget({ folderId: `cp-${item.id}` });
                                   fileInputRef.current?.click();
                                 }}
                                 style={{
@@ -1695,8 +1696,9 @@ export default function ClientDetailPage() {
                           </div>
 
                           {/* Inline Document Viewer */}
-                          {expandedDocRows[item.id] && (() => {
-                            const uploadedDocs = client.documents.filter(d => d.folder === item.id);
+                          {expandedDocRows[`cp-${item.id}`] && (() => {
+                            const folderId = `cp-${item.id}`;
+                            const uploadedDocs = client.documents.filter(d => d.folder === folderId);
                             if (uploadedDocs.length === 0) return null;
                             return (
                               <div style={{
@@ -1904,7 +1906,7 @@ export default function ClientDetailPage() {
                         
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           {(() => {
-                            const folderId = `oc-${item.id}`;
+                            const folderId = `ocl-${item.id}`;
                             const uploadedDocs = client.documents.filter(d => d.folder === folderId);
                             if (uploadedDocs.length > 0) {
                               return (
@@ -1985,8 +1987,8 @@ export default function ClientDetailPage() {
                       </div>
 
                       {/* Inline Document Viewer */}
-                      {expandedDocRows[`oc-${item.id}`] && (() => {
-                        const folderId = `oc-${item.id}`;
+                      {expandedDocRows[`ocl-${item.id}`] && (() => {
+                        const folderId = `ocl-${item.id}`;
                         const uploadedDocs = client.documents.filter(d => d.folder === folderId);
                         if (uploadedDocs.length === 0) return null;
                         return (
