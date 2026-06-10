@@ -1212,6 +1212,35 @@ export default function ClientDetailPage() {
         ))}
       </div>
 
+      {/* ── Global Hidden File Inputs ─────────────────────────────────────────── */}
+      <input
+        type="file"
+        multiple
+        ref={fileInputRef}
+        className={styles.hiddenInput}
+        onChange={handleFileUpload}
+        id="file-upload-input"
+        style={{ display: 'none' }}
+      />
+      <input
+        type="file"
+        multiple
+        ref={ocDocFileInputRef}
+        className={styles.hiddenInput}
+        onChange={handleOcDocFileUpload}
+        id="oc-doc-file-upload-input"
+        style={{ display: 'none' }}
+      />
+      <input
+        type="file"
+        multiple
+        ref={ccrdpFileInputRef}
+        className={styles.hiddenInput}
+        onChange={handleCcrdpFileUpload}
+        id="ccrdp-file-upload-input"
+        style={{ display: 'none' }}
+      />
+
       {/* ── Overview Tab ─────────────────────────────────────────────────────── */}
       {activeTab === 'overview' && (
         <div className={styles.tabContent}>
@@ -2279,14 +2308,6 @@ export default function ClientDetailPage() {
               </div>
             </div>
           )}
-          <input
-            type="file"
-            multiple
-            ref={fileInputRef}
-            className={styles.hiddenInput}
-            onChange={handleFileUpload}
-            id="file-upload-input"
-          />
 
           <div className={styles.foldersGrid}>
             {FOLDERS.map((folder) => {
@@ -2651,6 +2672,7 @@ export default function ClientDetailPage() {
         </div>
       )}
 
+
       {/* ── OC Documents Tab ──────────────────────────────────────────────────── */}
       {activeTab === 'oc_docs' && (
         <div className={styles.tabContent}>
@@ -2830,15 +2852,6 @@ export default function ClientDetailPage() {
               </div>
             )}
           </div>
-
-          <input
-            type="file"
-            multiple
-            ref={ccrdpFileInputRef}
-            className={styles.hiddenInput}
-            onChange={handleCcrdpFileUpload}
-            id="ccrdp-file-upload-input"
-          />
 
           {/* 4 Folders */}
           <div className={styles.foldersGrid}>
