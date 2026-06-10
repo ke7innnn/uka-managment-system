@@ -1613,23 +1613,84 @@ export default function ClientDetailPage() {
                             </div>
                           </div>
                           
-                          <button
-                            onClick={(e) => handleToggleNA(e, item.id)}
-                            style={{
-                              padding: '0.25rem 0.5rem',
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
-                              borderRadius: '4px',
-                              background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
-                              color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
-                              border: '1px solid',
-                              borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
-                              cursor: 'pointer',
-                              transition: 'all 0.15s ease'
-                            }}
-                          >
-                            NA
-                          </button>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            {(() => {
+                              const uploadedDocs = client.documents.filter(d => d.folder === item.id);
+                              if (uploadedDocs.length > 0) {
+                                return (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setActiveTab('documents'); }}
+                                    style={{
+                                      padding: '0.25rem 0.5rem',
+                                      fontSize: '0.7rem',
+                                      fontWeight: 600,
+                                      borderRadius: '4px',
+                                      background: 'rgba(37, 211, 102, 0.1)',
+                                      color: '#25d366',
+                                      border: '1px solid rgba(37, 211, 102, 0.2)',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '0.25rem'
+                                    }}
+                                  >
+                                    📁 {uploadedDocs.length}
+                                  </button>
+                                );
+                              }
+                              return null;
+                            })()}
+                            
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setUploadTarget({ folderId: item.id });
+                                fileInputRef.current?.click();
+                              }}
+                              style={{
+                                padding: '0.25rem 0.5rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                borderRadius: '4px',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                color: 'var(--text-secondary)',
+                                border: '1px solid var(--border)',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseOver={e => {
+                                e.currentTarget.style.color = 'var(--text-main)';
+                                e.currentTarget.style.borderColor = 'var(--text-muted)';
+                              }}
+                              onMouseOut={e => {
+                                e.currentTarget.style.color = 'var(--text-secondary)';
+                                e.currentTarget.style.borderColor = 'var(--border)';
+                              }}
+                            >
+                              <CloudUpload size={14} /> Upload
+                            </button>
+                            
+                            <button
+                              onClick={(e) => handleToggleNA(e, item.id)}
+                              style={{
+                                padding: '0.25rem 0.5rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                borderRadius: '4px',
+                                background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                                color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                                border: '1px solid',
+                                borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              NA
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
@@ -1804,23 +1865,85 @@ export default function ClientDetailPage() {
                         </div>
                       </div>
                       
-                      <button
-                        onClick={(e) => handleToggleOcNA(e, item.id)}
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          borderRadius: '4px',
-                          background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
-                          color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
-                          border: '1px solid',
-                          borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        NA
-                      </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {(() => {
+                          const folderId = `oc-${item.id}`;
+                          const uploadedDocs = client.documents.filter(d => d.folder === folderId);
+                          if (uploadedDocs.length > 0) {
+                            return (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setActiveTab('oc_docs'); }}
+                                style={{
+                                  padding: '0.25rem 0.5rem',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 600,
+                                  borderRadius: '4px',
+                                  background: 'rgba(37, 211, 102, 0.1)',
+                                  color: '#25d366',
+                                  border: '1px solid rgba(37, 211, 102, 0.2)',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem'
+                                }}
+                              >
+                                📁 {uploadedDocs.length}
+                              </button>
+                            );
+                          }
+                          return null;
+                        })()}
+                        
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUploadTarget({ folderId: `oc-${item.id}` });
+                            fileInputRef.current?.click();
+                          }}
+                          style={{
+                            padding: '0.25rem 0.5rem',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            borderRadius: '4px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            color: 'var(--text-secondary)',
+                            border: '1px solid var(--border)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseOver={e => {
+                            e.currentTarget.style.color = 'var(--text-main)';
+                            e.currentTarget.style.borderColor = 'var(--text-muted)';
+                          }}
+                          onMouseOut={e => {
+                            e.currentTarget.style.color = 'var(--text-secondary)';
+                            e.currentTarget.style.borderColor = 'var(--border)';
+                          }}
+                        >
+                          <CloudUpload size={14} /> Upload
+                        </button>
+                        
+                        <button
+                          onClick={(e) => handleToggleOcNA(e, item.id)}
+                          style={{
+                            padding: '0.25rem 0.5rem',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            borderRadius: '4px',
+                            background: isNA ? 'var(--text-main)' : 'rgba(255, 255, 255, 0.05)',
+                            color: isNA ? 'var(--bg-main)' : 'var(--text-muted)',
+                            border: '1px solid',
+                            borderColor: isNA ? 'var(--text-main)' : 'var(--border)',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          NA
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
