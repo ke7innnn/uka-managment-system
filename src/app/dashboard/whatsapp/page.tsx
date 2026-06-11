@@ -468,7 +468,21 @@ export default function WhatsappRepliesPage() {
 
         @media (max-width: 768px) {
           .chat-layout {
-            height: calc(100vh - 130px);
+            height: calc(100vh - 145px);
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            background: transparent;
+            margin: 0 -1rem;
+          }
+          .chat-sidebar {
+            width: 100% !important;
+            border-right: none;
+            background: transparent;
+          }
+          .chat-thread-container {
+            width: 100% !important;
+            background: var(--bg);
           }
           .chat-sidebar.mobile-hidden {
             display: none !important;
@@ -476,20 +490,34 @@ export default function WhatsappRepliesPage() {
           .chat-thread-container.mobile-hidden {
             display: none !important;
           }
+          .page-desc {
+            display: none !important;
+          }
+          .refresh-btn-text {
+            display: none !important;
+          }
+          .refresh-btn {
+            padding: 8px !important;
+            border-radius: 50% !important;
+          }
+          .search-container {
+            padding: 0.75rem !important;
+          }
         }
       `}</style>
 
       {/* Main Top Title Panel */}
       <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.5rem, 5vw, 1.85rem)', fontWeight: 400, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 10, marginBottom: '0.2rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.25rem, 5vw, 1.85rem)', fontWeight: 400, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 10, marginBottom: '0.2rem' }}>
             <MessageSquareReply size={22} className="text-gradient" /> WhatsApp Inbox
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Track, view and manage WhatsApp notifications and client replies in real-time</p>
+          <p className="page-desc" style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Track, view and manage WhatsApp notifications and client replies in real-time</p>
         </div>
         <button 
           onClick={handleRefresh} 
           disabled={refreshing}
+          className="refresh-btn"
           style={{ 
             background: 'var(--bg-raised)', 
             border: '1px solid var(--border)', 
@@ -505,7 +533,7 @@ export default function WhatsappRepliesPage() {
           }}
         >
           <RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} />
-          {refreshing ? 'Refreshing...' : 'Refresh'}
+          <span className="refresh-btn-text">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
         </button>
       </div>
 
@@ -523,7 +551,7 @@ export default function WhatsappRepliesPage() {
           <div className={`chat-sidebar ${activeChatPhone ? 'mobile-hidden' : ''}`}>
             
             {/* Sidebar Search Bar */}
-            <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
+            <div className="search-container" style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <Search size={16} style={{ position: 'absolute', left: 12, color: 'var(--text-tertiary)' }} />
                 <input 
@@ -532,6 +560,7 @@ export default function WhatsappRepliesPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{
+                    width: '100%',
                     padding: '0.55rem 0.75rem 0.55rem 2.25rem',
                     background: 'var(--bg-elevated)',
                     border: '1px solid var(--border)',
@@ -560,6 +589,20 @@ export default function WhatsappRepliesPage() {
                   snippet = snippet.slice(0, 50) + '...';
                 }
 
+                // Generates name initials
+                const initials = formatted.main
+                  .split(/\s+/)
+                  .map((n: string) => n[0])
+                  .slice(0, 2)
+                  .join('')
+                  .toUpperCase() || 'C';
+
+                // Pick a consistent background color for the avatar badge based on phone number hash
+                const colors = ['#8f7a5c', '#617d69', '#536b8f', '#7d5c8f', '#8f5c6b', '#685c8f', '#5c8f87'];
+                const colorIndex = parseInt(chat.phoneNumber.slice(-4)) % colors.length || 0;
+                const avatarBg = isSelected ? 'var(--accent)' : colors[colorIndex];
+                const avatarColor = isSelected ? '#121212' : '#ffffff';
+
                 return (
                   <div
                     key={chat.phoneNumber}
@@ -571,35 +614,59 @@ export default function WhatsappRepliesPage() {
                       background: isSelected ? 'rgba(200, 169, 110, 0.05)' : 'transparent',
                       borderLeft: isSelected ? '3px solid var(--accent)' : '3px solid transparent',
                       transition: 'all 0.15s ease',
-                      position: 'relative'
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.875rem', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '70%' }}>
-                        {formatted.main}
-                      </span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>
-                        {new Date(chat.latestMessageTime).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
-                      </span>
+                    {/* Circle Avatar Badge */}
+                    <div style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      background: avatarBg,
+                      color: avatarColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      flexShrink: 0,
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                    }}>
+                      {initials}
                     </div>
 
-                    {formatted.sub && (
-                      <div style={{ fontSize: '0.725rem', color: 'var(--accent)', fontWeight: 500, marginBottom: 4, opacity: 0.85 }}>
-                        {formatted.sub}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.875rem', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '70%' }}>
+                          {formatted.main}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>
+                          {new Date(chat.latestMessageTime).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                        </span>
                       </div>
-                    )}
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.8rem', color: isSelected ? 'var(--text-secondary)' : 'var(--text-tertiary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '85%' }}>
-                        {isOutbound ? '📤 ' : ''}{snippet}
-                      </span>
-                      {chat.hasUnread && (
-                        <span style={{ width: 8, height: 8, background: '#6aaa84', borderRadius: '50%' }} />
+                      {formatted.sub && (
+                        <div style={{ fontSize: '0.725rem', color: 'var(--accent)', fontWeight: 500, marginBottom: 4, opacity: 0.85 }}>
+                          {formatted.sub}
+                        </div>
                       )}
-                    </div>
 
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginTop: 4 }}>
-                      +{chat.phoneNumber}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.8rem', color: isSelected ? 'var(--text-secondary)' : 'var(--text-tertiary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '85%' }}>
+                          {isOutbound ? '📤 ' : ''}{snippet}
+                        </span>
+                        {chat.hasUnread && (
+                          <span style={{ width: 8, height: 8, background: '#6aaa84', borderRadius: '50%' }} />
+                        )}
+                      </div>
+
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginTop: 4 }}>
+                        +{chat.phoneNumber}
+                      </div>
                     </div>
                   </div>
                 );
@@ -618,14 +685,15 @@ export default function WhatsappRepliesPage() {
               <>
                 {/* Chat Header */}
                 <div style={{ 
-                  padding: '0.9rem 1.5rem', 
+                  padding: '0.9rem 1.25rem', 
                   borderBottom: '1px solid var(--border)', 
                   background: 'rgba(0,0,0,0.12)', 
                   display: 'flex', 
                   alignItems: 'center', 
-                  justifyContent: 'space-between' 
+                  justifyContent: 'space-between',
+                  gap: 8
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
                     
                     {/* Back Button on Mobile */}
                     <button 
@@ -646,14 +714,37 @@ export default function WhatsappRepliesPage() {
                       <ArrowLeft size={16} />
                     </button>
 
-                    <div>
-                      <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.95rem' }}>
+                    {/* Chat Header Initials Avatar */}
+                    <div style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: 'rgba(250, 204, 21, 0.15)',
+                      color: 'var(--accent)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      flexShrink: 0,
+                      border: '1px solid rgba(250, 204, 21, 0.25)'
+                    }}>
+                      {formatSenderName(activeChat.clientName).main
+                        .split(/\s+/)
+                        .map((n: string) => n[0])
+                        .slice(0, 2)
+                        .join('')
+                        .toUpperCase() || 'C'}
+                    </div>
+
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.95rem', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                         {formatSenderName(activeChat.clientName).main}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                         <span>+{activeChat.phoneNumber}</span>
                         {formatSenderName(activeChat.clientName).sub && (
-                          <span style={{ color: 'var(--accent)', fontWeight: 500 }}>
+                          <span style={{ color: 'var(--accent)', fontWeight: 500, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                             • {formatSenderName(activeChat.clientName).sub}
                           </span>
                         )}
@@ -662,7 +753,7 @@ export default function WhatsappRepliesPage() {
                   </div>
 
                   {/* Contextual Actions (View client profile index link) */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                     {activeClientProfile && (
                       <a 
                         href={`/dashboard/clients/${activeClientProfile.id}`}
@@ -683,7 +774,7 @@ export default function WhatsappRepliesPage() {
                           cursor: 'pointer'
                         }}
                       >
-                        Client Profile <ExternalLink size={11} />
+                        Profile <ExternalLink size={11} />
                       </a>
                     )}
                   </div>
