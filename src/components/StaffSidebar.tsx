@@ -25,6 +25,12 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
   const [workspaceCount, setWorkspaceCount] = useState(0);
   const [alertsCount, setAlertsCount] = useState(0);
   const [member, setMember] = useState<StaffMember | null>(null);
+  const [theme, setTheme] = useState<string>('dark');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('uka_theme') || 'dark';
+    setTheme(savedTheme);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -133,7 +139,51 @@ export default function StaffSidebar({ onClose }: { onClose?: () => void }) {
 
       {/* Footer / Toggle & Logout */}
       <div className={styles.footer} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <ThemeSwitcher />
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+          padding: '0.75rem',
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border)',
+          borderRadius: '10px',
+        }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Theme
+          </span>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {[
+              { id: 'dark', color: '#080808', border: '#c8a96e', title: 'Dark Gold' },
+              { id: 'light', color: '#fdfcf8', border: '#b08d48', title: 'Light Gold' },
+              { id: 'sage', color: '#121b16', border: '#6aaa84', title: 'Sage Green' },
+              { id: 'blue', color: '#0a1024', border: '#a8d5e2', title: 'Deep Blue' },
+              { id: 'ruby', color: '#1f0a10', border: '#c06060', title: 'Ruby Red' },
+            ].map(t => (
+              <button
+                key={t.id}
+                title={t.title}
+                onClick={() => {
+                  setTheme(t.id);
+                  localStorage.setItem('uka_theme', t.id);
+                  document.documentElement.setAttribute('data-theme', t.id);
+                  window.dispatchEvent(new Event('uka-theme-change'));
+                }}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  background: t.color,
+                  border: theme === t.id ? `2px solid ${t.border}` : '1px solid var(--border)',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, border-color 0.2s',
+                  transform: theme === t.id ? 'scale(1.15)' : 'scale(1)',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = theme === t.id ? 'scale(1.15)' : 'scale(1)'}
+              />
+            ))}
+          </div>
+        </div>
 
         <button className={styles.logoutBtn} onClick={handleLogout}>
           <span className={styles.navIcon}><LogOut size={18} strokeWidth={1.75} /></span>

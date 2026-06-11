@@ -31,6 +31,18 @@ export default function RootLayout({
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <ThemeProvider>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    var saved = localStorage.getItem('uka_theme') || 'dark';
+                    document.documentElement.setAttribute('data-theme', saved);
+                  } catch (e) {}
+                })();
+              `,
+            }}
+          />
           <SupabaseSyncProvider>
             {children}
           </SupabaseSyncProvider>
