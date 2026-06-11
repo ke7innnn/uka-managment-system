@@ -51,7 +51,7 @@ function parseMessageBody(body: string): ParsedTemplate {
     return { isTemplate: false, templateName: '', clientName: '', items: [], summary: '', yesCount: 0, noCount: 0, neutralCount: 0 };
   }
   
-  const templateMatch = body.match(/^\[Template:\s*([^\]]+)\]\s*-\s*(.*)$/s);
+  const templateMatch = body.match(/^\[Template:\s*([^\]]+)\]\s*-\s*([\s\S]*)$/);
   if (!templateMatch) {
     return {
       isTemplate: false,
@@ -138,7 +138,7 @@ function OutboundTemplateCard({ parsed }: { parsed: ParsedTemplate }) {
   
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', className: 'items-center' }}>
+      <div className="items-center" style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {parsed.templateName === 'client_ukaprogress' ? '📊 UKA Progress Update' : 
            parsed.templateName === 'ocprogress_uka' ? '🏠 OC Checklist Update' : 
