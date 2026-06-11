@@ -77,7 +77,7 @@ export async function POST(request: Request) {
           },
           body: JSON.stringify({
             phone_number: finalDest,
-            sender_name: 'UKA Admin (Sent)',
+            sender_name: body.senderName || 'UKA Admin (Sent)',
             message_body: `[Template: ${templateName || "client_ukaprogress"}] - ${params.join(', ')}`,
             direction: 'outbound',
             status: 'sent'

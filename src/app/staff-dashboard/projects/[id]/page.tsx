@@ -277,12 +277,16 @@ export default function ClientDetailPage() {
       
       for (const rec of selected) {
         if (!rec.phone || rec.phone.trim() === '') continue;
+        const currentStaff = staffList.find(s => s.id === currentStaffId);
+        const staffName = currentStaff ? currentStaff.name : 'Staff Member';
+
         await fetch('/api/whatsapp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             destination: rec.phone,
             userName: p1,
+            senderName: `${staffName} (Staff)`,
             params: [p1, p2, p3],
             templateName: templateName
           })

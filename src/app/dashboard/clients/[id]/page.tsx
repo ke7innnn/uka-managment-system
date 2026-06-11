@@ -327,6 +327,7 @@ export default function ClientDetailPage() {
           body: JSON.stringify({
             destination: rec.phone,
             userName: p1,
+            senderName: 'UKA Admin (Sent)',
             params: [p1, p2, p3],
             templateName: templateName
           })

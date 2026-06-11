@@ -57,7 +57,7 @@ export async function POST(req: Request) {
           .from('whatsapp_messages')
           .select('created_at, phone_number, sender_name, message_body, direction')
           .order('created_at', { ascending: false })
-          .limit(10); // Limit to last 10 messages to keep token usage extremely low
+          .limit(30); // Limit to last 30 messages
 
         if (rawMessages && rawMessages.length > 0) {
           whatsappText = rawMessages.map((m: any) => {
