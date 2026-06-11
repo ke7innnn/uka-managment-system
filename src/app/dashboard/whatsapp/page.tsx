@@ -335,8 +335,25 @@ export default function WhatsappRepliesPage() {
     // Pick the most detailed sender name resolved
     if (msg.sender_name && msg.sender_name !== 'Client' && msg.sender_name !== 'Unknown Client' && msg.sender_name !== 'UKA Admin (Sent)') {
       const currentName = chatsMap[phone].clientName;
-      if (currentName === 'Client' || currentName === 'Unknown Client' || msg.sender_name.includes('Owner') || msg.sender_name.includes('Ref')) {
+      if (currentName === 'Client' || currentName === 'Unknown Client' || currentName === 'UKA Admin (Sent)' || msg.sender_name.includes('Owner') || msg.sender_name.includes('Ref')) {
         chatsMap[phone].clientName = msg.sender_name;
+      }
+    }
+  });
+
+  // Try to resolve 'UKA Admin (Sent)' or 'Unknown Client' using loaded clientProfiles
+  Object.values(chatsMap).forEach(chat => {
+    if (chat.clientName === 'UKA Admin (Sent)' || chat.clientName === 'Unknown Client' || chat.clientName === 'Client') {
+      const chatPhone10 = chat.phoneNumber.replace(/\D/g, '').slice(-10);
+      const matchedClient = clientProfiles.find(c => {
+        const checkPhone = (p: string) => p && p.replace(/\D/g, '').endsWith(chatPhone10);
+        if (checkPhone(c.phone)) return true;
+        if (c.kyc?.otherOwners?.some((o: any) => checkPhone(o.phone))) return true;
+        if (c.kyc?.references?.some((r: any) => checkPhone(r.phone))) return true;
+        return false;
+      });
+      if (matchedClient) {
+        chat.clientName = matchedClient.name;
       }
     }
   });
