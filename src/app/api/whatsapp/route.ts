@@ -3,15 +3,15 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { destination, userName, params } = body;
+    const { destination, userName, params, templateName } = body;
 
     if (!destination || !params) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
     }
 
     // Meta Cloud API Credentials
-    const META_PHONE_NUMBER_ID = "1163664470159303";
-    const META_ACCESS_TOKEN = "EAAOjDBxScxUBRn0wXTB4DPyak7OmAaoSLcDHtzoEFrHmkeoICrbm1tgmD34HeHwkxXf8OqUJOiw34ZBasXOqREosyOvAkoUmAuCl9KKIoPJciJLsV15kOif2uuD5rIPOkVJxovK21dyUGdBVKhZAamB6vW6qOd0ctJsIvMZCQfZBfPdhIAMTIRkLWW8uQm6UwQZDZD";
+    const META_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || "1139968109202309";
+    const META_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN || "EAAOjDBxScxUBRmixWCZBuZB7eWP3xuj8cdbOccXOkJ2PM6599xtiVbzL4KarNQLseJquf8gHg6LjZB256WEw5eUj29br3pCbkDJcuedNYsj1q9uSRnwXnwaA0MZAQdoZAGBp7wlwnsoqb6HOvOfnCxJfMcaAGVJsTH8uds73qqpolyNpS2i6HMN4rffu9HQUnSQZDZD";
     
     // Format destination number (Meta requires country code without '+', default to 91 for India)
     const cleanDestination = destination.replace(/\D/g, '');
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       to: finalDest,
       type: "template",
       template: {
-        name: "progress_update_uka",
+        name: templateName || "client_ukaprogress",
         language: {
           code: "en"
         },

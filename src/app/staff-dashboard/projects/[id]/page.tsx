@@ -45,6 +45,7 @@ export default function ClientDetailPage() {
   const [whatsappRecipients, setWhatsappRecipients] = useState<WhatsappRecipient[]>([]);
   const [whatsappPreviewText, setWhatsappPreviewText] = useState('');
   const [whatsappSending, setWhatsappSending] = useState(false);
+  const [whatsappMessageType, setWhatsappMessageType] = useState<'progress' | 'oc'>('progress');
   const [customPhone, setCustomPhone] = useState('');
   const [customName, setCustomName] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -220,16 +221,57 @@ export default function ClientDetailPage() {
     }
 
     setWhatsappRecipients(recs);
+    setWhatsappMessageType('progress');
     setShowWhatsappModal(true);
+  };
+
+  const getOcProgressStringByIndex = (startIndex: number, endIndex: number) => {
+    if (!client) return "";
+    const items = OC_CHECKLIST_ITEMS.slice(startIndex, endIndex + 1);
+    const current = client.ocChecklist || [];
+    
+    const SHORT_LABEL_MAP: Record<string, string> = {
+      "107": "Appendix G",
+      "108": "Completion Dwg",
+      "109": "Stability Cert",
+      "110": "Adequacy Cert",
+      "111": "Fire NOC",
+      "112": "Water NOC",
+      "113": "STP Cert",
+      "114": "Encroachment NOC",
+      "115": "Tree NOC",
+      "116": "Tax NOC",
+      "117": "Lift NOC",
+      "118": "Storm Water NOC",
+      "119": "Appendix J",
+      "120": "Solar System",
+      "121": "Rainwater Harvesting",
+      "122": "Organic Disposal",
+      "123": "CCTV System",
+      "124": "Tenements Handover",
+      "125": "Parking Cert",
+      "126": "MPCB Consent"
+    };
+
+    return items.map(item => {
+      let icon = "❌";
+      if (current.includes(item.id)) icon = "✅";
+      if (current.includes(`${item.id}-NA`)) icon = "➖";
+      const shortName = SHORT_LABEL_MAP[item.id] || item.label;
+      return `${shortName}: ${icon}`;
+    }).join(", ");
   };
 
   const handleConfirmSendWhatsapp = async () => {
     if (!client) return;
     setWhatsappSending(true);
     try {
+      const isOc = whatsappMessageType === 'oc';
+      const templateName = isOc ? "ocprogress_uka" : "client_ukaprogress";
+      
       const p1 = client.name || "Client";
-      const p2 = getProgressStringByIndex(0, 52);
-      const p3 = getProgressStringByIndex(53, 105);
+      const p2 = isOc ? getOcProgressStringByIndex(0, 11) : getProgressStringByIndex(0, 52);
+      const p3 = isOc ? getOcProgressStringByIndex(12, 19) : getProgressStringByIndex(53, 105);
       
       const selected = whatsappRecipients.filter(r => r.selected);
       
@@ -241,14 +283,20 @@ export default function ClientDetailPage() {
           body: JSON.stringify({
             destination: rec.phone,
             userName: p1,
-            params: [p1, p2, p3]
+            params: [p1, p2, p3],
+            templateName: templateName
           })
         });
       }
 
       setShowWhatsappModal(false);
-      setShowSendSuccess(true);
-      setTimeout(() => setShowSendSuccess(false), 4000);
+      if (isOc) {
+        setShowOcSendSuccess(true);
+        setTimeout(() => setShowOcSendSuccess(false), 4000);
+      } else {
+        setShowSendSuccess(true);
+        setTimeout(() => setShowSendSuccess(false), 4000);
+      }
     } catch (err: any) {
       alert("Error: " + err.message);
     } finally {
@@ -301,8 +349,47 @@ export default function ClientDetailPage() {
   const [showOcSendSuccess, setShowOcSendSuccess] = useState(false);
 
   const handleSendOc = () => {
-    setShowOcSendSuccess(true);
-    setTimeout(() => setShowOcSendSuccess(false), 4000);
+    if (!client) return;
+    
+    // 1. Generate preview
+    const p1 = client.name || "Client";
+    const p2 = getOcProgressStringByIndex(0, 11); // Mandatory
+    const p3 = getOcProgressStringByIndex(12, 19); // Optional
+    
+    setWhatsappPreviewText(
+      `Hi ${p1},\n\n` +
+      `This is your Occupancy Certificate (OC) progress and pending documents:\n\n` +
+      `OC Documents:\n` +
+      `[${p2}]\n\n` +
+      `[${p3}]\n\n` +
+      `Thankyou`
+    );
+
+    // 2. Build Recipients
+    const recs: WhatsappRecipient[] = [
+      { id: 'admin1', phone: '8698930978', name: 'Kevin (testing)', role: 'Admin', selected: false },
+      { id: 'admin2', phone: '9860146006', name: 'Umesh', role: 'Admin', selected: true }
+    ];
+    
+    if (client.phone) {
+      recs.push({ id: 'client_main', phone: client.phone.replace(/[^0-9]/g, ''), name: client.name || 'Main Client', role: 'Client', selected: true });
+    }
+    
+    if (client.kyc?.otherOwners) {
+      client.kyc.otherOwners.forEach((o, i) => {
+        if (o.phone) recs.push({ id: `owner_${i}`, phone: o.phone.replace(/[^0-9]/g, ''), name: o.name || `Owner ${i+1}`, role: 'Owner', selected: true });
+      });
+    }
+    
+    if (client.kyc?.references) {
+      client.kyc.references.forEach((r, i) => {
+        if (r.phone) recs.push({ id: `ref_${i}`, phone: r.phone.replace(/[^0-9]/g, ''), name: r.name || `Ref ${i+1}`, role: 'Reference', selected: true });
+      });
+    }
+
+    setWhatsappRecipients(recs);
+    setWhatsappMessageType('oc');
+    setShowWhatsappModal(true);
   };
 
   const handleToggleOcChecklist = (itemId: string) => {
@@ -1400,7 +1487,7 @@ export default function ClientDetailPage() {
                   Track receipt and filing of core property mutations, NOCs, and structural approvals.
                 </p>
               </div>
-              <button className={styles.sendBtn} onClick={() => alert("WhatsApp messaging is temporarily under maintenance for upgrades. Please try again later.")}>
+              <button className={styles.sendBtn} onClick={handleSendProgress}>
                 <MessageSquare size={16} /> Send Progress (WhatsApp)
               </button>
             </div>
@@ -1759,7 +1846,7 @@ export default function ClientDetailPage() {
                   Track receipt and filing of mandatory and optional documents required for Occupancy Certificate.
                 </p>
               </div>
-              <button className={styles.sendBtn} onClick={() => alert("WhatsApp messaging is temporarily under maintenance for upgrades. Please try again later.")}>
+              <button className={styles.sendBtn} onClick={handleSendOc}>
                 <MessageSquare size={16} /> Send OC Progress (WhatsApp)
               </button>
             </div>
@@ -2611,7 +2698,7 @@ export default function ClientDetailPage() {
                   Manage and share OC Documents aligned with the Occupancy Certificate checklist.
                 </p>
               </div>
-              <button className={styles.sendBtn} onClick={() => alert("WhatsApp messaging is temporarily under maintenance for upgrades. Please try again later.")}>
+              <button className={styles.sendBtn} onClick={handleSendOcDocs}>
                 <MessageSquare size={16} /> Send OC Documents (WhatsApp)
               </button>
             </div>
@@ -2917,7 +3004,7 @@ export default function ClientDetailPage() {
                 Cancel
               </button>
               <button 
-                onClick={() => alert("WhatsApp messaging is temporarily under maintenance for upgrades. Please try again later.")}
+                onClick={handleConfirmSendWhatsapp}
                 style={{ padding: '10px 20px', background: '#25D366', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, cursor: whatsappRecipients.some(r => r.selected) ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px', opacity: whatsappRecipients.some(r => r.selected) ? 1 : 0.5 }}
                 disabled={whatsappSending || !whatsappRecipients.some(r => r.selected)}
               >
