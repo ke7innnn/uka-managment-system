@@ -55,17 +55,33 @@ export async function POST(request: Request) {
               if (supabaseUrl && supabaseKey) {
                 const supabase = createClient(supabaseUrl, supabaseKey);
                 
-                // Try to match the incoming phone number with a registered client
+                // Try to match the incoming phone number with a registered client, owner, or reference
                 let finalSenderName = senderName;
                 const cleanIncomingPhone = phoneNumber.replace(/\D/g, '');
                 const last10Digits = cleanIncomingPhone.length >= 10 ? cleanIncomingPhone.slice(-10) : cleanIncomingPhone;
                 
-                // Fetch all clients to handle phone number formatting (spaces, dashes) in DB
-                const { data: allClients } = await supabase.from('clients').select('name, phone').not('phone', 'is', null);
+                // Fetch all clients with their KYC data to check extra owners and references
+                const { data: allClients } = await supabase.from('clients').select('name, phone, kyc');
                 if (allClients) {
-                  const matchedClient = allClients.find((c: any) => c.phone && c.phone.replace(/\D/g, '').endsWith(last10Digits));
-                  if (matchedClient) {
-                    finalSenderName = `${matchedClient.name} (WA: ${senderName})`;
+                  for (const c of allClients) {
+                    const checkPhone = (p: any) => p && typeof p === 'string' && p.replace(/\D/g, '').endsWith(last10Digits);
+                    
+                    if (checkPhone(c.phone)) {
+                      finalSenderName = `${c.name} (WA: ${senderName})`;
+                      break;
+                    }
+                    
+                    const matchedOwner = c.kyc?.otherOwners?.find((o: any) => checkPhone(o.phone));
+                    if (matchedOwner) {
+                      finalSenderName = `${c.name} (Owner: ${matchedOwner.name || senderName})`;
+                      break;
+                    }
+                    
+                    const matchedRef = c.kyc?.references?.find((r: any) => checkPhone(r.phone));
+                    if (matchedRef) {
+                      finalSenderName = `${c.name} (Ref: ${matchedRef.name || senderName})`;
+                      break;
+                    }
                   }
                 }
 
