@@ -55,12 +55,26 @@ export async function POST(request: Request) {
               if (supabaseUrl && supabaseKey) {
                 const supabase = createClient(supabaseUrl, supabaseKey);
                 
+                // Try to match the incoming phone number with a registered client
+                let finalSenderName = senderName;
+                const cleanIncomingPhone = phoneNumber.replace(/\D/g, '');
+                const last10Digits = cleanIncomingPhone.length >= 10 ? cleanIncomingPhone.slice(-10) : cleanIncomingPhone;
+                
+                // Fetch all clients to handle phone number formatting (spaces, dashes) in DB
+                const { data: allClients } = await supabase.from('clients').select('name, phone').not('phone', 'is', null);
+                if (allClients) {
+                  const matchedClient = allClients.find((c: any) => c.phone && c.phone.replace(/\D/g, '').endsWith(last10Digits));
+                  if (matchedClient) {
+                    finalSenderName = `${matchedClient.name} (WA: ${senderName})`;
+                  }
+                }
+
                 const { error } = await supabase
                   .from('whatsapp_messages')
                   .insert([
                     {
                       phone_number: phoneNumber,
-                      sender_name: senderName,
+                      sender_name: finalSenderName,
                       message_body: messageBody,
                       direction: 'inbound',
                       status: 'received',
