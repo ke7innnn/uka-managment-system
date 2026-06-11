@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, downloadDocumentSafe, getStaff, StaffMember, getClients, isStaffAuthenticated, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, CC_RDP_FOLDERS, OC_DOCUMENT_FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
-import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare, AlertCircle } from 'lucide-react';
+import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare, AlertCircle, MapPin, Phone } from 'lucide-react';
 import styles from '@/app/dashboard/clients/[id]/page.module.css';
 
 const STATUS_COLORS: Record<Client['projectStatus'], string> = {
@@ -1179,51 +1179,54 @@ export default function ClientDetailPage() {
       {/* Hero header */}
       <div className={`glass-panel ${styles.hero}`}>
         <div className={styles.heroLeft}>
-          <div className={styles.heroAvatar}>
-            {client.name.charAt(0).toUpperCase()}
+          <div className={styles.heroAvatarContainer}>
+            <div className={styles.heroAvatar}>
+              {client.name.charAt(0).toUpperCase()}
+            </div>
+            <div className={styles.avatarGlow} />
           </div>
           <div className={styles.heroInfo}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <h1 className={styles.heroName}>{client.name}</h1>
-              {client.clientId && (
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '4px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    color: 'var(--text-secondary)',
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  ID: {client.clientId}
-                </span>
-              )}
-              {client.clientUin && (
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '4px',
-                    backgroundColor: 'rgba(200, 169, 110, 0.1)',
-                    border: '1px solid rgba(200, 169, 110, 0.2)',
-                    color: 'var(--accent)',
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  UIN: {client.clientUin}
-                </span>
-              )}
+            <div className={styles.heroNameRow}>
+              <h1 className={styles.heroName}>{client.projectName || client.company || client.name}</h1>
+              <div className={styles.primaryBadges}>
+                {client.clientId && (
+                  <span className={styles.idBadge}>
+                    ID: {client.clientId}
+                  </span>
+                )}
+                {client.clientUin && (
+                  <span className={styles.uinBadge}>
+                    UIN: {client.clientUin}
+                  </span>
+                )}
+              </div>
             </div>
-            {client.company && <p className={styles.heroCompany}>{client.company}</p>}
+            {(client.projectName || client.company) && client.name !== (client.projectName || client.company) && (
+              <p className={styles.heroCompany}>
+                <User size={16} className={styles.companyIcon} />
+                {client.name}
+              </p>
+            )}
+            
             <div className={styles.heroMeta}>
-              {client.place && <span>📍 {client.place}</span>}
-              {client.email && <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}><Mail size={14} strokeWidth={1.5} />{client.email}</span>}
-              {client.phone && <span>📞 {client.phone}</span>}
+              {client.place && (
+                <div className={styles.contactPill}>
+                  <MapPin size={14} className={styles.pillIcon} />
+                  <span>{client.place}</span>
+                </div>
+              )}
+              {client.email && (
+                <div className={styles.contactPill}>
+                  <Mail size={14} className={styles.pillIcon} />
+                  <span>{client.email}</span>
+                </div>
+              )}
+              {client.phone && (
+                <div className={styles.contactPill}>
+                  <Phone size={14} className={styles.pillIcon} />
+                  <span>{client.phone}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
