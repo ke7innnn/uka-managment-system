@@ -14,6 +14,7 @@ const NAV = [
   { href: '/dashboard/staff',                 label: 'Staff',              Icon: UserCog          },
   { href: '/dashboard/workspace',             label: 'Workspace',          Icon: MessageSquare    },
   { href: '/dashboard/inbox',                 label: 'Inbox',              Icon: Inbox            },
+  { href: '/dashboard/whatsapp',              label: 'WhatsApp Replies',   Icon: MessageSquare    },
   { href: '/dashboard/performance-alerts',    label: 'Performance Alerts', Icon: Bell             },
   { href: '/dashboard/reports',               label: 'Reports',            Icon: BarChart3        },
 ];
