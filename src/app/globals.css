@@ -105,6 +105,45 @@
   --grad-amber:   linear-gradient(135deg, #b08d48 0%, #7e5c20 100%);
 }
 
+/* ── SAPPHIRE BLUE THEME ── */
+[data-theme='sapphire'] {
+  --border-active:  rgba(75, 144, 216, 0.6);
+  --accent:         #4B90D8;
+  --accent-light:   #75B3EE;
+  --accent-glow:    rgba(75, 144, 216, 0.12);
+  --accent-bg:      rgba(75, 144, 216, 0.08);
+  --primary:        var(--accent);
+  --primary-hover:  #3A7CBF;
+  --grad-accent:    linear-gradient(135deg, #4B90D8 0%, #75B3EE 100%);
+  --grad-amber:     linear-gradient(135deg, #4B90D8 0%, #2A5A8C 100%);
+}
+
+/* ── EMERALD GREEN THEME ── */
+[data-theme='emerald'] {
+  --border-active:  rgba(64, 184, 131, 0.6);
+  --accent:         #40B883;
+  --accent-light:   #6DE0AD;
+  --accent-glow:    rgba(64, 184, 131, 0.12);
+  --accent-bg:      rgba(64, 184, 131, 0.08);
+  --primary:        var(--accent);
+  --primary-hover:  #329C6D;
+  --grad-accent:    linear-gradient(135deg, #40B883 0%, #6DE0AD 100%);
+  --grad-amber:     linear-gradient(135deg, #40B883 0%, #25704E 100%);
+}
+
+/* ── AMETHYST PURPLE THEME ── */
+[data-theme='amethyst'] {
+  --border-active:  rgba(155, 89, 182, 0.6);
+  --accent:         #9B59B6;
+  --accent-light:   #C39BD3;
+  --accent-glow:    rgba(155, 89, 182, 0.12);
+  --accent-bg:      rgba(155, 89, 182, 0.08);
+  --primary:        var(--accent);
+  --primary-hover:  #8E44AD;
+  --grad-accent:    linear-gradient(135deg, #9B59B6 0%, #C39BD3 100%);
+  --grad-amber:     linear-gradient(135deg, #9B59B6 0%, #5B2C6F 100%);
+}
+
 /* ─── Reset ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

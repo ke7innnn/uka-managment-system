@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import SupabaseSyncProvider from "@/components/SupabaseSyncProvider";
 import UpdateNotification from "@/components/UpdateNotification";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,10 +30,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <SupabaseSyncProvider>
-          {children}
-        </SupabaseSyncProvider>
-        <UpdateNotification />
+        <ThemeProvider>
+          <SupabaseSyncProvider>
+            {children}
+          </SupabaseSyncProvider>
+          <UpdateNotification />
+        </ThemeProvider>
       </body>
     </html>
   );

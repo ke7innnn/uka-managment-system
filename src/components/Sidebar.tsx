@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { logout, getUnreadWorkspaceCount, getUnreadAlertsCount } from '@/lib/store';
 import styles from './Sidebar.module.css';
 import { LayoutDashboard, Users, FolderKanban, FileText, UserCog, BarChart3, LogOut, MessageSquare, Inbox, Bell, Sun, Moon, X, Receipt } from 'lucide-react';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 const NAV = [
   { href: '/dashboard',                        label: 'Dashboard',          Icon: LayoutDashboard },
@@ -24,7 +25,6 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [alertsCount, setAlertsCount] = useState(0);
   const [inboxCount, setInboxCount] = useState(0);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   const updateUnread = () => {
     setUnreadCount(getUnreadWorkspaceCount('admin'));
@@ -35,37 +35,17 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   useEffect(() => {
     updateUnread();
     
-    // Theme sync
-    const saved = localStorage.getItem('uka_theme') || 'dark';
-    setTheme(saved as 'dark' | 'light');
-    document.documentElement.setAttribute('data-theme', saved);
-
-    const handleThemeChange = () => {
-      const current = localStorage.getItem('uka_theme') || 'dark';
-      setTheme(current as 'dark' | 'light');
-    };
-    window.addEventListener('uka-theme-change', handleThemeChange);
-    
     // Recalculate on sync and read completion events
     window.addEventListener('uka-workspace-sync-complete', updateUnread);
     window.addEventListener('uka-workspace-read-complete', updateUnread);
     
     const interval = setInterval(updateUnread, 5000);
     return () => {
-      window.removeEventListener('uka-theme-change', handleThemeChange);
       window.removeEventListener('uka-workspace-sync-complete', updateUnread);
       window.removeEventListener('uka-workspace-read-complete', updateUnread);
       clearInterval(interval);
     };
   }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('uka_theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    window.dispatchEvent(new Event('uka-theme-change'));
-  };
 
   const handleLogout = () => { logout(); router.replace('/'); };
 
@@ -120,39 +100,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
       {/* Footer / Toggle & Logout */}
       <div className={styles.footer} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <button 
-          onClick={toggleTheme}
-          style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.75rem', 
-            width: '100%', 
-            padding: '0.75rem 1rem', 
-            borderRadius: '10px',
-            color: 'var(--text-secondary)',
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            justifyContent: 'flex-start'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = 'var(--text)';
-            e.currentTarget.style.borderColor = 'var(--border-hover)';
-            e.currentTarget.style.background = 'var(--bg-hover)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = 'var(--text-secondary)';
-            e.currentTarget.style.borderColor = 'var(--border)';
-            e.currentTarget.style.background = 'var(--bg-elevated)';
-          }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            {theme === 'dark' ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
-          </span>
-          <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-        </button>
+        <ThemeSwitcher />
 
         <button className={styles.logoutBtn} onClick={handleLogout}>
           <span className={styles.navIcon}><LogOut size={18} strokeWidth={1.75} /></span>
