@@ -20,7 +20,19 @@ export default function AdminWorkspacePage() {
   if (!authChecked) return null;
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '1000px', margin: '0 auto' }}>
+    <div className="workspace-page-container">
+      <style>{`
+        .workspace-page-container {
+          padding: 1.5rem;
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+        @media (max-width: 768px) {
+          .workspace-page-container {
+            padding: 0 !important;
+          }
+        }
+      `}</style>
       <WorkspaceChat 
         currentUserId="admin" 
         currentUserName="Umesh Kekre" 
