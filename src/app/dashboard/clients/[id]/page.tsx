@@ -58,8 +58,8 @@ export default function ClientDetailPage() {
     
     // 1. Generate preview
     const p1 = client.name || "Client";
-    const p2 = getProgressString(1, 16);
-    const p3 = getProgressString(17, 74);
+    const p2 = getProgressStringByIndex(0, 52);
+    const p3 = getProgressStringByIndex(53, 105);
     
     setWhatsappPreviewText(
       `Hi ${p1},\n\n` +
@@ -97,91 +97,122 @@ export default function ClientDetailPage() {
     setShowWhatsappModal(true);
   };
 
-  const getProgressString = (startId: number, endId: number) => {
+  const getProgressStringByIndex = (startIndex: number, endIndex: number) => {
     if (!client) return "";
-    const items = PROGRESS_CHECKLIST_ITEMS.filter(item => {
-      const num = parseInt(item.id, 10);
-      return num >= startId && num <= endId;
-    });
+    const items = PROGRESS_CHECKLIST_ITEMS.slice(startIndex, endIndex + 1);
 
     const current = client.progressChecklist || [];
     
     const SHORT_LABEL_MAP: Record<string, string> = {
+      "75": "Inward Copy",
       "1": "7/12 Extract",
       "2": "6/12 Mutation",
       "3": "Pikpani",
       "4": "8A Extract",
       "5": "Title Search",
       "6": "No Claim",
-      "7": "Paper Notice",
+      "7": "Papers Notice",
       "8": "Sale Permit",
       "9": "NA Order",
       "10": "Gaon Nakasha",
-      "11": "Gavthan Cert",
-      "12": "Site Survey",
-      "13": "Site Photos",
-      "14": "RR Rate Copy",
-      "15": "Gut Book",
-      "16": "TLR",
-      "17": "Soc Reg Cert",
-      "18": "Mem Consents",
-      "19": "Gharpatti",
-      "20": "Assessment",
-      "21": "Share Cert",
-      "22": "Light Bill",
-      "23": "Pan Cards",
-      "24": "Aadhar Cards",
-      "25": "Member List",
-      "26": "79A Reso",
-      "27": "79A NOC",
-      "28": "Soc Officer Reso",
-      "29": "C1 Notice",
-      "30": "Dev Agreement",
-      "31": "Power of Atty",
-      "32": "Partner Deed",
-      "33": "Firm PAN",
-      "34": "Ward No Dues",
-      "35": "Old Approval",
-      "36": "As-Built Survey",
-      "37": "Joint Soc Reso",
-      "38": "Affidavits",
-      "39": "DA/POA Auth",
-      "40": "Xerox True Copy",
-      "41": "Arch Appt",
-      "42": "Stamp Papers",
-      "43": "Zone Remark",
-      "44": "Client Photos",
-      "45": "Client KYC",
-      "46": "Client ID/Pass",
-      "47": "Client DSC",
-      "48": "OTP Mobile",
-      "49": "Permit Type",
-      "50": "Scheme Type",
-      "51": "Appendix A1",
-      "52": "Appendix B",
-      "53": "Railway NOC",
-      "54": "Arch/Eng Appt",
-      "55": "Struct Appt",
-      "56": "Struct Stability",
-      "57": "Receipt",
-      "58": "EE Report",
-      "59": "DP",
-      "60": "Tree NOC",
-      "61": "Fire NOC",
-      "62": "Level Survey",
-      "63": "Physical Survey",
-      "64": "Report & Dwg",
-      "65": "Blue Board",
-      "66": "Hardship Report",
-      "67": "Layout",
-      "68": "Specific NOC",
-      "69": "Work Status",
-      "70": "MOEF Clear",
-      "71": "RR Rate CC/RDP",
-      "72": "Right of Way",
-      "73": "EC Dwg NOC",
-      "74": "TDR Form"
+      "11": "Site Survey",
+      "12": "Site Photos",
+      "13": "RR Rate Copy",
+      "14": "Gutbook",
+      "15": "TILR",
+      "16": "Court Cases",
+      "76": "Soc Reg Cert",
+      "17": "Consents",
+      "18": "Gharpatti",
+      "19": "Assessment",
+      "20": "Share Cert",
+      "21": "Light Bill",
+      "22": "Pan Cards",
+      "23": "Aadhar Cards",
+      "24": "Tenant Papers",
+      "77": "Member List",
+      "25": "79A Reso",
+      "26": "79A NOC",
+      "27": "Soc Officer Reso",
+      "28": "C1 Notice",
+      "29": "Dev Agreement",
+      "30": "Power of Atty",
+      "31": "Partner Deed",
+      "32": "Firm PAN",
+      "33": "Ward No Dues",
+      "34": "Old Approval",
+      "35": "As-Built Survey",
+      "36": "Joint Soc Reso",
+      "37": "Affidavits",
+      "38": "DA/POA Auth",
+      "39": "Affidavits (Final)",
+      "78": "AR Appt",
+      "79": "AR Accept",
+      "80": "AR Supvn",
+      "81": "AR Licence",
+      "82": "Str Appt",
+      "83": "Str Accept",
+      "84": "Str Supvn",
+      "85": "Str Stability",
+      "86": "Str Licence",
+      "87": "Site Appt",
+      "88": "Site Accept",
+      "89": "Site Supvn",
+      "90": "Site Licence",
+      "91": "Adj Flat Aff",
+      "92": "Affidavit",
+      "93": "Balance Aff",
+      "94": "Declaration Aff",
+      "95": "Indemnity Bond",
+      "96": "OP Affidavit",
+      "97": "Self Decl",
+      "98": "Sewage Disposal",
+      "99": "Tenant Band Patr",
+      "100": "Undertaking",
+      "101": "Pratidnya Patra",
+      "102": "Tree Pratidnya",
+      "103": "Band Patra",
+      "104": "Green Zone Und",
+      "105": "EWS Affidavit",
+      "106": "5 Points Letter",
+      "107": "Appendix-A-1",
+      "51": "No Form",
+      "108": "Others",
+      "109": "Zone Remark",
+      "43": "Client Photos",
+      "44": "Client KYC",
+      "45": "Client ID/Pass",
+      "46": "Client DSC",
+      "47": "OTP Mobile",
+      "48": "Permit Type",
+      "49": "Scheme Type",
+      "50": "Appendix A1",
+      "110": "Appendix B",
+      "52": "Receipt",
+      "57": "EE Report/Dwg",
+      "111": "DP",
+      "59": "DP Remark",
+      "112": "Tree NOC",
+      "60": "Fire NOC",
+      "61": "Specific NOC",
+      "68": "Level Survey",
+      "62": "Report & Dwg",
+      "64": "Marginal",
+      "113": "Blue Board",
+      "65": "Hardship Rpt",
+      "66": "Layout",
+      "67": "Work Status",
+      "69": "MOEF Clear",
+      "70": "RR Rate CC/RDP",
+      "71": "Right of Way",
+      "72": "EC Dwg NOC",
+      "73": "TDR Form",
+      "74": "TDR DD",
+      "114": "Others (2)",
+      "115": "OTHERS"
     };
+
+
 
     return items.map(item => {
       let icon = "❌";
@@ -197,8 +228,8 @@ export default function ClientDetailPage() {
     setWhatsappSending(true);
     try {
       const p1 = client.name || "Client";
-      const p2 = getProgressString(1, 16);
-      const p3 = getProgressString(17, 74);
+      const p2 = getProgressStringByIndex(0, 52);
+      const p3 = getProgressStringByIndex(53, 105);
       
       const selected = whatsappRecipients.filter(r => r.selected);
       
@@ -1582,27 +1613,23 @@ export default function ClientDetailPage() {
 
           {/* Checklist Items Grouped */}
           {(() => {
-            // Group items based on 71 items
             const groups = [
               {
-                title: "General Land & Personal Documents (1-41)",
+                title: "Land & Personal Documents (1-56)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
-                  const num = parseInt(item.id, 10);
-                  return num <= 41;
+                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx <= 55;
                 })
               },
               {
-                title: "₹500 Stamp Paper Affidavits (42)",
+                title: "Affidavits & Undertakings (57-75)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
-                  const num = parseInt(item.id, 10);
-                  return num === 42;
+                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx >= 56 && idx <= 74;
                 })
               },
               {
-                title: "CC/RDP Approvals & NOCs (43-74)",
+                title: "Approvals, NOCs & Others (76-106)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
-                  const num = parseInt(item.id, 10);
-                  return num >= 43;
+                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx >= 75;
                 })
               }
             ];
