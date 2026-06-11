@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
 // Multi-provider waterfall: Paid Gemini → Groq Key 1 → Groq Key 2 → Free Gemini
 // Rate-limit errors return in ~100ms, so fallback is near-instant with zero UX impact.
@@ -45,6 +46,52 @@ export async function POST(req: Request) {
       return `[${(a.type || 'info').toUpperCase()}] ${a.title} - ${a.message}`;
     }).join('\n');
 
+    // Fetch WhatsApp messages from Supabase directly in the API route
+    let whatsappText = 'No messages';
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const { data: rawMessages } = await supabase
+          .from('whatsapp_messages')
+          .select('created_at, phone_number, sender_name, message_body, direction')
+          .order('created_at', { ascending: false })
+          .limit(10); // Limit to last 10 messages to keep token usage extremely low
+
+        if (rawMessages && rawMessages.length > 0) {
+          whatsappText = rawMessages.map((m: any) => {
+            const time = new Date(m.created_at).toLocaleString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              hour: '2-digit', 
+              minute: '2-digit',
+              hour12: true 
+            });
+            const dir = m.direction === 'inbound' ? 'IN' : 'OUT';
+            const fromTo = m.direction === 'inbound' ? `from ${m.phone_number}` : `to ${m.phone_number}`;
+            const name = m.sender_name ? ` (${m.sender_name})` : '';
+            
+            // Shorten template body text if it's too long
+            let body = m.message_body || '';
+            const templateMatch = body.match(/^\[Template:\s*([^\]]+)\]\s*-\s*([\s\S]*)$/);
+            if (templateMatch) {
+              const [, templateName, content] = templateMatch;
+              const parts = content.split(/,\s*/);
+              const clientName = parts[0] || 'Client';
+              body = `[Template: ${templateName}] sent to ${clientName}`;
+            } else if (body.length > 100) {
+              body = body.substring(0, 97) + '...';
+            }
+            
+            return `- ${dir} [${time}] ${fromTo}${name}: "${body}"`;
+          }).join('\n');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch whatsapp messages for chat context:', err);
+    }
+
     const systemInstruction = `
       You are Bruce Wayne, a smart AI assistant for an architecture firm.
       You must guide the Admin in their work, answer questions about their firm, suggest which projects to prioritize, and evaluate staff performance. Be professional, insightful, and act like a high-level manager.
@@ -64,6 +111,9 @@ export async function POST(req: Request) {
 
       --- STAFF PERFORMANCE ALERTS ---
       ${alertsText || 'No alerts'}
+
+      --- RECENT WHATSAPP REPLIES & PROGRESS UPDATES ---
+      ${whatsappText}
 
       CRITICAL INSTRUCTIONS FOR ACCURACY:
       1. Your answers MUST be 100% accurate and based STRICTLY on the text data provided above.
