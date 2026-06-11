@@ -23,9 +23,10 @@ export default function AdminWorkspacePage() {
     <div className="workspace-page-container">
       <style>{`
         .workspace-page-container {
-          padding: 1.5rem;
-          max-width: 1000px;
-          margin: 0 auto;
+          padding: 0;
+          max-width: 100%;
+          width: 100%;
+          margin: 0;
         }
         @media (max-width: 768px) {
           .workspace-page-container {

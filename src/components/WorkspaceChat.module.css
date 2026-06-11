@@ -1,7 +1,7 @@
 .chatContainer {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 190px);
+  height: calc(100vh - 120px);
   min-height: 500px;
   background: var(--bg-raised);
   border: 1px solid var(--border);
@@ -399,12 +399,12 @@
 /* ── Responsive Mobile ── */
 @media (max-width: 768px) {
   .chatContainer {
-    height: calc(100vh - 145px);
+    height: calc(100vh - 105px);
     border: none;
     border-radius: 0;
     box-shadow: none;
     background: transparent;
-    margin: 0 -1rem;
+    margin: -1.25rem -1rem 0 -1rem;
   }
   .chatHeader {
     padding: 0.9rem 1rem;
