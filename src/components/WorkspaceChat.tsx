@@ -176,43 +176,63 @@ export default function WorkspaceChat({ currentUserId, currentUserName, currentU
             const showHeader = i === 0 || messages[i - 1].senderId !== msg.senderId;
 
             return (
-              <div key={msg.id} className={`${styles.messageWrapper} ${isMe ? styles.isMe : ''}`}>
-                {!isMe && showHeader && (
-                  <div className={styles.avatarWrap}>
-                    <div className={`${styles.avatar} ${isAdmin ? styles.adminAvatar : ''}`}>
-                      {msg.senderName.charAt(0).toUpperCase()}
+              <div 
+                key={msg.id} 
+                className={`${styles.messageWrapper} ${isMe ? styles.isMe : ''}`}
+                style={{ 
+                  marginTop: showHeader ? '0.75rem' : '0.15rem',
+                  marginBottom: '0.15rem'
+                }}
+              >
+                {/* Inbound Avatars on the left side of the bubble */}
+                {!isMe && (
+                  showHeader ? (
+                    <div className={styles.avatarWrap}>
+                      <div className={`${styles.avatar} ${isAdmin ? styles.adminAvatar : ''}`}>
+                        {msg.senderName.charAt(0).toUpperCase()}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    // Spacer for aligned bubbles when the avatar is hidden on consecutive messages
+                    <div style={{ width: 34, flexShrink: 0 }} />
+                  )
                 )}
                 
-                <div className={styles.messageContent}>
-                  {showHeader && (
-                    <div className={styles.messageMeta}>
-                      <span className={styles.senderName}>{msg.senderName}</span>
-                      <span className={`${styles.senderRole} ${isAdmin ? styles.adminRole : ''}`}>
+                <div className={`${styles.bubble} ${isMe ? styles.myBubble : styles.theirBubble}`}>
+                  {/* Sender Name and Role tag (only for others at the start of a message group) */}
+                  {!isMe && showHeader && (
+                    <div className={styles.bubbleSenderName}>
+                      {msg.senderName}
+                      <span className={`${styles.bubbleSenderRole} ${isAdmin ? styles.adminRole : ''}`}>
                         {msg.senderRole}
                       </span>
-                      <span className={styles.time}>
-                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                      {(isMe || currentUserRole.toLowerCase().includes('admin')) && (
-                        <button 
-                          style={{ background: 'none', border: 'none', color: '#ff4d4f', cursor: 'pointer', marginLeft: 'auto', padding: '0 5px' }}
-                          onClick={() => {
-                            if (window.confirm('Delete this message for everyone?')) {
-                              deleteWorkspaceMessage(msg.id);
-                              loadMessages();
-                            }
-                          }}
-                          title="Delete message for everyone"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      )}
                     </div>
                   )}
-                  <div className={`${styles.bubble} ${isMe ? styles.myBubble : styles.theirBubble}`}>
+                  
+                  {/* Message content block */}
+                  <div className={styles.bubbleText}>
                     {renderMessageContent(msg.content)}
+                  </div>
+
+                  {/* WhatsApp/Telegram style inline bottom-right timestamp footer */}
+                  <div className={styles.bubbleFooter}>
+                    <span className={styles.bubbleTime}>
+                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                    {(isMe || currentUserRole.toLowerCase().includes('admin')) && (
+                      <button 
+                        className={styles.bubbleDeleteBtn}
+                        onClick={() => {
+                          if (window.confirm('Delete this message for everyone?')) {
+                            deleteWorkspaceMessage(msg.id);
+                            loadMessages();
+                          }
+                        }}
+                        title="Delete message for everyone"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
