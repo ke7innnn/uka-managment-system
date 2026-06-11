@@ -167,23 +167,36 @@ export async function POST(req: Request) {
     let aiMessage: string | null = null;
     let usedProvider = '';
 
-    for (const provider of providers) {
-      try {
-        console.log(`[Chat] Trying: ${provider.name}`);
-        aiMessage = await provider.call();
-        if (aiMessage) {
-          usedProvider = provider.name;
-          console.log(`[Chat] Success with: ${provider.name}`);
-          break;
-        }
-      } catch (err: any) {
-        console.warn(`[Chat] ${provider.name} threw: ${err.message}`);
+    const MAX_LOOPS = 3; // 3 full loops = up to 12 total attempts before giving up
+    const LOOP_WAIT_MS = 1500; // wait 1.5s before looping back to paid key
+
+    for (let loop = 1; loop <= MAX_LOOPS; loop++) {
+      if (loop > 1) {
+        console.log(`[Chat] All providers failed. Loop ${loop}/${MAX_LOOPS} — restarting from paid key after ${LOOP_WAIT_MS}ms...`);
+        await new Promise(r => setTimeout(r, LOOP_WAIT_MS));
       }
+
+      for (const provider of providers) {
+        try {
+          console.log(`[Chat] Loop ${loop} — Trying: ${provider.name}`);
+          aiMessage = await provider.call();
+          if (aiMessage) {
+            usedProvider = provider.name;
+            console.log(`[Chat] Loop ${loop} — Success with: ${provider.name}`);
+            break;
+          }
+        } catch (err: any) {
+          console.warn(`[Chat] Loop ${loop} — ${provider.name} threw: ${err.message}`);
+        }
+      }
+
+      if (aiMessage) break; // Got an answer, stop looping
     }
 
     if (!aiMessage) {
+      // All 3 loops exhausted — extremely unlikely scenario
       return NextResponse.json(
-        { error: 'All AI providers are currently unavailable. Please try again in a moment.' },
+        { error: 'All AI providers are temporarily overloaded. Please try again in a few seconds.' },
         { status: 503 }
       );
     }
