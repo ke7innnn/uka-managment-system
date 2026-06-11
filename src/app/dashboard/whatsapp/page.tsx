@@ -56,29 +56,44 @@ export default function WhatsappRepliesPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {messages.map(msg => {
-            const isRead = msg.status === 'read';
+            const isInbound = msg.direction !== 'outbound';
+            const isRead = msg.status === 'read' || !isInbound;
+            const isOutbound = !isInbound;
+            
             return (
               <div
                 key={msg.id}
                 className="glass-panel"
                 style={{
                   padding: '1.25rem',
-                  borderLeft: `4px solid ${isRead ? 'var(--border)' : '#6aaa84'}`,
-                  background: isRead ? 'var(--bg-raised)' : 'rgba(106,170,132,0.06)',
-                  opacity: isRead ? 0.7 : 1,
+                  borderLeft: `4px solid ${isOutbound ? '#3b82f6' : (isRead ? 'var(--border)' : '#6aaa84')}`,
+                  background: isOutbound ? 'rgba(59, 130, 246, 0.03)' : (isRead ? 'var(--bg-raised)' : 'rgba(106,170,132,0.06)'),
+                  opacity: (isRead && !isOutbound) ? 0.8 : 1,
                   display: 'flex',
                   gap: 16,
-                  alignItems: 'flex-start'
+                  alignItems: 'flex-start',
+                  marginLeft: isOutbound ? '3rem' : '0',
+                  marginRight: isInbound ? '3rem' : '0',
+                  marginBottom: '0.5rem'
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text)' }}>{msg.sender_name || 'Client'}</span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>+{msg.phone_number}</span>
-                      {!isRead && (
+                      <span style={{ fontWeight: 600, color: 'var(--text)' }}>
+                        {isOutbound ? 'UKA System' : (msg.sender_name || 'Client')}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        {isOutbound ? 'Sent to ' : ''}+{msg.phone_number}
+                      </span>
+                      {isInbound && !isRead && (
                         <span style={{ background: 'var(--accent)', color: '#000', padding: '1px 7px', borderRadius: 10, fontSize: '0.6rem', fontWeight: 700 }}>
                           NEW
+                        </span>
+                      )}
+                      {isOutbound && (
+                        <span style={{ background: 'transparent', border: '1px solid #3b82f6', color: '#3b82f6', padding: '1px 7px', borderRadius: 10, fontSize: '0.6rem', fontWeight: 600 }}>
+                          OUTBOUND
                         </span>
                       )}
                     </div>
@@ -92,13 +107,13 @@ export default function WhatsappRepliesPage() {
                   </p>
                 </div>
 
-                {!isRead && (
+                {isInbound && !isRead && (
                   <button 
                     onClick={() => markAsRead(msg.id)}
                     style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', padding: 4 }}
                     title="Mark as read"
                   >
-                    <CheckCircle2 size={18} />
+                    <CheckCircle2 size={20} />
                   </button>
                 )}
               </div>

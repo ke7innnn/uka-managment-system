@@ -59,10 +59,39 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: data }, { status: res.status });
     }
 
+    // Attempt to log the outbound message to the database for context tracking
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (supabaseUrl && supabaseKey) {
+        // We use dynamic import for createClient here, or just assume it works if we import it at top
+        // Let's use fetch directly since we don't have createClient imported in this file
+        await fetch(`${supabaseUrl}/rest/v1/whatsapp_messages`, {
+          method: 'POST',
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            phone_number: finalDest,
+            sender_name: 'UKA Admin (Sent)',
+            message_body: `[Template: ${templateName || "client_ukaprogress"}] - ${params.join(', ')}`,
+            direction: 'outbound',
+            status: 'sent'
+          })
+        });
+      }
+    } catch (dbError) {
+      console.error("Failed to log outbound message to Supabase:", dbError);
+    }
+
     return NextResponse.json({ success: true, data });
 
-  } catch (err: any) {
-    console.error("WhatsApp API Error:", err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error sending WhatsApp message:', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
