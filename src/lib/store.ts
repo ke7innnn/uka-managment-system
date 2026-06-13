@@ -219,15 +219,38 @@ export function getClients(): Client[] {
     
     let migrated = false;
     const migratedClients = clients.map(client => {
-      // Check if they have the old phases format or no phases at all
-      const hasOldPhases = !client.phases || client.phases.length === 0 || client.phases.some(p => 
-        p.name === "Stage 1 — File Preparation" || 
-        p.name === "Stage 2 — Paper Procurement" || 
-        p.name === "Stage 3 — Legal / Tree NOC" || 
+      // ── SAFE hasOldPhases check ──────────────────────────────────────────────
+      // IMPORTANT: Only migrate if the client's phases are GENUINELY old/legacy.
+      // A client is considered up-to-date if it already has 5+ phases that match
+      // the "Stage N" naming convention. The old check was dangerously broad —
+      // if ANY single phase didn't match (e.g. a custom extra stage added by admin),
+      // it would wipe ALL phases and reset them to the template, destroying all progress.
+      const hasLegacyPhaseNames = (client.phases || []).some(p =>
+        p.name === "Stage 1 — File Preparation" ||
+        p.name === "Stage 2 — Paper Procurement" ||
+        p.name === "Stage 3 — Legal / Tree NOC" ||
         p.name === "Stage 3 — Upon Obtaining Permission" ||
-        p.name.includes("1a") || p.name.includes("1b") || p.name.includes("2c") || p.name.includes("3d") || p.name.includes("3e") || p.name.includes("3f") ||
-        (!p.name.includes("Stage 1") && !p.name.includes("Stage 2") && !p.name.includes("Stage 3") && !p.name.includes("Stage 4") && !p.name.includes("Stage 5") && !p.name.includes("Stage 6"))
+        p.name.includes("1a") || p.name.includes("1b") ||
+        p.name.includes("2c") || p.name.includes("3d") ||
+        p.name.includes("3e") || p.name.includes("3f")
       );
+
+      // Count how many phases already match the current Stage 1–6 naming
+      const validStageCount = (client.phases || []).filter(p =>
+        p.name.includes("Stage 1") || p.name.includes("Stage 2") ||
+        p.name.includes("Stage 3") || p.name.includes("Stage 4") ||
+        p.name.includes("Stage 5") || p.name.includes("Stage 6")
+      ).length;
+
+      // Only trigger migration if:
+      //   1. The client has NO phases at all, OR
+      //   2. The client has explicit OLD phase names, AND
+      //   3. The client does NOT already have 5+ valid Stage 1-6 phases
+      //      (which would indicate it was already migrated and is fine)
+      const hasOldPhases =
+        !client.phases ||
+        client.phases.length === 0 ||
+        (hasLegacyPhaseNames && validStageCount < 5);
 
       let clientMigrated = false;
       let newPhases = client.phases || [];
@@ -275,10 +298,10 @@ export function getClients(): Client[] {
             };
           });
 
-            return {
-              id: matchingOld ? matchingOld.id : safeUUID(),
-              name: stage.name,
-              status,
+          return {
+            id: matchingOld ? matchingOld.id : safeUUID(),
+            name: stage.name,
+            status,
             order: idx,
             tasks,
             startedAt,
@@ -430,25 +453,39 @@ export function getClients(): Client[] {
         migrated = true;
       }
       
-      // Post-migration cleanup: remove duplicate phases caused by earlier bugs
-      // We keep the LAST phase created for each name (to ensure we keep the ones with highest ID or latest edit if they match name)
-      // Actually, since we want to keep the one that matches our template exactly, we just re-run deduplication based on exact template names.
+      // Post-migration cleanup: remove EXACT duplicate phases (same id or same name) caused by earlier bugs.
+      // IMPORTANT: Sort by `order` (not by name) so we don't scramble the stage order.
+      // IMPORTANT: We only deduplicate by name for the 6 standard template stages.
+      //            Extra custom phases added by the admin are preserved as-is.
       let finalPhases = newPhases || [];
-      if (finalPhases.length > DEFAULT_PHASES_TEMPLATE.length) {
-         // Deduplicate by name, keeping the one that has tasks/progress
-         const uniquePhases = new Map<string, any>();
-         finalPhases.forEach(p => {
-           const existing = uniquePhases.get(p.name);
-           if (!existing || (p.status !== 'not-started' && existing.status === 'not-started')) {
-             uniquePhases.set(p.name, p);
-           }
-         });
-         finalPhases = Array.from(uniquePhases.values());
-         // Sort them back to standard order
-         finalPhases.sort((a, b) => a.name.localeCompare(b.name));
-         migrated = true;
-         clientMigrated = true;
+      const standardPhaseNames = new Set(DEFAULT_PHASES_TEMPLATE.map(s => s.name));
+      const seenNames = new Map<string, any>();
+      const deduped: any[] = [];
+      finalPhases.forEach(p => {
+        if (standardPhaseNames.has(p.name)) {
+          // For standard stages, deduplicate by name, keeping the one with more progress
+          const existing = seenNames.get(p.name);
+          if (!existing) {
+            seenNames.set(p.name, p);
+            deduped.push(p);
+          } else if (p.status !== 'not-started' && existing.status === 'not-started') {
+            // Replace with the more progressed one
+            const idx = deduped.indexOf(existing);
+            if (idx !== -1) deduped[idx] = p;
+            seenNames.set(p.name, p);
+          }
+        } else {
+          // Custom (non-template) phases: always keep, never deduplicate
+          deduped.push(p);
+        }
+      });
+      if (deduped.length !== finalPhases.length) {
+        finalPhases = deduped;
+        migrated = true;
+        clientMigrated = true;
       }
+      // Sort by order field to preserve original stage sequence (NOT by name)
+      finalPhases.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
       return {
         ...client,

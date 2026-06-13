@@ -580,10 +580,18 @@ export default function ClientDetailPage() {
       .then(
         ({ data, error }) => {
           if (!error && data) {
-            // Always prefer local checklist state — Supabase data may be stale
-            // if the user just toggled a checkbox (async push hasn't completed yet)
+            // IMPORTANT: Always read the freshest local state at the moment this async
+            // callback fires (not the stale closure value from when reload() was called).
+            // The user may have made additional edits while the Supabase fetch was in-flight.
             const localClient = getClientById(params.id);
+
+            // For phases, progressChecklist, and ocChecklist we ALWAYS prefer local state.
+            // These are the fields users edit most frequently (ticking tasks, toggling checkboxes).
+            // Supabase data for these fields may be stale if the push hasn't completed yet,
+            // or if a race caused an earlier stale value to arrive after a fresh one.
+            // For display-only fields (name, email, KYC photos) Supabase is authoritative.
             const isPending = localClient?.syncStatus === 'pending';
+
             const fullClient: Client = {
               id: data.id,
               clientId: isPending ? (localClient?.clientId ?? '') : (data.client_id ?? ''),
@@ -600,14 +608,11 @@ export default function ClientDetailPage() {
               tilrStatus: isPending ? (localClient?.tilrStatus ?? 'pending') : (data.tilr_status ?? 'pending'),
               createdAt: data.created_at,
               tags: isPending ? (localClient?.tags ?? []) : (data.tags ?? []),
-              // Use local state for checklists AND phases to avoid overwriting fresh toggles
-              // (the async push to Supabase may not have completed yet)
               progressChecklist: isPending ? (localClient?.progressChecklist ?? []) : (data.progress_checklist || []),
               ocChecklist: isPending ? (localClient?.ocChecklist ?? []) : (data.oc_checklist || []),
               clientPassword: isPending ? (localClient?.clientPassword ?? '') : (data.client_password ?? ''),
               kyc: isPending ? { ...(data.kyc || {}), ...(localClient?.kyc || {}) } : (data.kyc || {}),
               naFolders: isPending ? (localClient?.naFolders ?? []) : (data.kyc?.naFolders || []),
-              // Use pending local priority if edited offline, otherwise master from Supabase kyc
               priority: isPending ? (localClient?.priority ?? 'medium') : (data.kyc?.priority ?? 'medium'),
               syncStatus: isPending ? 'pending' : 'synced',
               phases: isPending ? (localClient?.phases ?? []) : (data.phases || []).map((p: any) => ({
