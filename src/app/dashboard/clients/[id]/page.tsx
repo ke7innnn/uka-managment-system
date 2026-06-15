@@ -592,46 +592,59 @@ export default function ClientDetailPage() {
 
   const handleSendTaskTemplate = async (task: any) => {
     if (!task.templateName) return;
-    if (!client?.phone) {
-      alert("Client has no phone number set!");
-      return;
+    if (!client) return;
+
+    const uin = client.clientUin || 'N/A';
+    const cName = client.name || 'N/A';
+    const pName = client.projectName || 'N/A';
+    let params: string[] = [];
+
+    switch (task.templateName) {
+      case 'stage1_task1':
+      case 'stage1_task2':
+      case 'stage2_task1':
+      case 'stage3_task2':
+        params = [];
+        break;
+      case 'stage1_task3':
+        params = [uin, pName];
+        break;
+      case 'stage4_task1':
+      case 'stage4_task2':
+        const remark = window.prompt(`Enter the manual remark for "${task.title}":`);
+        if (remark === null) return;
+        params = [uin, remark];
+        break;
+      default:
+        params = [uin];
+        break;
     }
 
-    let params: string[] = [
-      client.clientUin || 'N/A',
-      client.name || 'N/A',
-      client.projectName || 'N/A'
+    const recs: WhatsappRecipient[] = [
+      { id: 'admin', phone: '9320297059', name: 'Umesh Admin', role: 'Admin', selected: true },
+      { id: 'dev', phone: '8087968560', name: 'Kevin Dev', role: 'Admin', selected: false }
     ];
-
-    if (task.requiresManualRemark) {
-      const remark = window.prompt(`Enter the manual remark for "${task.title}":`);
-      if (remark === null) return; // User cancelled
-      params = [client.clientUin || 'N/A', remark];
+    
+    if (client.phone) {
+      recs.push({ id: 'client_main', phone: client.phone.replace(/[^0-9]/g, ''), name: client.name || 'Main Client', role: 'Client', selected: true });
     }
-
-    setSendingTaskIds(prev => ({ ...prev, [task.id]: true }));
-    try {
-      const res = await fetch('/api/whatsapp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          destination: client.phone,
-          templateName: task.templateName,
-          params: params,
-          senderName: "UKA Admin (Sent via Task)"
-        })
+    
+    if (client.kyc?.otherOwners) {
+      client.kyc.otherOwners.forEach((o: any, i: number) => {
+        if (o.phone) recs.push({ id: `owner_${i}`, phone: o.phone.replace(/[^0-9]/g, ''), name: o.name || `Owner ${i+1}`, role: 'Owner', selected: true });
       });
-      const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.error?.error?.message || JSON.stringify(data.error) || 'Failed to send template');
-      }
-      alert(`Successfully sent WhatsApp template: ${task.templateName}`);
-    } catch (err: any) {
-      console.error(err);
-      alert(`Error sending template: ${err.message}`);
-    } finally {
-      setSendingTaskIds(prev => ({ ...prev, [task.id]: false }));
     }
+    
+    if (client.kyc?.references) {
+      client.kyc.references.forEach((r: any, i: number) => {
+        if (r.phone) recs.push({ id: `ref_${i}`, phone: r.phone.replace(/[^0-9]/g, ''), name: r.name || `Ref ${i+1}`, role: 'Reference', selected: true });
+      });
+    }
+
+    setWhatsappRecipients(recs);
+    setWhatsappPreviewText(`[Task Template: ${task.templateName}]\n\nSending variables:\n${params.length === 0 ? 'None' : params.map((p, i) => `${i+1}. ${p}`).join('\n')}`);
+    setPendingTaskTemplate({ templateName: task.templateName, params: params });
+    setShowWhatsappModal(true);
   };
 
   const reload = () => {

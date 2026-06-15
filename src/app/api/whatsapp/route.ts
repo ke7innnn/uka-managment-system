@@ -17,46 +17,65 @@ export async function POST(request: Request) {
     const cleanDestination = destination.replace(/\D/g, '');
     const finalDest = cleanDestination.startsWith('91') ? cleanDestination : `91${cleanDestination}`;
 
-    // Map the params array to Meta's expected parameters format
-    const templateParameters = params.map((paramValue: string) => ({
-      type: "text",
-      text: paramValue || " " // Meta API fails if text is empty
-    }));
+    let currentParams = [...params];
+    let res;
+    let data;
 
-    const payload = {
-      messaging_product: "whatsapp",
-      to: finalDest,
-      type: "template",
-      template: {
-        name: templateName || "client_ukaprogress",
-        language: {
-          code: "en"
+    while (currentParams.length >= 0) {
+      const templateParameters = currentParams.map((paramValue: string) => ({
+        type: "text",
+        text: paramValue || " " // Meta API fails if text is empty
+      }));
+
+      const components = currentParams.length > 0 ? [
+        {
+          type: "body",
+          parameters: templateParameters
+        }
+      ] : [];
+
+      const payload = {
+        messaging_product: "whatsapp",
+        to: finalDest,
+        type: "template",
+        template: {
+          name: templateName || "client_ukaprogress",
+          language: {
+            code: "en"
+          },
+          components: components
+        }
+      };
+
+      console.log(`Sending Meta Cloud API Payload with ${currentParams.length} params`);
+
+      res = await fetch(`https://graph.facebook.com/v19.0/${META_PHONE_NUMBER_ID}/messages`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${META_ACCESS_TOKEN}`,
+          "Content-Type": "application/json"
         },
-        components: [
-          {
-            type: "body",
-            parameters: templateParameters
-          }
-        ]
+        body: JSON.stringify(payload)
+      });
+
+      data = await res.json();
+      console.log("Meta API Response:", data);
+
+      if (res.ok) {
+        break;
+      } else {
+        const isParamError = data?.error?.code === 132000 || (data?.error?.message && data.error.message.includes("Number of parameters"));
+        if (isParamError && currentParams.length > 0) {
+          console.log(`Parameter mismatch. Retrying with ${currentParams.length - 1} parameters...`);
+          currentParams.pop();
+        } else {
+          break;
+        }
       }
-    };
+    }
 
-    console.log("Sending Meta Cloud API Payload:", JSON.stringify(payload, null, 2));
-
-    const res = await fetch(`https://graph.facebook.com/v19.0/${META_PHONE_NUMBER_ID}/messages`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${META_ACCESS_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-    console.log("Meta API Response:", data);
-
-    if (!res.ok) {
-      return NextResponse.json({ success: false, error: data }, { status: res.status });
+    if (!res || !res.ok) {
+      return NextResponse.json({ success: false, error: data }, { status: res ? res.status : 500 });
     }
 
     // Attempt to log the outbound message to the database for context tracking
