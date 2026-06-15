@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getClientById, updateClient, Client, Phase, Document as Doc, viewDocumentSafe, downloadDocumentSafe, getStaff, StaffMember, getClients, isStaffAuthenticated, PROGRESS_CHECKLIST_ITEMS, OC_CHECKLIST_ITEMS, DOCUMENT_FOLDERS as FOLDERS, CC_RDP_FOLDERS, OC_DOCUMENT_FOLDERS, getStageDefaultWorkingDays, calculateDefaultDeadline } from '@/lib/store';
 import { initStageReminders, clearStageReminders, processReminders, updateStageReminderSchedule } from '@/lib/reminders';
+import { getTemplatePreview } from '@/lib/whatsappTemplates';
 import { supabase } from '@/lib/supabase';
 import { Image, FileText, FileSpreadsheet, Video, Paperclip, Mail, User, List, FolderOpen, Eye, Download, Trash2, Pencil, Check, X, Upload, CheckCircle2, Clock, ChevronDown, Folder, Plus, CloudUpload, Loader2, ClipboardCheck, Search, MessageSquare, AlertCircle, MapPin, Phone } from 'lucide-react';
 import styles from '@/app/dashboard/clients/[id]/page.module.css';
@@ -617,8 +618,8 @@ export default function ClientDetailPage() {
     }
 
     const recs: WhatsappRecipient[] = [
-      { id: 'admin', phone: '9320297059', name: 'Umesh Admin', role: 'Admin', selected: true },
-      { id: 'dev', phone: '8087968560', name: 'Kevin Dev', role: 'Admin', selected: false }
+      { id: 'admin', phone: '9860146006', name: 'Umesh Admin', role: 'Admin', selected: true },
+      { id: 'dev', phone: '8698930978', name: 'Kevin Dev', role: 'Admin', selected: false }
     ];
     
     if (client.phone) {
@@ -638,7 +639,7 @@ export default function ClientDetailPage() {
     }
 
     setWhatsappRecipients(recs);
-    setWhatsappPreviewText(`[Task Template: ${task.templateName}]\n\nSending variables:\n${params.length === 0 ? 'None' : params.map((p, i) => `${i+1}. ${p}`).join('\n')}`);
+    setWhatsappPreviewText(getTemplatePreview(task.templateName, params));
     setPendingTaskTemplate({ templateName: task.templateName, params: params });
     setShowWhatsappModal(true);
   };
