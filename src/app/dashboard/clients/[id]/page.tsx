@@ -34,6 +34,7 @@ export default function ClientDetailPage() {
   const ccrdpFileInputRef = useRef<HTMLInputElement>(null);
   const ocDocFileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'documents' | 'progress' | 'oc' | 'oc_docs' | 'ccrdp'>('overview');
+  const [sendingTaskIds, setSendingTaskIds] = useState<Record<string, boolean>>({});
   
   // Client progress checklist search/filters & success state
   const [progressSearch, setProgressSearch] = useState('');
@@ -46,6 +47,7 @@ export default function ClientDetailPage() {
   const [whatsappPreviewText, setWhatsappPreviewText] = useState('');
   const [whatsappSending, setWhatsappSending] = useState(false);
   const [whatsappMessageType, setWhatsappMessageType] = useState<'progress' | 'oc'>('progress');
+  const [pendingTaskTemplate, setPendingTaskTemplate] = useState<{templateName: string, params: string[]} | null>(null);
   const [customPhone, setCustomPhone] = useState('');
   const [customName, setCustomName] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -310,6 +312,28 @@ export default function ClientDetailPage() {
     if (!client) return;
     setWhatsappSending(true);
     try {
+      const selected = whatsappRecipients.filter(r => r.selected);
+
+      if (pendingTaskTemplate) {
+        for (const rec of selected) {
+          if (!rec.phone || rec.phone.trim() === '') continue;
+          await fetch('/api/whatsapp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              destination: rec.phone,
+              userName: client.name || "Client",
+              senderName: 'UKA Admin (Sent via Task)',
+              params: pendingTaskTemplate.params,
+              templateName: pendingTaskTemplate.templateName
+            })
+          });
+        }
+        setShowWhatsappModal(false);
+        setPendingTaskTemplate(null);
+        alert(`Successfully sent WhatsApp template: ${pendingTaskTemplate.templateName}`);
+        return;
+      }
       const isOc = whatsappMessageType === 'oc';
       const templateName = isOc ? "ocprogress_uka" : "client_ukaprogress";
       
@@ -317,7 +341,7 @@ export default function ClientDetailPage() {
       const p2 = isOc ? getOcProgressStringByIndex(0, 11) : getProgressStringByIndex(0, 52);
       const p3 = isOc ? getOcProgressStringByIndex(12, 19) : getProgressStringByIndex(53, 105);
       
-      const selected = whatsappRecipients.filter(r => r.selected);
+      
       
       for (const rec of selected) {
         if (!rec.phone || rec.phone.trim() === '') continue;
@@ -562,6 +586,51 @@ export default function ClientDetailPage() {
       setDraggedDocId(null);
     } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       processFiles(Array.from(e.dataTransfer.files), folderId, subfolderId);
+    }
+  };
+
+
+  const handleSendTaskTemplate = async (task: any) => {
+    if (!task.templateName) return;
+    if (!client?.phone) {
+      alert("Client has no phone number set!");
+      return;
+    }
+
+    let params: string[] = [
+      client.clientUin || 'N/A',
+      client.name || 'N/A',
+      client.projectName || 'N/A'
+    ];
+
+    if (task.requiresManualRemark) {
+      const remark = window.prompt(`Enter the manual remark for "${task.title}":`);
+      if (remark === null) return; // User cancelled
+      params = [client.clientUin || 'N/A', remark];
+    }
+
+    setSendingTaskIds(prev => ({ ...prev, [task.id]: true }));
+    try {
+      const res = await fetch('/api/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          destination: client.phone,
+          templateName: task.templateName,
+          params: params,
+          senderName: "UKA Admin (Sent via Task)"
+        })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error?.error?.message || JSON.stringify(data.error) || 'Failed to send template');
+      }
+      alert(`Successfully sent WhatsApp template: ${task.templateName}`);
+    } catch (err: any) {
+      console.error(err);
+      alert(`Error sending template: ${err.message}`);
+    } finally {
+      setSendingTaskIds(prev => ({ ...prev, [task.id]: false }));
     }
   };
 
@@ -2424,6 +2493,33 @@ export default function ClientDetailPage() {
                                     <option key={s.id} value={s.name} />
                                   ))}
                                 </datalist>
+
+                                {/* WHATSAPP SEND BUTTON */}
+                                {task.templateName && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleSendTaskTemplate(task); }}
+                                    title={`Send WhatsApp Template: ${task.templateName}`}
+                                    disabled={sendingTaskIds[task.id]}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '4px',
+                                      padding: '2px 8px',
+                                      background: 'rgba(37, 211, 102, 0.1)',
+                                      border: '1px solid rgba(37, 211, 102, 0.3)',
+                                      borderRadius: '4px',
+                                      color: '#25D366',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 600,
+                                      cursor: sendingTaskIds[task.id] ? 'not-allowed' : 'pointer',
+                                      opacity: sendingTaskIds[task.id] ? 0.6 : 1
+                                    }}
+                                  >
+                                    {sendingTaskIds[task.id] ? <Loader2 size={12} className="animate-spin" /> : <MessageSquare size={12} />}
+                                    Send
+                                  </button>
+                                )}
+
                                 {task.completed && (
                                   <button
                                     onClick={(e) => { e.stopPropagation(); reassignTask(phase.id, task.id); }}
