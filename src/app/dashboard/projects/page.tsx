@@ -17,6 +17,7 @@ export default function ProjectsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -46,7 +47,8 @@ export default function ProjectsPage() {
       (c.projectName || '').toLowerCase().includes(search.toLowerCase()) ||
       (c.clientUin || '').toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter ? (c.projectStatus || 'pending') === statusFilter : true;
-    return hasProject && matchSearch && matchStatus;
+    const matchPriority = priorityFilter === 'all' || (c.priority || 'medium') === priorityFilter;
+    return hasProject && matchSearch && matchStatus && matchPriority;
   });
 
   const sortedProjects = [...withProjects].sort((a, b) => {
@@ -103,9 +105,31 @@ export default function ProjectsPage() {
                 transition: 'all 0.15s ease',
               }}
             >
-              {s === '' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1).replace('-', ' ')}
+              {s === '' ? 'All Status' : s.charAt(0).toUpperCase() + s.slice(1).replace('-', ' ')}
             </button>
           ))}
+          
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '8px',
+              border: '1px solid var(--border)',
+              background: 'var(--bg-elevated)',
+              color: 'var(--text-secondary)',
+              fontWeight: 600,
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              outline: 'none',
+              minWidth: '130px'
+            }}
+          >
+            <option value="all">All Priorities</option>
+            <option value="high">High Priority</option>
+            <option value="medium">Medium Priority</option>
+            <option value="low">Low Priority</option>
+          </select>
         </div>
       </div>
 
