@@ -9,6 +9,7 @@ import styles from '@/app/dashboard/projects/page.module.css';
 export default function StaffProjectsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
+  const [filterPriority, setFilterPriority] = useState<string>('all');
 
   useEffect(() => {
     setClients(getClients());
@@ -16,11 +17,13 @@ export default function StaffProjectsPage() {
     return () => window.removeEventListener('uka-sync-complete', () => setClients(getClients()));
   }, []);
 
-  const filteredClients = clients.filter(c => 
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    (c.projectName || '').toLowerCase().includes(search.toLowerCase()) ||
-    (c.clientUin || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredClients = clients.filter(c => {
+    const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
+      (c.projectName || '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.clientUin || '').toLowerCase().includes(search.toLowerCase());
+    const matchPriority = filterPriority === 'all' || (c.priority || 'medium') === filterPriority;
+    return matchSearch && matchPriority;
+  });
 
   // Sort active projects on top
   const sortedClients = [...filteredClients].sort((a, b) => {
@@ -58,14 +61,15 @@ export default function StaffProjectsPage() {
         </Link>
       </div>
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         <input
           type="text"
           placeholder="Search by client, project name, or UIN..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{
-            width: '100%',
+            flex: 1,
+            minWidth: '250px',
             maxWidth: '400px',
             padding: '0.75rem 1rem',
             borderRadius: '10px',
@@ -76,6 +80,26 @@ export default function StaffProjectsPage() {
             outline: 'none'
           }}
         />
+        
+        <select
+          value={filterPriority}
+          onChange={(e) => setFilterPriority(e.target.value)}
+          style={{
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            border: '1px solid var(--border)',
+            background: 'var(--bg-elevated)',
+            color: 'var(--text)',
+            fontSize: '0.9rem',
+            outline: 'none',
+            minWidth: '150px'
+          }}
+        >
+          <option value="all">All Priorities</option>
+          <option value="high">High Priority</option>
+          <option value="medium">Medium Priority</option>
+          <option value="low">Low Priority</option>
+        </select>
       </div>
 
       <div className={styles.projectGrid}>

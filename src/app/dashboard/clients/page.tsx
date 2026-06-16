@@ -18,6 +18,7 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<Client['projectStatus'] | 'all'>('all');
+  const [filterPriority, setFilterPriority] = useState<Client['priority'] | 'all'>('all');
 
   const reload = () => setClients(getClients());
 
@@ -31,7 +32,8 @@ export default function ClientsPage() {
       (c.company || '').toLowerCase().includes(search.toLowerCase()) ||
       (c.place || '').toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === 'all' || c.projectStatus === filterStatus;
-    return matchSearch && matchStatus;
+    const matchPriority = filterPriority === 'all' || (c.priority || 'medium') === filterPriority;
+    return matchSearch && matchStatus && matchPriority;
   });
 
   const handleDelete = (id: string, name: string) => {
@@ -61,16 +63,29 @@ export default function ClientsPage() {
           className={styles.searchInput}
           id="client-search"
         />
-        <div className={styles.statusFilters}>
-          {(['all', ...STATUS_OPTIONS] as const).map((s) => (
-            <button
-              key={s}
-              className={`${styles.filterBtn} ${filterStatus === s ? styles.filterActive : ''}`}
-              onClick={() => setFilterStatus(s)}
-            >
-              {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1).replace('-', ' ')}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div className={styles.statusFilters}>
+            {(['all', ...STATUS_OPTIONS] as const).map((s) => (
+              <button
+                key={s}
+                className={`${styles.filterBtn} ${filterStatus === s ? styles.filterActive : ''}`}
+                onClick={() => setFilterStatus(s)}
+              >
+                {s === 'all' ? 'All Status' : s.charAt(0).toUpperCase() + s.slice(1).replace('-', ' ')}
+              </button>
+            ))}
+          </div>
+          <div className={styles.statusFilters}>
+            {(['all', 'high', 'medium', 'low'] as const).map((p) => (
+              <button
+                key={p}
+                className={`${styles.filterBtn} ${filterPriority === p ? styles.filterActive : ''}`}
+                onClick={() => setFilterPriority(p)}
+              >
+                {p === 'all' ? 'All Priorities' : p.charAt(0).toUpperCase() + p.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
