@@ -288,24 +288,36 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
       });
       router.push(successRedirect ?? '/dashboard/clients');
     } else {
-      updateClient(client!.id, {
-        name: form.name.trim(),
-        clientId: form.clientId.trim() || undefined,
-        clientUin: form.clientUin.trim() || undefined,
-        clientPassword: form.clientPassword.trim() || undefined,
-        company: form.company.trim() || undefined,
-        email: form.email.trim() || undefined,
-        phone: form.phone.trim() || undefined,
-        place: form.place.trim() || undefined,
-        address: form.address.trim() || undefined,
-        notes: form.notes.trim() || undefined,
-        tags,
-        projectName: form.projectName.trim() || undefined,
-        projectStatus: form.projectStatus,
-        priority: form.priority,
-        tilrStatus: form.tilrStatus,
-        kyc: kycData,
-      });
+      const updates: Partial<Client> = {};
+      
+      const checkUpdate = (key: keyof Client, newValue: any, originalValue: any) => {
+        if (JSON.stringify(newValue) !== JSON.stringify(originalValue)) {
+          (updates as any)[key] = newValue;
+        }
+      };
+
+      checkUpdate('name', form.name.trim(), client!.name);
+      checkUpdate('clientId', form.clientId.trim() || undefined, client!.clientId);
+      checkUpdate('clientUin', form.clientUin.trim() || undefined, client!.clientUin);
+      checkUpdate('clientPassword', form.clientPassword.trim() || undefined, client!.clientPassword);
+      checkUpdate('company', form.company.trim() || undefined, client!.company);
+      checkUpdate('email', form.email.trim() || undefined, client!.email);
+      checkUpdate('phone', form.phone.trim() || undefined, client!.phone);
+      checkUpdate('place', form.place.trim() || undefined, client!.place);
+      checkUpdate('address', form.address.trim() || undefined, client!.address);
+      checkUpdate('notes', form.notes.trim() || undefined, client!.notes);
+      checkUpdate('tags', tags, client!.tags || []);
+      checkUpdate('projectName', form.projectName.trim() || undefined, client!.projectName);
+      checkUpdate('projectStatus', form.projectStatus, client!.projectStatus);
+      checkUpdate('priority', form.priority, client!.priority || 'medium');
+      checkUpdate('tilrStatus', form.tilrStatus, client!.tilrStatus || 'pending');
+      checkUpdate('kyc', kycData, client!.kyc || {});
+
+      // Only call updateClient if something actually changed
+      if (Object.keys(updates).length > 0) {
+        updateClient(client!.id, updates);
+      }
+      
       router.push(successRedirect ?? `/dashboard/clients/${client!.id}`);
     }
   };

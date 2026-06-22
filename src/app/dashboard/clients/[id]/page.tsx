@@ -62,8 +62,8 @@ export default function ClientDetailPage() {
     
     // 1. Generate preview
     const p1 = client.name || "Client";
-    const p2 = getProgressStringByIndex(0, 52);
-    const p3 = getProgressStringByIndex(53, 105);
+    const p2 = getProgressStringByIndex(0, 53);
+    const p3 = getProgressStringByIndex(54, 107);
     
     setWhatsappPreviewText(
       `Hi ${p1},\n\n` +
@@ -108,26 +108,114 @@ export default function ClientDetailPage() {
     const current = client.ocChecklist || [];
     
     const SHORT_LABEL_MAP: Record<string, string> = {
-      "107": "Appendix G",
-      "108": "Completion Dwg",
-      "109": "Stability Cert",
-      "110": "Adequacy Cert",
-      "111": "Fire NOC",
-      "112": "Water NOC",
-      "113": "STP Cert",
-      "114": "Encroachment NOC",
-      "115": "Tree NOC",
-      "116": "Tax NOC",
-      "117": "Lift NOC",
-      "118": "Storm Water NOC",
-      "119": "Appendix J",
-      "120": "Solar System",
-      "121": "Rainwater Harvesting",
-      "122": "Organic Disposal",
-      "123": "CCTV System",
-      "124": "Tenements Handover",
-      "125": "Parking Cert",
-      "126": "MPCB Consent"
+      "1": "Inward Copy",
+      "2": "7/12 & Prop Card",
+      "3": "Pikpani",
+      "4": "Pikpani",
+      "5": "8A Extract",
+      "6": "Title Search",
+      "7": "No Claim",
+      "8": "Papers Notice",
+      "9": "Sale Permit",
+      "10": "NA Order",
+      "11": "Gaon Nakasha",
+      "12": "Gavthan Cert",
+      "13": "Site Survey",
+      "14": "Site Photos",
+      "15": "RR Rate Copy",
+      "16": "Gutbook",
+      "17": "TILR",
+      "18": "Court Cases",
+      "19": "Soc Reg Cert",
+      "20": "Consents",
+      "21": "Gharpatti",
+      "22": "Assessment",
+      "23": "Share Cert",
+      "24": "Light Bill",
+      "25": "Pan Cards",
+      "26": "Aadhar Cards",
+      "27": "Tenant Papers",
+      "28": "Member List",
+      "29": "79A Reso",
+      "30": "79A NOC",
+      "31": "Soc Officer Reso",
+      "32": "C1 Notice",
+      "33": "Dev Agreement",
+      "34": "Power of Atty",
+      "35": "Partner Deed",
+      "36": "Firm PAN",
+      "37": "Ward No Dues",
+      "38": "Old Approval",
+      "39": "As-Built Survey",
+      "40": "Joint Soc Reso",
+      "41": "Affidavits",
+      "42": "DA/POA Auth",
+      "43": "Affidavits (Final)",
+      "44": "Resign NOC",
+      "45": "AR Appt",
+      "46": "AR Accept",
+      "47": "AR Supvn",
+      "48": "AR Licence",
+      "49": "Str Appt",
+      "50": "Str Accept",
+      "51": "Str Supvn",
+      "52": "Str Stability",
+      "53": "Str Licence",
+      "54": "Site Appt",
+      "55": "Site Accept",
+      "56": "Site Supvn",
+      "57": "Site Licence",
+      "58": "Adj Flat Aff",
+      "59": "Affidavit",
+      "60": "Balance Aff",
+      "61": "Declaration Aff",
+      "62": "Indemnity Bond",
+      "63": "OP Affidavit",
+      "64": "Self Decl",
+      "65": "Sewage Disposal",
+      "66": "Tenant Band Patr",
+      "67": "Undertaking",
+      "68": "Pratidnya Patra",
+      "69": "Tree Pratidnya",
+      "70": "Band Patra",
+      "71": "Green Zone Und",
+      "72": "EWS Affidavit",
+      "73": "5 Points Letter",
+      "74": "Appendix-A-1",
+      "75": "No Form",
+      "76": "Legal Noting",
+      "77": "Others",
+      "78": "Zone Remark",
+      "79": "Client Photos",
+      "80": "Client KYC",
+      "81": "Client ID/Pass",
+      "82": "Client DSC",
+      "83": "OTP Mobile",
+      "84": "Permit Type",
+      "85": "Scheme Type",
+      "86": "Appendix A1",
+      "87": "Appendix B",
+      "88": "Receipt",
+      "89": "DP",
+      "90": "DP Remark",
+      "91": "Tree NOC",
+      "92": "Fire NOC",
+      "93": "Specific NOC",
+      "94": "Level Survey",
+      "95": "Report & Dwg",
+      "96": "Marginal",
+      "97": "EE Report/Dwg",
+      "98": "Blue Board",
+      "99": "Hardship Rpt",
+      "100": "Layout",
+      "101": "Work Status",
+      "102": "MOEF Clear",
+      "103": "RR Rate CC/RDP",
+      "104": "Right of Way",
+      "105": "EC Dwg NOC",
+      "106": "TDR Form",
+      "107": "TDR DD",
+      "108": "Others (2)",
     };
 
     return items.map(item => {
@@ -339,8 +427,8 @@ export default function ClientDetailPage() {
       const templateName = isOc ? "ocprogress_uka" : "client_ukaprogress";
       
       const p1 = client.name || "Client";
-      const p2 = isOc ? getOcProgressStringByIndex(0, 11) : getProgressStringByIndex(0, 52);
-      const p3 = isOc ? getOcProgressStringByIndex(12, 19) : getProgressStringByIndex(53, 105);
+      const p2 = isOc ? getOcProgressStringByIndex(0, 11) : getProgressStringByIndex(0, 53);
+      const p3 = isOc ? getOcProgressStringByIndex(12, 19) : getProgressStringByIndex(54, 107);
       
       
       
@@ -1791,19 +1879,19 @@ export default function ClientDetailPage() {
           {(() => {
             const groups = [
               {
-                title: "Land & Personal Documents (1-56)",
+                title: "Land & Personal Documents (1-57)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
-                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx <= 55;
+                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx <= 56;
                 })
               },
               {
-                title: "Affidavits & Undertakings (57-75)",
+                title: "Affidavits & Undertakings (58-75)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
-                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx >= 56 && idx <= 74;
+                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx >= 57 && idx <= 74;
                 })
               },
               {
-                title: "Approvals, NOCs & Others (76-106)",
+                title: "Approvals, NOCs & Others (76-108)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
                   const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx >= 75;
                 })
