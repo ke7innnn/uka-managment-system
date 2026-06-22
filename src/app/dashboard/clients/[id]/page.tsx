@@ -62,8 +62,8 @@ export default function ClientDetailPage() {
     
     // 1. Generate preview
     const p1 = client.name || "Client";
-    const p2 = getProgressStringByIndex(0, 53);
-    const p3 = getProgressStringByIndex(54, 107);
+    const p2 = getProgressStringByIndex(0, 52);
+    const p3 = getProgressStringByIndex(53, 107);
     
     setWhatsappPreviewText(
       `Hi ${p1},\n\n` +
@@ -182,8 +182,8 @@ export default function ClientDetailPage() {
       "72": "EWS Affidavit",
       "73": "5 Points Letter",
       "74": "Appendix-A-1",
-      "75": "No Form",
-      "76": "Legal Noting",
+      "75": "Legal Noting",
+      "76": "No Form",
       "77": "Others",
       "78": "Zone Remark",
       "79": "Client Photos",
@@ -202,9 +202,9 @@ export default function ClientDetailPage() {
       "92": "Fire NOC",
       "93": "Specific NOC",
       "94": "Level Survey",
-      "95": "Report & Dwg",
-      "96": "Marginal",
-      "97": "EE Report/Dwg",
+      "95": "EE Report/Dwg",
+      "96": "Report & Dwg",
+      "97": "Marginal",
       "98": "Blue Board",
       "99": "Hardship Rpt",
       "100": "Layout",
@@ -427,8 +427,8 @@ export default function ClientDetailPage() {
       const templateName = isOc ? "ocprogress_uka" : "client_ukaprogress";
       
       const p1 = client.name || "Client";
-      const p2 = isOc ? getOcProgressStringByIndex(0, 11) : getProgressStringByIndex(0, 53);
-      const p3 = isOc ? getOcProgressStringByIndex(12, 19) : getProgressStringByIndex(54, 107);
+      const p2 = isOc ? getOcProgressStringByIndex(0, 11) : getProgressStringByIndex(0, 52);
+      const p3 = isOc ? getOcProgressStringByIndex(12, 19) : getProgressStringByIndex(53, 107);
       
       
       
@@ -1885,15 +1885,15 @@ export default function ClientDetailPage() {
                 })
               },
               {
-                title: "Affidavits & Undertakings (58-75)",
+                title: "Affidavits & Undertakings (58-77)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
-                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx >= 57 && idx <= 74;
+                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx >= 57 && idx <= 76;
                 })
               },
               {
-                title: "Approvals, NOCs & Others (76-108)",
+                title: "Approvals, NOCs & Others (78-108)",
                 items: PROGRESS_CHECKLIST_ITEMS.filter(item => {
-                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx >= 75;
+                  const idx = PROGRESS_CHECKLIST_ITEMS.findIndex(i => i.id === item.id); return idx >= 77;
                 })
               }
             ];
