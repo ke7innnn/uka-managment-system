@@ -473,20 +473,10 @@ export function getClients(): Client[] {
           newChecklist.push(shiftId(id));
         });
         uniqueMigratedChecklist = [...new Set([...newChecklist, "MIGRATED_V2", "MIGRATED_V3", "MIGRATED_V4"])];
-        
-        if (client.documents && Array.isArray(client.documents)) {
-          client.documents.forEach(doc => {
-            if (doc.folder) {
-              const prefix = doc.folder.startsWith('cp-') ? 'cp-' : (doc.folder.startsWith('oc-') ? 'oc-' : '');
-              if (prefix) {
-                const baseId = doc.folder.replace(prefix, '');
-                doc.folder = `${prefix}${shiftId(baseId)}`;
-              } else {
-                 doc.folder = shiftId(doc.folder);
-              }
-            }
-          });
+        if (client.ocChecklist) {
+           client.ocChecklist = client.ocChecklist.map(id => shiftId(id));
         }
+
         clientMigrated = true;
       }
 
