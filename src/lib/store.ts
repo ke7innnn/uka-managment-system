@@ -476,36 +476,17 @@ export function getClients(): Client[] {
         
         if (client.documents && Array.isArray(client.documents)) {
           client.documents.forEach(doc => {
-            if (doc.folderId) {
-              const prefix = doc.folderId.startsWith('cp-') ? 'cp-' : (doc.folderId.startsWith('oc-') ? 'oc-' : '');
+            if (doc.folder) {
+              const prefix = doc.folder.startsWith('cp-') ? 'cp-' : (doc.folder.startsWith('oc-') ? 'oc-' : '');
               if (prefix) {
-                const baseId = doc.folderId.replace(prefix, '');
-                doc.folderId = `${prefix}${shiftId(baseId)}`;
+                const baseId = doc.folder.replace(prefix, '');
+                doc.folder = `${prefix}${shiftId(baseId)}`;
               } else {
-                 doc.folderId = shiftId(doc.folderId);
+                 doc.folder = shiftId(doc.folder);
               }
             }
           });
         }
-        
-        if (newPhases && Array.isArray(newPhases)) {
-          newPhases.forEach(phase => {
-            if (phase.documents && Array.isArray(phase.documents)) {
-              phase.documents.forEach(doc => {
-                if (doc.folderId) {
-                  const prefix = doc.folderId.startsWith('cp-') ? 'cp-' : (doc.folderId.startsWith('oc-') ? 'oc-' : '');
-                  if (prefix) {
-                    const baseId = doc.folderId.replace(prefix, '');
-                    doc.folderId = `${prefix}${shiftId(baseId)}`;
-                  } else {
-                     doc.folderId = shiftId(doc.folderId);
-                  }
-                }
-              });
-            }
-          });
-        }
-
         clientMigrated = true;
       }
 
