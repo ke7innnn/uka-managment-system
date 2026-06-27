@@ -441,11 +441,81 @@ export function getClients(): Client[] {
         clientMigrated = true;
       }
 
+      // MIGRATION V4: Fix numbering offset for RESIGN NOC, LEGAL NOTING, EE REPORT
+      if (!isChecklistMigrated || !originalChecklist.includes("MIGRATED_V4")) {
+        const shiftId = (oldIdStr: string) => {
+          if (!oldIdStr) return oldIdStr;
+          
+          const isNA = oldIdStr.endsWith("-NA");
+          const baseStr = isNA ? oldIdStr.replace("-NA", "") : oldIdStr;
+          
+          const oldId = parseInt(baseStr);
+          if (isNaN(oldId)) return oldIdStr;
+          
+          let newId = oldId;
+          if (oldId >= 1 && oldId <= 43) newId = oldId;
+          else if (oldId >= 44 && oldId <= 73) newId = oldId + 1;
+          else if (oldId === 74) newId = 76;
+          else if (oldId >= 75 && oldId <= 86) newId = oldId + 2;
+          else if (oldId === 87) newId = 95;
+          else if (oldId >= 88 && oldId <= 93) newId = oldId + 1;
+          else if (oldId === 94) newId = 96;
+          else if (oldId === 95) newId = 97;
+          else if (oldId >= 96 && oldId <= 106) newId = oldId + 2;
+          else if (oldId >= 107) newId = oldId + 2;
+          
+          return isNA ? `${newId}-NA` : `${newId}`;
+        };
+
+        let newChecklist: string[] = [];
+        uniqueMigratedChecklist.forEach(id => {
+          if (id === "MIGRATED_V2" || id === "MIGRATED_V3" || id === "MIGRATED_V4") return;
+          newChecklist.push(shiftId(id));
+        });
+        uniqueMigratedChecklist = [...new Set([...newChecklist, "MIGRATED_V2", "MIGRATED_V3", "MIGRATED_V4"])];
+        
+        if (client.documents && Array.isArray(client.documents)) {
+          client.documents.forEach(doc => {
+            if (doc.folderId) {
+              const prefix = doc.folderId.startsWith('cp-') ? 'cp-' : (doc.folderId.startsWith('oc-') ? 'oc-' : '');
+              if (prefix) {
+                const baseId = doc.folderId.replace(prefix, '');
+                doc.folderId = `${prefix}${shiftId(baseId)}`;
+              } else {
+                 doc.folderId = shiftId(doc.folderId);
+              }
+            }
+          });
+        }
+        
+        if (newPhases && Array.isArray(newPhases)) {
+          newPhases.forEach(phase => {
+            if (phase.documents && Array.isArray(phase.documents)) {
+              phase.documents.forEach(doc => {
+                if (doc.folderId) {
+                  const prefix = doc.folderId.startsWith('cp-') ? 'cp-' : (doc.folderId.startsWith('oc-') ? 'oc-' : '');
+                  if (prefix) {
+                    const baseId = doc.folderId.replace(prefix, '');
+                    doc.folderId = `${prefix}${shiftId(baseId)}`;
+                  } else {
+                     doc.folderId = shiftId(doc.folderId);
+                  }
+                }
+              });
+            }
+          });
+        }
+
+        clientMigrated = true;
+      }
+
       // Filter to keep only valid checklist IDs
       const VALID_IDS = new Set([
         ...PROGRESS_CHECKLIST_ITEMS.map(item => item.id),
+        ...OC_CHECKLIST_ITEMS.map(item => item.id),
         "MIGRATED_V2",
-        "MIGRATED_V3"
+        "MIGRATED_V3",
+        "MIGRATED_V4"
       ]);
       uniqueMigratedChecklist = uniqueMigratedChecklist.filter(id => 
         VALID_IDS.has(id) || (id.endsWith('-NA') && VALID_IDS.has(id.replace('-NA', '')))
