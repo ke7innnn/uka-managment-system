@@ -1288,28 +1288,28 @@ export const PROGRESS_CHECKLIST_ITEMS = [
 
 export const OC_CHECKLIST_ITEMS = [
   // MANDATORY
-  { id: "107", label: "APPENDIX G", type: "mandatory" },
-  { id: "108", label: "COMPLETION DRAWING", type: "mandatory" },
-  { id: "109", label: "RCC STABILITY CERTIFICATE FROM STRUCTURAL ENGINEER", type: "mandatory" },
-  { id: "110", label: "STRUCTURAL DESIGN ADEQUACY (CERTIFICATE AS PER APPENDIX C-4.3)", type: "mandatory" },
-  { id: "111", label: "NOC FROM FIRE DEPARTMENT FOR OCCUPATION", type: "mandatory" },
-  { id: "112", label: "NOC FROM WATER SUPPLY DEPARTMENT", type: "mandatory" },
-  { id: "113", label: "COMPLETION CERTIFICATE FOR SEWAGE TREATMENT PLANT (STP) FROM DRAINAGE DEPARTMENT", type: "mandatory" },
-  { id: "114", label: "ENCROACHMENT DEPARTMENT NOC", type: "mandatory" },
-  { id: "115", label: "NOC FROM TREE AUTHORITY", type: "mandatory" },
-  { id: "116", label: "TAX NOC", type: "mandatory" },
-  { id: "117", label: "LIFT NOC", type: "mandatory" },
-  { id: "118", label: "COMPLETION CERTIFICATE NOC FROM STORM WATER DEPARTMENT", type: "mandatory" },
+  { id: "109", label: "APPENDIX G", type: "mandatory" },
+  { id: "110", label: "COMPLETION DRAWING", type: "mandatory" },
+  { id: "111", label: "RCC STABILITY CERTIFICATE FROM STRUCTURAL ENGINEER", type: "mandatory" },
+  { id: "112", label: "STRUCTURAL DESIGN ADEQUACY (CERTIFICATE AS PER APPENDIX C-4.3)", type: "mandatory" },
+  { id: "113", label: "NOC FROM FIRE DEPARTMENT FOR OCCUPATION", type: "mandatory" },
+  { id: "114", label: "NOC FROM WATER SUPPLY DEPARTMENT", type: "mandatory" },
+  { id: "115", label: "COMPLETION CERTIFICATE FOR SEWAGE TREATMENT PLANT (STP) FROM DRAINAGE DEPARTMENT", type: "mandatory" },
+  { id: "116", label: "ENCROACHMENT DEPARTMENT NOC", type: "mandatory" },
+  { id: "117", label: "NOC FROM TREE AUTHORITY", type: "mandatory" },
+  { id: "118", label: "TAX NOC", type: "mandatory" },
+  { id: "119", label: "LIFT NOC", type: "mandatory" },
+  { id: "120", label: "COMPLETION CERTIFICATE NOC FROM STORM WATER DEPARTMENT", type: "mandatory" },
 
   // OPTIONAL
-  { id: "119", label: "APPENDIX – J FOR OCCUPANCY (INDEMNITY BOND)", type: "optional" },
-  { id: "120", label: "SOLAR WATER HEATING SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
-  { id: "121", label: "RAIN WATER HARVESTING SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
-  { id: "122", label: "ORGANIC WATER DISPOSAL SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
-  { id: "123", label: "CCTV SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
-  { id: "124", label: "HANDOVER RECEIPT OF BUILT-UP AMENITY / INCLUSIVE HOUSING TENEMENTS", type: "optional" },
-  { id: "125", label: "CERTIFICATE FROM ARCHITECT REGARDING NO. OF PARKINGS REQUIRED FOR THE PROPOSED BUILDING AND AVAILABLE AS PER BUILT PLAN", type: "optional" },
-  { id: "126", label: "CONSENT TO OPERATE FROM MPCB (POLLUTION CONTROL BOARD NOC)", type: "optional" }
+  { id: "121", label: "APPENDIX – J FOR OCCUPANCY (INDEMNITY BOND)", type: "optional" },
+  { id: "122", label: "SOLAR WATER HEATING SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
+  { id: "123", label: "RAIN WATER HARVESTING SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
+  { id: "124", label: "ORGANIC WATER DISPOSAL SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
+  { id: "125", label: "CCTV SYSTEM COMPLETION CERTIFICATE / PHOTOGRAPHS", type: "optional" },
+  { id: "126", label: "HANDOVER RECEIPT OF BUILT-UP AMENITY / INCLUSIVE HOUSING TENEMENTS", type: "optional" },
+  { id: "127", label: "CERTIFICATE FROM ARCHITECT REGARDING NO. OF PARKINGS REQUIRED FOR THE PROPOSED BUILDING AND AVAILABLE AS PER BUILT PLAN", type: "optional" },
+  { id: "128", label: "CONSENT TO OPERATE FROM MPCB (POLLUTION CONTROL BOARD NOC)", type: "optional" }
 ];
 
 export const DOCUMENT_FOLDERS = [
