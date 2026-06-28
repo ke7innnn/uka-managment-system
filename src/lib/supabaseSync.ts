@@ -129,20 +129,43 @@ export async function pullFromSupabase() {
 
     const mergedClientsMap = new Map<string, Client>();
     activeSupabaseClients.forEach(c => mergedClientsMap.set(c.id, c));
-    pendingLocalClients.forEach(c => mergedClientsMap.set(c.id, c)); // pending local takes precedence
+    
+    pendingLocalClients.forEach(c => {
+      const existing = mergedClientsMap.get(c.id);
+      if (existing) {
+        // FIELD-LEVEL MERGE: Only overwrite Supabase data with fields the user explicitly edited locally
+        const merged = { ...existing };
+        const pending = c.pendingFields || [];
+        
+        pending.forEach(key => {
+          (merged as any)[key] = (c as any)[key];
+        });
+        
+        // Ensure nested KYC fields merge correctly if modified
+        if (pending.includes('kyc') || pending.includes('clientUin') || pending.includes('naFolders') || pending.includes('priority')) {
+          merged.kyc = { ...existing.kyc, ...c.kyc };
+        }
+        
+        // Legacy support: preserve local priority if remote is missing
+        if (c.priority && !existing.kyc?.priority && !merged.kyc?.priority) {
+          merged.priority = c.priority;
+        }
+
+        // Preserve sync status so pushClientsToSupabase knows to push it
+        merged.syncStatus = c.syncStatus;
+        merged.pendingFields = c.pendingFields;
+        
+        mergedClientsMap.set(c.id, merged);
+      } else {
+        mergedClientsMap.set(c.id, c); // It's a brand new offline client
+      }
+    });
 
     const mergedStaffMap = new Map<string, StaffMember>();
     activeSupabaseStaff.forEach(s => mergedStaffMap.set(s.id, s));
     pendingLocalStaff.forEach(s => mergedStaffMap.set(s.id, s));
 
-    const mergedClients = Array.from(mergedClientsMap.values()).map(c => {
-      // Legacy support: if Supabase doesn't have a priority in kyc yet, but local does, keep local
-      const localVersion = localClients.find(lc => lc.id === c.id);
-      if (localVersion?.priority && !c.kyc?.priority) {
-        return { ...c, priority: localVersion.priority };
-      }
-      return c;
-    });
+    const mergedClients = Array.from(mergedClientsMap.values());
     const mergedStaff = Array.from(mergedStaffMap.values());
 
     localStorage.setItem('uka_clients', JSON.stringify(stripLargeBase64(mergedClients)));
