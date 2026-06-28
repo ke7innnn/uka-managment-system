@@ -480,13 +480,149 @@ export function getClients(): Client[] {
         clientMigrated = true;
       }
 
+      // MIGRATION V5: Explicit Document Semantic Match
+      // Forces all incorrectly shifted documents to exactly map back to the correct folders
+      // based on their name keywords, preventing stale localStorage from corrupting Supabase.
+      if (!isChecklistMigrated || !originalChecklist.includes("MIGRATED_V5")) {
+        const getFolderForDoc = (name: string): string | null => {
+          if (!name) return null;
+          const n = name.toUpperCase().replace(/\.PDF$/i,'').trim();
+          const has = (...words: string[]) => words.every(w => n.includes(w));
+          const hasAny = (...words: string[]) => words.some(w => n.includes(w));
+
+          if (n === 'REMOVE' || n === 'REMOV') return null;
+
+          if (has('STR') && has('STAB'))    return '52';
+          if (has('STR') && hasAny('ACC', 'ACCEPT'))  return '50';
+          if (has('STR') && hasAny('SUPER', 'SUPERVIS'))  return '51';
+          if (has('STR') && hasAny('APPOINT', 'APP'))     return '49';
+          if (has('STR') && hasAny('LIC', 'LICEN'))       return '53';
+          
+          if (has('AR') && hasAny('ACC', 'ACCEPT'))  return '46';
+          if (has('AR') && hasAny('SUPER', 'SUPERVIS'))  return '47';
+          if (has('AR') && hasAny('APPOINT', 'APP'))      return '45';
+          if (has('AR') && hasAny('LIC', 'LICEN'))        return '48';
+          if (has('UK LIC') || (has('U K') && has('LIC'))) return '53';
+          
+          if (has('SITE') && hasAny('ACC', 'ACCEPT'))      return '55';
+          if (has('SITE') && hasAny('SUPER', 'SUPERVIS'))  return '56';
+          if (has('SITE') && hasAny('LIC', 'LICEN'))       return '57';
+          if (has('SITE') && hasAny('APPOINT', 'APP') && !has('ASSIGNMENT')) return '54';
+          
+          if (has('RESIGN'))  return '44';
+          
+          if (has('EWS') && has('AFF'))    return '72';
+          if (has('ADJOIN'))               return '58';
+          if (has('OP') && has('AFF'))     return '63';
+          if (has('BALANCE') && has('AFF')) return '60';
+          if (has('BALANCE') && has('PAPER')) return '60';
+          if (has('INDEMNITY') && has('BOND')) return '62';
+          if (has('SELF') && has('DECLAR')) return '64';
+          if (has('DECLAR') && has('AFF')) return '61';
+          if (has('DECLAR'))               return '61';
+          if (has('SEWAGE'))               return '65';
+          if (has('SELF') && has('DECL'))  return '64';
+          
+          if (hasAny('TENET BHAND', 'TENANT BAND', 'TENTENT', 'TENENT BHAND')) return '66';
+          if (hasAny('BANDHAPATR', 'BHANDPATR', 'BANDHPATR', 'BANDH PATRA', 'BHANDA PATRA', 'BHANDHPATRA', 'BANDHPATRA', 'BANDHPATAR', 'BAND PATRA'))  return '70';
+          
+          if (has('GREEN') && has('ZONE') && has('UNDER')) return '71';
+          if (has('UNDER') && has('NOT') && has('ENCLOS')) return '67';
+          if (has('SW') && has('UNDER'))   return '67';
+          if (has('UNDER') && has('SUBMIT')) return '67';
+          if (has('UNDERTAKING') || has('UNDERTAKIN')) return '67';
+          
+          if (has('TREE') && has('PRATIDNYA')) return '69';
+          if (has('TREE') && has('AFF'))       return '69';
+          if (hasAny('PRATIDNYA PATR', 'PRATIDNYAPATR')) return '68';
+          
+          if (hasAny('5 POINT', '5POINT', 'FIVE POINT')) return '73';
+          
+          if (has('APPENDIX') && hasAny('A 1', 'A1', 'A-1')) return '74';
+          if (has('APPENDIX') && has('B'))   return '87';
+          if (has('APPENDIX') && has('A') && !has('1')) return '86';
+          if (has('APPENDIX') && has('G'))   return null;
+          
+          if (has('LEGAL') && has('NOTING')) return '75';
+          if (n === 'NO FORM' || has('NO FORM')) return '76';
+          if (has('ZONE') && hasAny('DAKHALA', 'DHAKLA', 'REMARK', 'DHAKL')) return '78';
+          
+          if (has('DP') && hasAny('NOTING', 'REMARK')) return '90';
+          if (n === 'DP' || n === 'DP PDF' || (has('DP') && n.length <= 10)) return '89';
+          
+          if (has('TREE') && has('NOC') && !has('PROV')) return '91';
+          if (has('FIRE') && has('NOC') && !has('PROV')) return '92';
+          if (has('PROVISIONAL') && has('TREE')) return '91';
+          if (has('PROVISIONAL') && has('FIRE')) return '92';
+          
+          if (has('RR RATE') || (has('RR') && has('RATE'))) return '15';
+          if (has('INWARD') || has('INWORD')) return '1';
+          if (has('7/12') || has('7 12') || has('SATBARA')) return '2';
+          if (has('PIKPANI')) return '4';
+          if ((has('8A') || has('AATH A')) && has('EXTRACT')) return '5';
+          if (has('AATH') && has('A')) return '5';
+          if (has('TITLE') && hasAny('SEARCH', 'REPORT')) return '6';
+          if (has('NO CLAIM')) return '7';
+          if (hasAny('PAPER NOTICE', 'PEPAR NOTICE', 'PAPERS NOTICE')) return '8';
+          if ((has('NA') && has('ORDER')) || (has('NA') && has('GR') && !has('GRAM'))) return '10';
+          if (hasAny('GAON', 'NAKASHA', 'BHUNAKASHA')) return '11';
+          if (has('PHYSICAL') && has('SURV')) return '13';
+          if (has('LEVEL') && has('SURV')) return '94';
+          if (has('GOOGLE') || has('GOOGAL')) return '14';
+          if (hasAny('GUTBOOK', 'GUT BOOK')) return '16';
+          if (n === 'TILR') return '17';
+          if (has('REGISTRATION') && has('CERT')) return '19';
+          if (has('PAN CARD') && !has('FIRM') && !has('COMPANY') && !has('COMPANN')) return '25';
+          if (has('FIRM') && has('PAN')) return '36';
+          if (has('COMPANY') && has('PAN')) return '36';
+          if (has('COMPANN') && has('PAN')) return '36';
+          if (has('AADHAR')) return '26';
+          if (hasAny('TENENT', 'TENANT', 'TENAT') && !has('BAND') && !has('BHAND') && !has('NOC')) return '27';
+          if (has('LIST') && has('MEMBER')) return '28';
+          if (hasAny('SEC 79', 'SEC79', 'SECTION 79')) return '29';
+          if (has('RESOLUTION') && has('JOINT')) return '40';
+          if (has('RESOLUTION')) return '31';
+          if (has('MEETING')) return '31';
+          if (hasAny('DEV AGREEMENT', 'DEV. AGREEMENT', 'DEVELOPMENT AGREEMENT')) return '33';
+          if (has('PARTNERSHIP')) return '35';
+          if (has('NO DUES')) return '37';
+          if (has('OLD') && hasAny('APPROVAL', 'PLAN')) return '38';
+          if (has('KYC')) return '80';
+          if (has('RECEIPT') || n === 'REC') return '88';
+          if ((has('EE') && has('REPORT')) || (has('ENG') && has('REPORT'))) return '95';
+          if (has('FIRE') && has('ORDER')) return '93';
+          if (has('MOEF')) return '102';
+          if (has('EC') && has('NOC')) return '105';
+          if (has('EC') && has('DRAWING')) return '105';
+          if (has('VP') && has('2028')) return '53';
+          if (has('STABILITY') && has('CERT')) return '52';
+          if (has('AFF') && !has('EWS') && !has('ADJOIN') && !has('OP ') && !has('BALANCE') && !has('INDEMNITY') && !has('SELF') && !has('TREE')) return '59';
+          return null;
+        };
+
+        if (client.documents && Array.isArray(client.documents)) {
+          client.documents.forEach(doc => {
+             if (doc.folder && doc.folder.startsWith('cp-')) {
+                const explicitMatch = getFolderForDoc(doc.name);
+                if (explicitMatch) {
+                   doc.folder = `cp-${explicitMatch}`;
+                }
+             }
+          });
+        }
+        
+        uniqueMigratedChecklist = [...new Set([...uniqueMigratedChecklist, "MIGRATED_V5"])];
+        clientMigrated = true;
+      }
+
       // Filter to keep only valid checklist IDs
       const VALID_IDS = new Set([
         ...PROGRESS_CHECKLIST_ITEMS.map(item => item.id),
         ...OC_CHECKLIST_ITEMS.map(item => item.id),
         "MIGRATED_V2",
         "MIGRATED_V3",
-        "MIGRATED_V4"
+        "MIGRATED_V4",
+        "MIGRATED_V5"
       ]);
       uniqueMigratedChecklist = uniqueMigratedChecklist.filter(id => 
         VALID_IDS.has(id) || (id.endsWith('-NA') && VALID_IDS.has(id.replace('-NA', '')))
