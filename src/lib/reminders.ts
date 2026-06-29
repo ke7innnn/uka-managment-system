@@ -137,7 +137,7 @@ function fireAlert(
     pendingTasks,
     timeBound: phase.timeBound,
     severity,
-    templateKey: baseKey,
+    templateKey: templateKey, // Save EXACT key (e.g. daily-update-1) for accurate deduplication
     message: msg,
   });
 }

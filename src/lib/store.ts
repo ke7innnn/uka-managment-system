@@ -1389,16 +1389,36 @@ export function saveAlerts(alerts: PerformanceAlert[]): void {
 
 export function addAlert(alert: Omit<PerformanceAlert, 'id' | 'createdAt' | 'readBy'>): PerformanceAlert {
   const alerts = getAlerts();
+  
+  // Create a deterministic UUID based on the alert details and today's date
+  // This completely prevents duplicate alerts if Admin and Staff open the app at the exact same time
+  const today = new Date().toISOString().split('T')[0];
+  const seed = `${alert.clientId}-${alert.stageName}-${alert.templateKey}-${today}`;
+  
+  let hash1 = 0;
+  for (let i = 0; i < seed.length; i++) { hash1 = (hash1 << 5) - hash1 + seed.charCodeAt(i); hash1 |= 0; }
+  let hash2 = 0;
+  for (let i = seed.length - 1; i >= 0; i--) { hash2 = (hash2 << 5) - hash2 + seed.charCodeAt(i); hash2 |= 0; }
+  
+  const hex1 = Math.abs(hash1).toString(16).padStart(8, '0');
+  const hex2 = Math.abs(hash2).toString(16).padStart(8, '0');
+  const fullHex = (hex1 + hex2 + hex1 + hex2).padEnd(32, '0');
+  const deterministicId = `${fullHex.slice(0,8)}-${fullHex.slice(8,12)}-4${fullHex.slice(13,16)}-a${fullHex.slice(17,20)}-${fullHex.slice(20,32)}`;
+
   const newAlert: PerformanceAlert = {
     ...alert,
-    id: safeUUID(),
+    id: deterministicId,
     createdAt: new Date().toISOString(),
     readBy: []
   };
-  alerts.push(newAlert);
-  saveAlerts(alerts);
+
+  const exists = alerts.some(a => a.id === deterministicId);
+  if (!exists) {
+    alerts.push(newAlert);
+    saveAlerts(alerts);
+  }
   
-  // Real-time push to Supabase
+  // Real-time push to Supabase (upsert will safely handle the deterministic ID)
   pushAlertsToSupabase([newAlert]).catch(console.error);
   
   return newAlert;
