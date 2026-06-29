@@ -348,16 +348,16 @@ export async function pushClientsToSupabase(clients: Client[]) {
     
     // Helper to decide whether to use local value or preserve remote master value
     const val = (localKey: keyof Client, remoteKey: string, localValue: any) => {
-      if (!remoteClient) return localValue; // New client
-      if (!hasPending) return localValue; // Fallback for older offline edits
+      if (!remoteClient) return localValue; // New client — no remote to preserve
+      if (!hasPending) return remoteClient[remoteKey] ?? localValue; // No pendingFields → preserve remote, fallback to local only if remote is null
       if (pending.includes(localKey)) return localValue; // Field was explicitly edited locally
       return remoteClient[remoteKey]; // Preserve master database value
     };
 
     let finalKyc = safeKyc || {};
-    if (remoteClient && hasPending) {
+    if (remoteClient) {
        // Only push local KYC if it or its nested fields were explicitly edited
-       if (!pending.includes('kyc') && !pending.includes('clientUin') && !pending.includes('naFolders') && !pending.includes('priority')) {
+       if (!hasPending || (!pending.includes('kyc') && !pending.includes('clientUin') && !pending.includes('naFolders') && !pending.includes('priority'))) {
          finalKyc = remoteKyc;
        }
     }
@@ -391,8 +391,9 @@ export async function pushClientsToSupabase(clients: Client[]) {
     const pending = c.pendingFields || [];
     const hasPending = pending.length > 0;
 
-    // Only push phases if they were actually edited
-    if (!hasPending || pending.includes('phases')) {
+    // Only push phases if they were explicitly edited — skip when no pendingFields
+    // to avoid overwriting fresh Supabase data with stale local phases
+    if (hasPending && pending.includes('phases')) {
       c.phases.forEach(p => {
         phaseRows.push({ 
           id: p.id, 
@@ -412,8 +413,9 @@ export async function pushClientsToSupabase(clients: Client[]) {
     const deletedDocRaw = typeof window !== 'undefined' ? localStorage.getItem('uka_deleted_doc_ids') : null;
     const deletedDocIds = new Set<string>(deletedDocRaw ? JSON.parse(deletedDocRaw) : []);
 
-    // Only push documents if they were actually edited
-    if (!hasPending || pending.includes('documents')) {
+    // Only push documents if they were explicitly edited — skip when no pendingFields
+    // to avoid overwriting fresh Supabase data with stale local documents
+    if (hasPending && pending.includes('documents')) {
       c.documents.forEach(d => {
         if (deletedDocIds.has(d.id)) return; // Skip tombstoned (deleted) docs
         docRows.push({
@@ -466,7 +468,7 @@ export async function pushClientsToSupabase(clients: Client[]) {
     .filter(c => {
       const pending = c.pendingFields || [];
       const hasPending = pending.length > 0;
-      return !hasPending || pending.includes('phases');
+      return hasPending && pending.includes('phases');
     })
     .map(c => c.id);
 

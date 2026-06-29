@@ -672,42 +672,51 @@ export default function ClientDetailPage() {
             // Supabase data for these fields may be stale if the push hasn't completed yet,
             // or if a race caused an earlier stale value to arrive after a fresh one.
             // For display-only fields (name, email, KYC photos) Supabase is authoritative.
+            // FIELD-LEVEL UI MERGE: Only use local values for fields the user explicitly edited.
+            // For everything else, prefer fresh Supabase data to avoid displaying stale info.
             const isPending = localClient?.syncStatus === 'pending';
+            const pendingFields = new Set(localClient?.pendingFields || []);
+            const useLocal = (field: string) => isPending && pendingFields.has(field);
+
+            const supabasePhases = (data.phases || []).map((p: any) => ({
+              id: p.id, name: p.name, completed: p.completed, order: p.order,
+              status: p.status || (p.completed ? 'completed' : 'not-started'),
+              timeBound: p.time_bound || undefined,
+              startedAt: p.started_at || undefined,
+              tasks: typeof p.tasks === 'string' ? JSON.parse(p.tasks) : (p.tasks || [])
+            })).sort((a: any, b: any) => a.order - b.order);
+
+            const supabaseDocs = (data.documents || []).map((d: any) => ({
+              id: d.id, name: d.name, url: d.url, uploadedAt: d.uploaded_at,
+              type: d.type || 'unknown', size: d.size || 0, uploadedBy: d.uploaded_by || '',
+              folder: d.folder || undefined, subfolder: d.subfolder || undefined
+            }));
 
             const fullClient: Client = {
               id: data.id,
-              clientId: isPending ? (localClient?.clientId ?? '') : (data.client_id ?? ''),
-              clientUin: isPending ? (localClient?.clientUin ?? '') : (data.kyc?.clientUin ?? ''),
-              name: isPending ? (localClient?.name ?? data.name) : data.name,
-              company: isPending ? (localClient?.company ?? '') : (data.company ?? ''),
-              email: isPending ? (localClient?.email ?? '') : (data.email ?? ''),
-              phone: isPending ? (localClient?.phone ?? '') : (data.phone ?? ''),
-              place: isPending ? (localClient?.place ?? '') : (data.place ?? ''),
-              address: isPending ? (localClient?.address ?? '') : (data.address ?? ''),
-              notes: isPending ? (localClient?.notes ?? '') : (data.notes ?? ''),
-              projectName: isPending ? (localClient?.projectName ?? '') : (data.project_name ?? ''),
-              projectStatus: isPending ? (localClient?.projectStatus ?? 'pending') : (data.project_status ?? 'pending'),
-              tilrStatus: isPending ? (localClient?.tilrStatus ?? 'pending') : (data.tilr_status ?? 'pending'),
+              clientId: useLocal('clientId') ? (localClient?.clientId ?? '') : (data.client_id ?? ''),
+              clientUin: useLocal('clientUin') ? (localClient?.clientUin ?? '') : (data.kyc?.clientUin ?? ''),
+              name: useLocal('name') ? (localClient?.name ?? data.name) : data.name,
+              company: useLocal('company') ? (localClient?.company ?? '') : (data.company ?? ''),
+              email: useLocal('email') ? (localClient?.email ?? '') : (data.email ?? ''),
+              phone: useLocal('phone') ? (localClient?.phone ?? '') : (data.phone ?? ''),
+              place: useLocal('place') ? (localClient?.place ?? '') : (data.place ?? ''),
+              address: useLocal('address') ? (localClient?.address ?? '') : (data.address ?? ''),
+              notes: useLocal('notes') ? (localClient?.notes ?? '') : (data.notes ?? ''),
+              projectName: useLocal('projectName') ? (localClient?.projectName ?? '') : (data.project_name ?? ''),
+              projectStatus: useLocal('projectStatus') ? (localClient?.projectStatus ?? 'pending') : (data.project_status ?? 'pending'),
+              tilrStatus: useLocal('tilrStatus') ? (localClient?.tilrStatus ?? 'pending') : (data.tilr_status ?? 'pending'),
               createdAt: data.created_at,
-              tags: isPending ? (localClient?.tags ?? []) : (data.tags ?? []),
-              progressChecklist: isPending ? (localClient?.progressChecklist ?? []) : (data.progress_checklist || []),
-              ocChecklist: isPending ? (localClient?.ocChecklist ?? []) : (data.oc_checklist || []),
-              clientPassword: isPending ? (localClient?.clientPassword ?? '') : (data.client_password ?? ''),
-              kyc: isPending ? { ...(data.kyc || {}), ...(localClient?.kyc || {}) } : (data.kyc || {}),
-              naFolders: isPending ? (localClient?.naFolders ?? []) : (data.kyc?.naFolders || []),
+              tags: useLocal('tags') ? (localClient?.tags ?? []) : (data.tags ?? []),
+              progressChecklist: useLocal('progressChecklist') ? (localClient?.progressChecklist ?? []) : (data.progress_checklist || []),
+              ocChecklist: useLocal('ocChecklist') ? (localClient?.ocChecklist ?? []) : (data.oc_checklist || []),
+              clientPassword: useLocal('clientPassword') ? (localClient?.clientPassword ?? '') : (data.client_password ?? ''),
+              kyc: useLocal('kyc') ? { ...(data.kyc || {}), ...(localClient?.kyc || {}) } : (data.kyc || {}),
+              naFolders: useLocal('naFolders') ? (localClient?.naFolders ?? []) : (data.kyc?.naFolders || []),
               syncStatus: isPending ? 'pending' : 'synced',
-              phases: isPending ? (localClient?.phases ?? []) : (data.phases || []).map((p: any) => ({
-                id: p.id, name: p.name, completed: p.completed, order: p.order,
-                status: p.status || (p.completed ? 'completed' : 'not-started'),
-                timeBound: p.time_bound || undefined,
-                startedAt: p.started_at || undefined,
-                tasks: typeof p.tasks === 'string' ? JSON.parse(p.tasks) : (p.tasks || [])
-              })).sort((a: any, b: any) => a.order - b.order),
-              documents: isPending ? (localClient?.documents ?? []) : (data.documents || []).map((d: any) => ({
-                id: d.id, name: d.name, url: d.url, uploadedAt: d.uploaded_at,
-                type: d.type || 'unknown', size: d.size || 0, uploadedBy: d.uploaded_by || '',
-                folder: d.folder || undefined, subfolder: d.subfolder || undefined
-              }))
+              pendingFields: localClient?.pendingFields,
+              phases: useLocal('phases') ? (localClient?.phases ?? supabasePhases) : supabasePhases,
+              documents: useLocal('documents') ? (localClient?.documents ?? supabaseDocs) : supabaseDocs
             };
             setClient(fullClient);
           }
