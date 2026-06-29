@@ -522,16 +522,12 @@ export async function pushStaffToSupabase(staff: StaffMember[]) {
   
   if (taskRows.length > 0) await supabase.from('staff_tasks').upsert(taskRows);
 
-  // Clean up orphans
-  const staffIds = staff.map(s => s.id);
-  if (staffIds.length > 0) {
-    const currentTaskIds = taskRows.map(t => t.id);
-    if (currentTaskIds.length > 0) {
-      await supabase.from('staff_tasks').delete().in('staff_id', staffIds).not('id', 'in', `(${currentTaskIds.join(',')})`);
-    } else {
-      await supabase.from('staff_tasks').delete().in('staff_id', staffIds);
-    }
-  }
+  // Clean up orphans — but ONLY delete tasks that were explicitly removed locally.
+  // A staff member's local cache may be stale (missing tasks added by admin on another device).
+  // Blindly deleting "orphans" would wipe real tasks. So we skip orphan cleanup entirely
+  // for staff members whose task list might be stale. The upsert above already adds/updates
+  // the tasks that ARE present locally; missing remote tasks are left untouched.
+  // Task deletion is handled directly in the UI delete handler, not here.
 
   // Update local storage to mark successfully pushed staff as 'synced'
   if (typeof window !== 'undefined') {

@@ -1080,6 +1080,24 @@ export function updateStaffMember(id: string, data: Partial<StaffMember>): Staff
   const staff = getStaff();
   const idx = staff.findIndex((s) => s.id === id);
   if (idx === -1) return undefined;
+
+  // Detect if tasks were removed so we can delete them from Supabase directly
+  if (data.tasks && staff[idx].tasks) {
+    const oldTaskIds = new Set(staff[idx].tasks.map(t => t.id));
+    const newTaskIds = new Set(data.tasks.map(t => t.id));
+    const removedTaskIds = [...oldTaskIds].filter(tid => !newTaskIds.has(tid));
+    if (removedTaskIds.length > 0) {
+      // Delete removed tasks from Supabase in background
+      import('./supabase').then(({ supabase }) => {
+        removedTaskIds.forEach(tid => {
+          supabase.from('staff_tasks').delete().eq('id', tid).then(({ error }) => {
+            if (error) console.error('Failed to delete staff task from Supabase:', error.message);
+          });
+        });
+      }).catch(console.error);
+    }
+  }
+
   staff[idx] = { ...staff[idx], ...data, syncStatus: 'pending' };
   saveStaff(staff);
   return staff[idx];
