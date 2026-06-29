@@ -666,12 +666,23 @@ export function getClients(): Client[] {
       // Sort by order field to preserve original stage sequence (NOT by name)
       finalPhases.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
+      // IMPORTANT: Only mark the exact fields changed by migration as pending.
+      // If we set syncStatus:'pending' with NO pendingFields, the push will send ALL
+      // local fields (including stale phases, tasks, etc.) to Supabase, overwriting
+      // other users' live changes. We must scope the push to only the changed fields.
+      const migrationPendingFields = ['progressChecklist', 'ocChecklist'] as string[];
       return {
         ...client,
         phases: finalPhases,
         documents: client.documents || [],
         progressChecklist: uniqueMigratedChecklist,
-        syncStatus: clientMigrated ? ('pending' as const) : client.syncStatus
+        // Only mark pending if this specific client was migrated
+        syncStatus: clientMigrated ? ('pending' as const) : client.syncStatus,
+        // Scope the push to ONLY the checklist fields changed by migration.
+        // Merge with any existing real user edits so those are not lost.
+        pendingFields: clientMigrated
+          ? Array.from(new Set([...(client.pendingFields || []), ...migrationPendingFields]))
+          : client.pendingFields
       };
     });
 
@@ -682,6 +693,7 @@ export function getClients(): Client[] {
     }
 
     return migratedClients;
+
   } catch {
     return [];
   }
