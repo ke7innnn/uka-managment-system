@@ -41,6 +41,24 @@ export async function pullFromSupabase() {
       .select('*');
     if (alertsErr) console.warn('Performance alerts table might not exist yet:', alertsErr);
 
+    // Tombstone check for deleted clients
+    const deletedRaw = localStorage.getItem('uka_deleted_client_ids');
+    const deletedIds = new Set<string>(deletedRaw ? JSON.parse(deletedRaw) : []);
+
+    // Tombstone check for deleted staff members
+    const deletedStaffRaw = localStorage.getItem('uka_deleted_staff_ids');
+    const deletedStaffIds = new Set<string>(deletedStaffRaw ? JSON.parse(deletedStaffRaw) : []);
+
+    // Tombstones for sub-items (docs, phases, tasks) to handle offline deletes
+    const deletedDocRaw = localStorage.getItem('uka_deleted_doc_ids');
+    const deletedDocIds = new Set<string>(deletedDocRaw ? JSON.parse(deletedDocRaw) : []);
+    
+    const deletedPhaseRaw = localStorage.getItem('uka_deleted_phase_ids');
+    const deletedPhaseIds = new Set<string>(deletedPhaseRaw ? JSON.parse(deletedPhaseRaw) : []);
+    
+    const deletedTaskRaw = localStorage.getItem('uka_deleted_task_ids');
+    const deletedTaskIds = new Set<string>(deletedTaskRaw ? JSON.parse(deletedTaskRaw) : []);
+
     const supabaseClients: Client[] = (clientsData || []).map((c: any) => ({
       id: c.id,
       clientId: c.client_id || '',
@@ -64,14 +82,14 @@ export async function pullFromSupabase() {
       clientPassword: c.client_password || '',
       kyc: c.kyc || {},
       syncStatus: 'synced',
-      phases: (c.phases || []).map((p: any) => ({
+      phases: (c.phases || []).filter((p: any) => !deletedPhaseIds.has(p.id)).map((p: any) => ({
         id: p.id, name: p.name, completed: p.completed, order: p.order,
         status: p.status || (p.completed ? 'completed' : 'not-started'),
         timeBound: p.time_bound || undefined,
         startedAt: p.started_at || undefined,
         tasks: typeof p.tasks === 'string' ? JSON.parse(p.tasks) : (p.tasks || [])
       })).sort((a: any, b: any) => a.order - b.order),
-      documents: (c.documents || []).map((d: any) => ({
+      documents: (c.documents || []).filter((d: any) => !deletedDocIds.has(d.id)).map((d: any) => ({
         id: d.id, name: d.name, url: d.url, uploadedAt: d.uploaded_at,
         type: d.type || 'unknown', size: d.size || 0, uploadedBy: d.uploaded_by || '',
         folder: d.folder || undefined, subfolder: d.subfolder || undefined
@@ -91,7 +109,7 @@ export async function pullFromSupabase() {
       workDeadline: s.work_deadline || undefined,
       notes: s.notes || '',
       profilePicture: s.profile_picture || '',
-      tasks: (s.staff_tasks || []).map((t: any) => ({
+      tasks: (s.staff_tasks || []).filter((t: any) => !deletedTaskIds.has(t.id)).map((t: any) => ({
         id: t.id, title: t.title, completed: t.completed,
         deadline: t.deadline || '', createdAt: t.created_at, completedAt: t.completed_at || undefined
       }))
@@ -102,14 +120,6 @@ export async function pullFromSupabase() {
     const localStaffRaw = localStorage.getItem('uka_staff');
     const localClients: Client[] = localClientsRaw ? JSON.parse(localClientsRaw) : [];
     const localStaff: StaffMember[] = localStaffRaw ? JSON.parse(localStaffRaw) : [];
-
-    // Tombstone check for deleted clients
-    const deletedRaw = localStorage.getItem('uka_deleted_client_ids');
-    const deletedIds = new Set<string>(deletedRaw ? JSON.parse(deletedRaw) : []);
-
-    // Tombstone check for deleted staff members
-    const deletedStaffRaw = localStorage.getItem('uka_deleted_staff_ids');
-    const deletedStaffIds = new Set<string>(deletedStaffRaw ? JSON.parse(deletedStaffRaw) : []);
 
     const activeSupabaseClients = supabaseClients.filter(c => !deletedIds.has(c.id) && !PERMANENTLY_DELETED_CLIENT_IDS.has(c.id));
     // Filter out tombstoned staff from Supabase data — they must never come back
@@ -216,6 +226,52 @@ export async function pullFromSupabase() {
         } catch (err) {
           console.error('Retry delete staff sequential error:', err);
         }
+      });
+    }
+
+    // Retry deletes for any failed tombstoned sub-items
+    if (deletedDocIds.size > 0) {
+      deletedDocIds.forEach(async (id) => {
+        try {
+          const res = await supabase.from('documents').delete().eq('id', id);
+          if (!res.error) {
+            const currentDeletedRaw = localStorage.getItem('uka_deleted_doc_ids');
+            if (currentDeletedRaw) {
+              const currentDeleted: string[] = JSON.parse(currentDeletedRaw);
+              localStorage.setItem('uka_deleted_doc_ids', JSON.stringify(currentDeleted.filter(d => d !== id)));
+            }
+          }
+        } catch (err) {}
+      });
+    }
+
+    if (deletedPhaseIds.size > 0) {
+      deletedPhaseIds.forEach(async (id) => {
+        try {
+          const res = await supabase.from('phases').delete().eq('id', id);
+          if (!res.error) {
+            const currentDeletedRaw = localStorage.getItem('uka_deleted_phase_ids');
+            if (currentDeletedRaw) {
+              const currentDeleted: string[] = JSON.parse(currentDeletedRaw);
+              localStorage.setItem('uka_deleted_phase_ids', JSON.stringify(currentDeleted.filter(p => p !== id)));
+            }
+          }
+        } catch (err) {}
+      });
+    }
+
+    if (deletedTaskIds.size > 0) {
+      deletedTaskIds.forEach(async (id) => {
+        try {
+          const res = await supabase.from('staff_tasks').delete().eq('id', id);
+          if (!res.error) {
+            const currentDeletedRaw = localStorage.getItem('uka_deleted_task_ids');
+            if (currentDeletedRaw) {
+              const currentDeleted: string[] = JSON.parse(currentDeletedRaw);
+              localStorage.setItem('uka_deleted_task_ids', JSON.stringify(currentDeleted.filter(t => t !== id)));
+            }
+          }
+        } catch (err) {}
       });
     }
 

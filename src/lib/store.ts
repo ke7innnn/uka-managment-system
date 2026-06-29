@@ -874,6 +874,36 @@ export function updateClient(id: string, data: Partial<Client>): Client | undefi
   const existingPending = clients[idx].pendingFields || [];
   const mergedPending = Array.from(new Set([...existingPending, ...editedKeys]));
 
+  // Track deleted documents for offline reliability
+  if (data.documents && clients[idx].documents) {
+    const oldIds = new Set(clients[idx].documents.map(d => d.id));
+    const newIds = new Set(data.documents.map(d => d.id));
+    const removedIds = [...oldIds].filter(id => !newIds.has(id));
+    if (removedIds.length > 0 && typeof window !== 'undefined') {
+      const raw = localStorage.getItem('uka_deleted_doc_ids');
+      const deleted = raw ? JSON.parse(raw) : [];
+      localStorage.setItem('uka_deleted_doc_ids', JSON.stringify([...new Set([...deleted, ...removedIds])]));
+      import('./supabase').then(({ supabase }) => {
+        removedIds.forEach(did => supabase.from('documents').delete().eq('id', did).catch(()=>{}));
+      }).catch(console.error);
+    }
+  }
+
+  // Track deleted phases for offline reliability
+  if (data.phases && clients[idx].phases) {
+    const oldIds = new Set(clients[idx].phases.map(p => p.id));
+    const newIds = new Set(data.phases.map(p => p.id));
+    const removedIds = [...oldIds].filter(id => !newIds.has(id));
+    if (removedIds.length > 0 && typeof window !== 'undefined') {
+      const raw = localStorage.getItem('uka_deleted_phase_ids');
+      const deleted = raw ? JSON.parse(raw) : [];
+      localStorage.setItem('uka_deleted_phase_ids', JSON.stringify([...new Set([...deleted, ...removedIds])]));
+      import('./supabase').then(({ supabase }) => {
+        removedIds.forEach(pid => supabase.from('phases').delete().eq('id', pid).catch(()=>{}));
+      }).catch(console.error);
+    }
+  }
+
   clients[idx] = { 
     ...clients[idx], 
     ...data, 
@@ -1087,6 +1117,13 @@ export function updateStaffMember(id: string, data: Partial<StaffMember>): Staff
     const newTaskIds = new Set(data.tasks.map(t => t.id));
     const removedTaskIds = [...oldTaskIds].filter(tid => !newTaskIds.has(tid));
     if (removedTaskIds.length > 0) {
+      // Add to local tombstone
+      if (typeof window !== 'undefined') {
+        const raw = localStorage.getItem('uka_deleted_task_ids');
+        const deleted = raw ? JSON.parse(raw) : [];
+        localStorage.setItem('uka_deleted_task_ids', JSON.stringify([...new Set([...deleted, ...removedTaskIds])]));
+      }
+      
       // Delete removed tasks from Supabase in background
       import('./supabase').then(({ supabase }) => {
         removedTaskIds.forEach(tid => {
