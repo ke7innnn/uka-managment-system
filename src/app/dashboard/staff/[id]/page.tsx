@@ -37,7 +37,11 @@ export default function StaffDetailPage() {
     if (!m) { router.replace('/dashboard/staff'); return; }
     setMember(m);
   };
-  useEffect(() => { reload(); }, [params.id]);
+  useEffect(() => { 
+    reload();
+    window.addEventListener('uka-sync-complete', reload);
+    return () => window.removeEventListener('uka-sync-complete', reload);
+  }, [params.id]);
 
   if (!member) return null;
 

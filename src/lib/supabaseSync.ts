@@ -176,7 +176,26 @@ export async function pullFromSupabase() {
 
     const mergedStaffMap = new Map<string, StaffMember>();
     activeSupabaseStaff.forEach(s => mergedStaffMap.set(s.id, s));
-    pendingLocalStaff.forEach(s => mergedStaffMap.set(s.id, s));
+    
+    pendingLocalStaff.forEach(s => {
+      const existing = mergedStaffMap.get(s.id);
+      if (existing) {
+        // FIELD-LEVEL MERGE: Only overwrite Supabase data with fields the user explicitly edited locally
+        const merged = { ...existing };
+        const pending = s.pendingFields || [];
+        
+        pending.forEach(key => {
+          (merged as any)[key] = (s as any)[key];
+        });
+        
+        merged.syncStatus = s.syncStatus;
+        merged.pendingFields = s.pendingFields;
+        
+        mergedStaffMap.set(s.id, merged);
+      } else {
+        mergedStaffMap.set(s.id, s); // Brand new offline staff member
+      }
+    });
 
     const mergedClients = Array.from(mergedClientsMap.values());
     const mergedStaff = Array.from(mergedStaffMap.values());
@@ -547,30 +566,60 @@ export async function pushClientsToSupabase(clients: Client[]) {
 export async function pushStaffToSupabase(staff: StaffMember[]) {
   if (!staff || staff.length === 0) return;
 
-  const staffRows = staff.map(s => ({
-    id: s.id,
-    name: s.name,
-    role: s.role,
-    password: s.password,
-    email: s.email,
-    phone: s.phone,
-    department: s.department,
-    joined_at: s.joinedAt,
-    total_tasks_target: s.totalTasksTarget,
-    work_deadline: s.workDeadline,
-    notes: s.notes,
-    profile_picture: s.profilePicture
-  }));
+  // 1. Fetch the FULL existing data from Supabase to prevent overwriting with stale local data
+  const staffIds = staff.map(s => s.id);
+  const { data: existingStaff } = await supabase
+    .from('staff')
+    .select('*')
+    .in('id', staffIds);
+    
+  const existingMap = new Map(existingStaff?.map(s => [s.id, s]) || []);
+
+  const staffRows = staff.map(s => {
+    const remoteStaff = existingMap.get(s.id);
+    const pending = s.pendingFields || [];
+    const hasPending = pending.length > 0;
+
+    // Helper to decide whether to use local value or preserve remote master value
+    const val = (localKey: keyof StaffMember, remoteKey: string, localValue: any) => {
+      if (!remoteStaff) return localValue; // New staff — no remote to preserve
+      if (!hasPending) return remoteStaff[remoteKey] ?? localValue; // No pendingFields → preserve remote, fallback to local only if remote is null
+      if (pending.includes(localKey)) return localValue; // Field was explicitly edited locally
+      return remoteStaff[remoteKey]; // Preserve master database value
+    };
+
+    return {
+      id: s.id,
+      name: val('name', 'name', s.name),
+      role: val('role', 'role', s.role),
+      password: val('password', 'password', s.password),
+      email: val('email', 'email', s.email),
+      phone: val('phone', 'phone', s.phone),
+      department: val('department', 'department', s.department),
+      joined_at: s.joinedAt,
+      total_tasks_target: val('totalTasksTarget', 'total_tasks_target', s.totalTasksTarget),
+      work_deadline: val('workDeadline', 'work_deadline', s.workDeadline),
+      notes: val('notes', 'notes', s.notes),
+      profile_picture: val('profilePicture', 'profile_picture', s.profilePicture)
+    };
+  });
 
   const taskRows: any[] = [];
 
   staff.forEach(s => {
-    s.tasks.forEach(t => {
-      taskRows.push({
-        id: t.id, staff_id: s.id, title: t.title, completed: t.completed,
-        deadline: t.deadline || null, created_at: t.createdAt, completed_at: t.completedAt || null
+    const pending = s.pendingFields || [];
+    const hasPending = pending.length > 0;
+
+    // Only push tasks if they were explicitly edited — skip when no pendingFields
+    // to avoid overwriting fresh Supabase data with stale local tasks
+    if (hasPending && pending.includes('tasks')) {
+      s.tasks.forEach(t => {
+        taskRows.push({
+          id: t.id, staff_id: s.id, title: t.title, completed: t.completed,
+          deadline: t.deadline || null, created_at: t.createdAt, completed_at: t.completedAt || null
+        });
       });
-    });
+    }
   });
 
   const { error } = await supabase.from('staff').upsert(staffRows);
@@ -591,7 +640,11 @@ export async function pushStaffToSupabase(staff: StaffMember[]) {
     if (localRaw) {
       const local: StaffMember[] = JSON.parse(localRaw);
       const pushedIds = new Set(staff.map(s => s.id));
-      const updated = local.map(s => pushedIds.has(s.id) ? { ...s, syncStatus: 'synced' as const } : s);
+      const updated = local.map(s => 
+        pushedIds.has(s.id) 
+          ? { ...s, syncStatus: 'synced' as const, pendingFields: undefined } 
+          : s
+      );
       localStorage.setItem('uka_staff', JSON.stringify(updated));
     }
   }

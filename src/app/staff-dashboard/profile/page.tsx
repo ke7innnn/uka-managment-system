@@ -19,7 +19,11 @@ export default function StaffProfilePage() {
     }
   };
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => { 
+    reload();
+    window.addEventListener('uka-sync-complete', reload);
+    return () => window.removeEventListener('uka-sync-complete', reload);
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

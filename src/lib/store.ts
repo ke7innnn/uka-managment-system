@@ -990,6 +990,7 @@ export interface StaffMember {
   notes?: string;
   profilePicture?: string;        // data URL
   syncStatus?: 'pending' | 'synced';
+  pendingFields?: string[];       // Tracks explicitly edited fields for safe merging
 }
 
 // ─── Staff helpers ─────────────────────────────────────────────────────────────
@@ -1135,7 +1136,17 @@ export function updateStaffMember(id: string, data: Partial<StaffMember>): Staff
     }
   }
 
-  staff[idx] = { ...staff[idx], ...data, syncStatus: 'pending' };
+  // Track which specific fields are being edited
+  const editedKeys = Object.keys(data).filter(k => k !== 'syncStatus' && k !== 'pendingFields');
+  const existingPending = staff[idx].pendingFields || [];
+  const mergedPending = Array.from(new Set([...existingPending, ...editedKeys]));
+
+  staff[idx] = { 
+    ...staff[idx], 
+    ...data, 
+    syncStatus: 'pending',
+    pendingFields: mergedPending
+  };
   saveStaff(staff);
   return staff[idx];
 }
