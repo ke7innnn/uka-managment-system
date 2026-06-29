@@ -122,9 +122,12 @@ export async function pullFromSupabase() {
 
     // Clients pending push: local clients that have explicitly been marked as 'pending' syncStatus (and not deleted)
     const pendingLocalClients = localClients.filter(c => c.syncStatus === 'pending' && !deletedIds.has(c.id) && !PERMANENTLY_DELETED_CLIENT_IDS.has(c.id));
-    // Staff pending push: not in Supabase by ID AND not already there by name (prevents clones), and not tombstoned
+    // Staff pending push: local staff marked as 'pending' syncStatus (and not tombstoned).
+    // If it's a brand new staff member (id not in supabase), prevent cloning by checking name.
     const pendingLocalStaff = localStaff.filter(s =>
-      !supabaseStaffIds.has(s.id) && !supabaseStaffNames.has(s.name.toLowerCase()) && !deletedStaffIds.has(s.id)
+      s.syncStatus === 'pending' && 
+      !deletedStaffIds.has(s.id) &&
+      (supabaseStaffIds.has(s.id) || !supabaseStaffNames.has(s.name.toLowerCase()))
     );
 
     const mergedClientsMap = new Map<string, Client>();
