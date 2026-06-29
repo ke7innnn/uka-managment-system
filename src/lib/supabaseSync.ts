@@ -303,6 +303,9 @@ export async function pullFromSupabase() {
     }
 
     if (!workspaceErr && workspaceData) {
+      const localMessagesRaw = localStorage.getItem('uka_workspace_messages');
+      const localMessages: any[] = localMessagesRaw ? JSON.parse(localMessagesRaw) : [];
+
       const supabaseMessages: WorkspaceMessage[] = workspaceData.map(m => ({
         id: m.id,
         senderId: m.sender_id,
@@ -311,10 +314,32 @@ export async function pullFromSupabase() {
         content: m.content,
         createdAt: m.created_at
       }));
+
+      // Merge local and remote messages, preserving offline messages that haven't reached Supabase yet
+      const mergedMessagesMap = new Map<string, WorkspaceMessage>();
+      supabaseMessages.forEach(m => mergedMessagesMap.set(m.id, m));
+      
+      const unsyncedMessages: WorkspaceMessage[] = [];
+      localMessages.forEach(m => {
+        if (!mergedMessagesMap.has(m.id)) {
+          mergedMessagesMap.set(m.id, m);
+          unsyncedMessages.push(m);
+        }
+      });
+
       // Only keep last 3 days
       const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
-      const recentMessages = supabaseMessages.filter(m => new Date(m.createdAt).getTime() > threeDaysAgo);
+      const recentMessages = Array.from(mergedMessagesMap.values()).filter(m => new Date(m.createdAt).getTime() > threeDaysAgo);
+      
+      // Sort by chronological order
+      recentMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      
       localStorage.setItem('uka_workspace_messages', JSON.stringify(recentMessages));
+
+      // Push any offline messages that missed their initial upload
+      if (unsyncedMessages.length > 0) {
+        pushWorkspaceToSupabase(unsyncedMessages).catch(console.error);
+      }
     }
 
     // --- Performance Alerts Merge & Sync ---
