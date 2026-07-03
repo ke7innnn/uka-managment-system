@@ -97,7 +97,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
   const [form, setForm] = useState<FormData>({
     name: client?.name || '',
     clientId: client?.clientId || '',
-    clientUin: client?.clientUin || '',
+    clientUin: client?.clientUin || client?.kyc?.clientUin || '',
     clientPassword: client?.clientPassword || '',
     company: client?.company || '',
     email: client?.email || '',
@@ -108,7 +108,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
     tags: client?.tags?.join(', ') || '',
     projectName: client?.projectName || '',
     projectStatus: client?.projectStatus || 'pending',
-    priority: client?.priority || 'medium',
+    priority: client?.priority || (client?.kyc as any)?.priority || 'medium',
     tilrStatus: client?.tilrStatus || 'pending',
     
     // KYC initial states
@@ -289,7 +289,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
       router.push(successRedirect ?? '/dashboard/clients');
     } else {
       const updates: Partial<Client> = {};
-      
+
       const checkUpdate = (key: keyof Client, newValue: any, originalValue: any) => {
         if (JSON.stringify(newValue) !== JSON.stringify(originalValue)) {
           (updates as any)[key] = newValue;
@@ -311,13 +311,35 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
       checkUpdate('projectStatus', form.projectStatus, client!.projectStatus);
       checkUpdate('priority', form.priority, client!.priority || 'medium');
       checkUpdate('tilrStatus', form.tilrStatus, client!.tilrStatus || 'pending');
-      checkUpdate('kyc', kycData, client!.kyc || {});
 
-      // Only call updateClient if something actually changed
-      if (Object.keys(updates).length > 0) {
-        updateClient(client!.id, updates);
-      }
-      
+      // CRITICAL FIX: Always preserve any sync-injected extra fields that live inside kyc
+      // (clientUin, naFolders, priority) so they are never lost when saving from the form.
+      // The form only knows about "user-facing" kyc fields; the sync engine secretly stores
+      // extra metadata inside client.kyc. If we save kycData alone, those fields vanish.
+      const existingKyc = client!.kyc || {};
+      const safeKycData = {
+        // Keep any existing extra sync-injected fields first (clientUin, naFolders, priority etc)
+        ...existingKyc,
+        // Then overlay ALL fields the user actually filled in on the form
+        ...kycData,
+        // Preserve these specific sync-injected fields even if kycData accidentally omits them
+        clientUin: existingKyc.clientUin || '',
+        naFolders: existingKyc.naFolders || [],
+        priority: existingKyc.priority || form.priority || 'medium',
+        // Always carry otherOwners and references from the form (they are managed above)
+        otherOwners: otherOwners,
+        references: references,
+      };
+
+      // Always update kyc — never skip it when in edit mode.
+      // The `checkUpdate` comparison was unreliable because client.kyc contains extra keys
+      // that kycData doesn't, making them always appear "different" even when user changed nothing.
+      // By always writing, we guarantee the sync engine (pendingFields) picks it up correctly.
+      updates.kyc = safeKycData;
+
+      // Always call updateClient to guarantee kyc is written and marked as pending
+      updateClient(client!.id, updates);
+
       router.push(successRedirect ?? `/dashboard/clients/${client!.id}`);
     }
   };

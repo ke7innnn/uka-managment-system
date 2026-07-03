@@ -456,10 +456,15 @@ export async function pushClientsToSupabase(clients: Client[]) {
 
     let finalKyc = safeKyc || {};
     if (remoteClient) {
-       // Only push local KYC if it or its nested fields were explicitly edited
-       if (!hasPending || (!pending.includes('kyc') && !pending.includes('clientUin') && !pending.includes('naFolders') && !pending.includes('priority'))) {
-         finalKyc = remoteKyc;
-       }
+      const kycWasEdited = hasPending && (pending.includes('kyc') || pending.includes('clientUin') || pending.includes('naFolders') || pending.includes('priority'));
+      if (!kycWasEdited) {
+        // KYC was NOT edited locally → always use the remote (master) value to avoid accidental overwrites
+        finalKyc = remoteKyc;
+      } else {
+        // KYC was explicitly edited locally → merge: remote base first, then local on top
+        // This ensures any remote-only fields (e.g. older form fields) are not silently dropped
+        finalKyc = { ...remoteKyc, ...safeKyc };
+      }
     }
 
     return {
