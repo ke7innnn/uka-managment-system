@@ -108,7 +108,7 @@ export default function ClientForm({ client, mode, successRedirect }: Props) {
     tags: client?.tags?.join(', ') || '',
     projectName: client?.projectName || '',
     projectStatus: client?.projectStatus || 'pending',
-    priority: client?.priority || (client?.kyc as any)?.priority || 'medium',
+    priority: client?.priority || client?.kyc?.priority || 'medium',
     tilrStatus: client?.tilrStatus || 'pending',
     
     // KYC initial states

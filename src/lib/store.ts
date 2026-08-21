@@ -139,6 +139,8 @@ export interface KycData {
   isDigitalSignature?: string;
   digitalSignaturePhoto?: string;
   priority?: 'low' | 'medium' | 'high';
+  clientUin?: string;
+  naFolders?: string[];
 }
 
 export interface Client {
@@ -884,7 +886,7 @@ export function updateClient(id: string, data: Partial<Client>): Client | undefi
       const deleted = raw ? JSON.parse(raw) : [];
       localStorage.setItem('uka_deleted_doc_ids', JSON.stringify([...new Set([...deleted, ...removedIds])]));
       import('./supabase').then(({ supabase }) => {
-        removedIds.forEach(did => supabase.from('documents').delete().eq('id', did).catch(()=>{}));
+        removedIds.forEach(did => { supabase.from('documents').delete().eq('id', did).then(() => {}, () => {}); });
       }).catch(console.error);
     }
   }
@@ -899,7 +901,7 @@ export function updateClient(id: string, data: Partial<Client>): Client | undefi
       const deleted = raw ? JSON.parse(raw) : [];
       localStorage.setItem('uka_deleted_phase_ids', JSON.stringify([...new Set([...deleted, ...removedIds])]));
       import('./supabase').then(({ supabase }) => {
-        removedIds.forEach(pid => supabase.from('phases').delete().eq('id', pid).catch(()=>{}));
+        removedIds.forEach(pid => { supabase.from('phases').delete().eq('id', pid).then(() => {}, () => {}); });
       }).catch(console.error);
     }
   }
