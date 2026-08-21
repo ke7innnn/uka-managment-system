@@ -134,6 +134,45 @@ export async function POST(req: Request) {
 
     // ── PROVIDER HELPERS ────────────────────────────────────────────────────
 
+    const openRouterCall = async (apiKey: string, modelName: string, fallbackModels: string[] = []): Promise<string | null> => {
+      const formattedMessages = [
+        { role: 'system', content: systemInstruction },
+        ...recentMessages.map((msg: any) => ({
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        }))
+      ];
+
+      const bodyPayload: any = {
+        model: modelName,
+        messages: formattedMessages,
+        temperature: 0.7,
+        max_tokens: 4096
+      };
+
+      if (fallbackModels.length > 0) {
+        bodyPayload.models = [modelName, ...fallbackModels];
+      }
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://ukamanagementsystem.com',
+          'X-Title': 'UKA Management System',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bodyPayload)
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        console.warn(`[OpenRouter ${modelName}] Failed (${response.status}): ${data.error?.message || JSON.stringify(data.error)}`);
+        return null;
+      }
+      return data.choices?.[0]?.message?.content ?? null;
+    };
+
     const geminiCall = async (apiKey: string): Promise<string | null> => {
       const formattedMessages = recentMessages.map((msg: any) => ({
         role: msg.role === 'user' ? 'user' : 'model',
@@ -175,10 +214,10 @@ export async function POST(req: Request) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: 'groq/compound',
           messages: formattedMessages,
           temperature: 0.7,
-          max_tokens: 8192
+          max_tokens: 4096
         })
       });
 
@@ -191,25 +230,55 @@ export async function POST(req: Request) {
     };
 
     // ── WATERFALL ───────────────────────────────────────────────────────────
-    // Order: Paid Gemini → Groq Key 1 → Groq Key 2 → Free Gemini
+    // Primary: OpenRouter (Gemini 2.5 Flash with multi-model fallback array)
+    // Fallbacks: OpenRouter (Llama 3.3 70B, GPT-4o Mini, DeepSeek, Qwen) → Groq → Direct Gemini
     // Each provider is only called if the previous one fails.
 
     type Provider = { name: string; call: () => Promise<string | null> };
 
+    const openRouterKey   = process.env.OPENROUTER_API_KEY;
     const primaryGemini   = process.env.GEMINI_API_KEY;
     const groqKey1        = process.env.GROQ_API_KEY;
     const groqKey2        = process.env.GROQ_API_KEY_2;
     const secondaryGemini = process.env.GEMINI_API_KEY_SECONDARY;
 
     const providers: Provider[] = [];
-    if (primaryGemini)   providers.push({ name: 'Gemini (Paid)',  call: () => geminiCall(primaryGemini) });
-    if (groqKey1)        providers.push({ name: 'Groq Key 1',     call: () => groqCall(groqKey1, '1') });
-    if (groqKey2)        providers.push({ name: 'Groq Key 2',     call: () => groqCall(groqKey2, '2') });
-    if (secondaryGemini) providers.push({ name: 'Gemini (Free)',  call: () => geminiCall(secondaryGemini) });
+    if (openRouterKey) {
+      providers.push({
+        name: 'OpenRouter (Gemini 2.5 Flash)',
+        call: () => openRouterCall(openRouterKey, 'google/gemini-2.5-flash', [
+          'meta-llama/llama-3.3-70b-instruct',
+          'openai/gpt-4o-mini',
+          'deepseek/deepseek-chat',
+          'qwen/qwen-2.5-72b-instruct'
+        ])
+      });
+      providers.push({
+        name: 'OpenRouter (Llama 3.3 70B)',
+        call: () => openRouterCall(openRouterKey, 'meta-llama/llama-3.3-70b-instruct')
+      });
+      providers.push({
+        name: 'OpenRouter (GPT-4o Mini)',
+        call: () => openRouterCall(openRouterKey, 'openai/gpt-4o-mini')
+      });
+      providers.push({
+        name: 'OpenRouter (DeepSeek Chat)',
+        call: () => openRouterCall(openRouterKey, 'deepseek/deepseek-chat')
+      });
+      providers.push({
+        name: 'OpenRouter (Qwen 2.5 72B)',
+        call: () => openRouterCall(openRouterKey, 'qwen/qwen-2.5-72b-instruct')
+      });
+    }
+
+    if (groqKey1)        providers.push({ name: 'Groq Key 1',      call: () => groqCall(groqKey1, '1') });
+    if (groqKey2)        providers.push({ name: 'Groq Key 2',      call: () => groqCall(groqKey2, '2') });
+    if (primaryGemini)   providers.push({ name: 'Gemini (Direct)', call: () => geminiCall(primaryGemini) });
+    if (secondaryGemini) providers.push({ name: 'Gemini (Backup)', call: () => geminiCall(secondaryGemini) });
 
     if (providers.length === 0) {
       return NextResponse.json(
-        { error: 'No AI API keys are configured. Please add GEMINI_API_KEY to your environment variables.' },
+        { error: 'No AI API keys are configured. Please add OPENROUTER_API_KEY to your environment variables.' },
         { status: 500 }
       );
     }
